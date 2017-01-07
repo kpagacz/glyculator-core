@@ -7,7 +7,8 @@ library ('ttutils')
 library ('lubridate')
 library ('stringr')
 library ('ggplot2')
-source ('theme_default.R')
+library ('fractal')
+#source ('theme_default.R')
 
 
 ###########################
@@ -688,6 +689,13 @@ Calculate1 = R6Class ('Calculate1',
                           Percent = 100 * sum (Glucose > 180)/length (Glucose)
                           PrettyPercent = format (Percent, nsmall = 2, digits = 2, width = 4)
                           private$Output$Percent_of_measurements_over_180mgdl = PrettyPercent
+                        },
+                        
+                        calculateSlope = function () {
+                          df = private$Measurement$file[1:private$NoRecords, ]
+                          Glucose = as.vector(df$Glucose)
+                          alpha = DFA(Glucose)[[1]]
+                          private$Output$Alpha_DFA = alpha
                         }
 ),
                       active = list (
