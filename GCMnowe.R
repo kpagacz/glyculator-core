@@ -473,6 +473,7 @@ Calculate1 = R6Class ('Calculate1',
                           private$calculateCONGA6h()
                           private$calculateHypo()
                           private$calculateHyper()
+                          private$calculateSlope1()
                           } else {
                           cat ("Insufficient number of measurement time points (needed at least 496) to calculate parameters in file", private$Measurement$id,".\n", sep = ' ')
                             private$Output$Mean = NA
@@ -489,6 +490,7 @@ Calculate1 = R6Class ('Calculate1',
                             private$Output$CONGA4h = NA
                             private$Output$CONGA6h = NA
                             private$Output$Percent_of_measurements_below_70mg/dl = NA
+                            private$Output$Alpha_DFA = NA
                         }
                       }
                       ),
@@ -691,10 +693,10 @@ Calculate1 = R6Class ('Calculate1',
                           private$Output$Percent_of_measurements_over_180mgdl = PrettyPercent
                         },
                         
-                        calculateSlope = function () {
+                        calculateSlope1 = function () {
                           df = private$Measurement$file[1:private$NoRecords, ]
                           Glucose = as.vector(df$Glucose)
-                          alpha = DFA(Glucose)[[1]]
+                          alpha = DFA(Glucose, scale.max = private$Measurement$perday/24)[[1]]
                           private$Output$Alpha_DFA = alpha
                         }
 ),
