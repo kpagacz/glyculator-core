@@ -1,6 +1,5 @@
 library ('R6')
 library ('xlsxjars') 
-library ('rJava')
 library ('xlsx')
 library ('dplyr')
 library ('ttutils')
@@ -8,7 +7,7 @@ library ('lubridate')
 library ('stringr')
 library ('ggplot2')
 library ('fractal')
-#source ('theme_default.R')
+source ('theme_default.R')
 
 
 ###########################
@@ -18,11 +17,13 @@ Measurement = R6Class ('Measurement',
                          perday = NA,
                          id = NA,
                          interval = NA,
+                         dtformat = '',
                          
-                         initialize = function (file, perday = 288) {
+                         initialize = function (file, perday = 288, dtformat) {
                            
                            private$getID(file)
-                           self$file = suppressWarnings(private$prepareDf(file))
+                           self$dtformat = dtformat
+                           self$file = suppressWarnings(private$prepareDf(file, dtformat = self$dtformat))
                            self$perday = perday
                            self$interval = 1440/perday
                            validation = private$validate()
@@ -56,7 +57,7 @@ Measurement = R6Class ('Measurement',
                          
                          areBreaks = function() {
                            datediff = abs(difftime(self$file$DT[-1], head(self$file$DT, -1), units = 'secs'))
-                           logical = datediff < self$interval*60+30
+                           logical = datediff < self$interval*60 + 30 + ((self$perday == 96) * 35)
                            #cat (datediff, logical)
                            return(!all(logical))
                          },
@@ -103,19 +104,19 @@ Measurement = R6Class ('Measurement',
                            if (self$perday!=96 & self$perday!=288) {return (FALSE)} else {return(TRUE)}
                          },
                          
-                         prepareDf = function(df) {
+                         prepareDf = function(df, dtformat) {
                            df = data.frame(df$Glucose, df$DT)
                            dfGlucose = df[[1]]
                            intgluc = as.numeric(levels(dfGlucose))[dfGlucose]
                            df$Glucose = intgluc
-                           df$df.DT = dmy_hms(df$df.DT)
+                           df$df.DT = do.call(dtformat, list(df$df.DT))
                            df = data.frame(df$df.DT, df$Glucose)
                            colnames(df) = c('DT', 'Glucose')
                            return (df)
                          },
                          
                          getID = function (df) {
-                           self$id = df[1,5]
+                           self$id = df[1,3]
                          },
                          
                          appendIndex = function() {
@@ -125,23 +126,11 @@ Measurement = R6Class ('Measurement',
                            colnames(self$file) = c('DT', 'Glucose', 'ID')
                          },
                          
-                         cutNAsFromBeg = function () {
-                           while (is.na(self$file[1,2])) {
-                             self$file = self$file[-1, ]
-                           }
-                           return
-                         },
-                         
-                         cutNAsFromEnd = function () {
-                           while (is.na(self$file[nrow(self$file),2])){
-                             self$file = self$file [-nrow(self$file), ]
-                           }
-                         },
-                         
                          cutDup = function () {
                            # cut duplicates and differing by 1 sec (for some reason the second part of cutShorter5andDup left them intact)
-                           datelagged = c(.POSIXct(double(length(self$file$DT))))
+                           datelagged = self$file$DT
                            datelagged[-1] = self$file$DT
+                           #print(datelagged)
                            datediff = abs(difftime(datelagged, self$file$DT, units = 'secs'))
                            datediff = datediff[-length(datediff)]
                            dup = datediff == 0 | datediff == 1
@@ -155,7 +144,7 @@ Measurement = R6Class ('Measurement',
                            datelagged2[-1] = self$file$DT
                            datediff2 = abs(difftime(datelagged2, self$file$DT, units = 'secs'))
                            datediff2 = datediff2[-length(datediff2)]
-                           logical2 = datediff2 < self$interval * 60 - 2
+                           logical2 = datediff2 < self$interval * 60 - 2 - (self$perday==96) * 60
                            logical2[1] = FALSE
                            patrn2 = as.logical(c('TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE'))
                            m2 = length(patrn2)
@@ -173,7 +162,7 @@ Measurement = R6Class ('Measurement',
                            datelagged2[-1] = self$file$DT
                            datediff2 = abs(difftime(datelagged2, self$file$DT, units = 'secs'))
                            datediff2 = datediff2[-length(datediff2)]
-                           logical2 = datediff2 < self$interval * 60 - 2
+                           logical2 = datediff2 < self$interval * 60 - 2- (self$perday==96) * 60
                            logical2[1] = FALSE
                            patrn2 = as.logical(c('TRUE', 'TRUE', 'TRUE', 'TRUE'))
                            m2 = length(patrn2)
@@ -191,7 +180,7 @@ Measurement = R6Class ('Measurement',
                            datelagged3[-1] = self$file$DT
                            datediff3 = abs(difftime(datelagged3, self$file$DT, units = 'secs'))
                            datediff3 = datediff3[-length(datediff3)]
-                           logical3 = datediff3 < self$interval * 60 - 2
+                           logical3 = datediff3 < self$interval * 60 - 2 - (self$perday==96) * 60
                            logical3[1] = FALSE
                            patrn3 = as.logical (c('TRUE', 'TRUE'))
                            m3 = length(patrn3)
@@ -211,7 +200,7 @@ Measurement = R6Class ('Measurement',
                            EndIndexLongest = 0
                            Longest = 0
                            for (i in 1:length(datediff)) {
-                             if (datediff[i] < self$interval + 0.04 * self$interval) {
+                             if (datediff[i] < self$interval + 0.08 * self$interval) {
                                EndIndex = i
                              } else {
                                if (EndIndex - StartIndex > Longest) {
@@ -257,24 +246,28 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                               idrow = 0,
                               idcol = 0,
                               headnrows = 0,
-                              datecol = 0,
-                              timecol = 0,
                               dtcol = 0,
                               glucosecol = 0,
                               perday = 0,
+                              datecol = 0,
+                              timecol = 0,
+                              separator = '',
+                              extension = '',
+                              dtformat = '',
                               
                               
-                              initialize = function (list = NA, dir = getwd(), perday = 288, idrow = 3, idcol = 2, headnrows = 13, datecol = 2, timecol = 3, dtcol = 4, glucosecol = 10) {
+                              initialize = function (list = NA, dir = getwd(), perday = 288, idrow = 3, idcol = 2, headnrows = 13, datecol = 2, timecol = 3, dtcol = 4, glucosecol = 10, separator = ',', extension = '.csv', dtformat = 'dmy_hms') {
                                 #self$removeMeasurementsWithNAs()
                                 
                                 self$idrow = idrow
                                 self$idcol = idcol
                                 self$headnrows = headnrows
-                                self$datecol = datecol
-                                self$timecol = timecol
                                 self$dtcol = dtcol
                                 self$glucosecol = glucosecol
                                 self$perday = perday
+                                self$extension = extension
+                                self$separator = separator
+                                self$dtformat = dtformat
                                 
                                 if(!is.na(list)) private$aftertrim = list else self$loadFromDir(dir)
                                 self$removeMeasurementsWithBreaks()
@@ -288,7 +281,7 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                 cat('Done trimming .\n')
                                 
                                 listofobjects = lapply (private$aftertrim, function (x) {
-                                  NewMeasure = Measurement$new(x,perday)
+                                  NewMeasure = Measurement$new(x,perday,dtformat = self$dtformat)
                                   NewMeasure$makePretty()
                                   return (NewMeasure)
                                 } 
@@ -404,26 +397,38 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                beforetrim = NA,
                                aftertrim = NA,
                                
-                               readCSVs = function (dir = getwd()) {
+                               readCSVs = function (dir = getwd(), ext = self$extension, separator = self$separator) {
                                  
-                                 FileNames = list.files (dir, pattern = '*.csv', full.names = TRUE)
-                                 ListOfDfs = lapply (FileNames, read.csv, sep = ',', header = FALSE, encoding = "UTF-16")
+                                 FileNames = list.files (dir, pattern = paste('*', ext, sep = ''), full.names = TRUE)
+                                 ListOfDfs = lapply (FileNames, read.csv, sep = separator, header = FALSE, encoding = "UTF-16")
                                  return (ListOfDfs)
                                },
                                
-                               trimDf = function (df) {
+                               trimDf = function (df, dtcol = self$dtcol, datecol = self$datecol, timecol = self$timecol, glucosecol = self$glucosecol) {
                                  id = as.character(df[self$idrow[[1]], self$idcol[[1]]])
-                                 #cat (id)
+                                 #cat(id)
+                                 #print(NewDf)
+                                 if(is.na(dtcol)) {
+                                   dtcol = ncol(df)+1
+                                   df = private$joinDateAndTime(df, datecol = datecol, timecol = timecol, dtcol = dtcol)
+                                 }
                                  NewDf = df[self$headnrows:nrow(df),]
-                                 NewDf = NewDf[,c(self$datecol[[1]],self$timecol[[1]],self$dtcol[[1]],self$glucosecol[[1]])]
+                                 NewDf = NewDf[,c(dtcol,glucosecol)]
                                  norows = nrow(NewDf)-10
                                  NewDf = NewDf[1:norows,]
                                  rownames (NewDf) = NULL
-                                 NewDf[1,5] = id
-                                 colnames(NewDf) = c('Date', 'Time', 'DT', 'Glucose')
+                                 #print(NewDf)
+                                 NewDf[1,3] = id
+                                 colnames(NewDf) = c('DT', 'Glucose')
                                                        #, 'ID')
+                                 #print (NewDf)
                                  return (NewDf)
                                  },
+                               
+                               joinDateAndTime = function (df, datecol, timecol, dtcol) {
+                                 df[,dtcol] = paste (df[,datecol], df[,timecol])
+                                 return (df)
+                               },
                                
                                trimAll = function (file = private$beforetrim) {
                                  aftertrim = lapply (file, private$trimDf)
@@ -489,7 +494,8 @@ Calculate1 = R6Class ('Calculate1',
                             private$Output$CONGA3h = NA
                             private$Output$CONGA4h = NA
                             private$Output$CONGA6h = NA
-                            private$Output$Percent_of_measurements_below_70mg/dl = NA
+                            private$Output$Percent_of_measurements_below_70mgdl = NA
+                            private$Output$Percent_of_measurements_over_180mgdl = NA
                             private$Output$Alpha_DFA = NA
                         }
                       }
@@ -682,7 +688,7 @@ Calculate1 = R6Class ('Calculate1',
                           Glucose = as.vector(df$Glucose)
                           Percent = 100 * sum (Glucose < 70)/length (Glucose)
                           PrettyPercent = format (Percent, nsmall = 2, digits = 2, width = 4)
-                          private$Output$Percent_of_measurements_below_70mgdl = PrettyPercent
+                          private$Output$Percent_of_measurements_below_70mgdl = Percent
                         },
                         
                         calculateHyper = function () {
@@ -690,13 +696,13 @@ Calculate1 = R6Class ('Calculate1',
                           Glucose = as.vector(df$Glucose)
                           Percent = 100 * sum (Glucose > 180)/length (Glucose)
                           PrettyPercent = format (Percent, nsmall = 2, digits = 2, width = 4)
-                          private$Output$Percent_of_measurements_over_180mgdl = PrettyPercent
+                          private$Output$Percent_of_measurements_over_180mgdl = Percent
                         },
                         
                         calculateSlope1 = function () {
                           df = private$Measurement$file[1:private$NoRecords, ]
                           Glucose = as.vector(df$Glucose)
-                          alpha = DFA(Glucose, scale.max = private$Measurement$perday/24)[[1]]
+                          alpha = DFA(Glucose, scale.min = 2, scale.max = private$Measurement$perday/12)[[1]]
                           private$Output$Alpha_DFA = alpha
                         }
 ),
