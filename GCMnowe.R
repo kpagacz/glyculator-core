@@ -18,16 +18,22 @@ Measurement = R6Class ('Measurement',
                          id = NA,
                          interval = NA,
                          dtformat = '',
+                         max.days = F,
                          
-                         initialize = function (file, perday = 288, dtformat) {
+                         initialize = function (file, perday = 288, dtformat, max.days) {
                            
                            private$getID(file)
                            self$dtformat = dtformat
                            self$file = suppressWarnings(private$prepareDf(file, dtformat = self$dtformat))
                            self$perday = perday
                            self$interval = 1440/perday
+                           self$max.days = max.days
                            validation = private$validate()
                            if (validation==FALSE) cat('Your input is incorrect. Check whether the number of measurements per day is correct. Only 288 or 96 are being accepted.\n')
+                           self$makePretty()
+                           if (max.days == F) {
+                             self$file = self$file[private$getIndOf10PM():(private$getIndOf10PM()-1+self$perday*2),]
+                           }
                          },
                          
                          makePretty = function () {
@@ -228,7 +234,13 @@ Measurement = R6Class ('Measurement',
                          
                          cutNAs = function(){
                            self$file = self$file[!is.na(self$file$Glucose),]
-                          }
+                          },
+                         
+                         getIndOf10PM = function () {
+                           logic = hour(self$file[,1])==20
+                           first = min(which(logic==T))
+                           return (first)
+                         }
                            
                            ),
                        active = list(
@@ -254,9 +266,10 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                               separator = '',
                               extension = '',
                               dtformat = '',
+                              max.days = F,
                               
                               
-                              initialize = function (list = NA, dir = getwd(), perday = 288, idrow = 3, idcol = 2, headnrows = 13, datecol = 2, timecol = 3, dtcol = 4, glucosecol = 10, separator = ',', extension = '.csv', dtformat = 'dmy_hms') {
+                              initialize = function (list = NA, dir = getwd(), max.days = F, perday = 288, idrow = 3, idcol = 2, headnrows = 13, datecol = 2, timecol = 3, dtcol = 4, glucosecol = 10, separator = ',', extension = '.csv', dtformat = 'dmy_hms') {
                                 #self$removeMeasurementsWithNAs()
                                 
                                 self$idrow = idrow
@@ -268,21 +281,22 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                 self$extension = extension
                                 self$separator = separator
                                 self$dtformat = dtformat
+                                self$max.days = max.days
                                 
-                                if(!is.na(list)) private$aftertrim = list else self$loadFromDir(dir)
+                                if(!is.na(list)) private$aftertrim = list else self$loadFromDir(dir, perday = self$perday, dtformat = self$dtformat, max.days = self$max.days)
                                 self$removeMeasurementsWithBreaks()
                                 
                               },
                               
-                              loadFromDir = function (dir = getwd(), perday = self$perday) {
+                              loadFromDir = function (dir = getwd(), perday, dtformat, max.days) {
                                 private$beforetrim = private$readCSVs (dir = dir)
                                 cat ('Done loading. \n')
                                 private$aftertrim = private$trimAll ()
                                 cat('Done trimming .\n')
                                 
                                 listofobjects = lapply (private$aftertrim, function (x) {
-                                  NewMeasure = Measurement$new(x,perday,dtformat = self$dtformat)
-                                  NewMeasure$makePretty()
+                                  NewMeasure = Measurement$new(x,perday,dtformat = dtformat,max.days = max.days)
+                                  #NewMeasure$makePretty()
                                   return (NewMeasure)
                                 } 
                                 )
