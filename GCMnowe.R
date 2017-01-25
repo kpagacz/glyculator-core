@@ -7,7 +7,7 @@ library ('lubridate')
 library ('stringr')
 library ('ggplot2')
 library ('fractal')
-source ('theme_default.R')
+#source ('theme_default.R')
 
 
 ###########################
@@ -326,7 +326,7 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                               
                               getResults = function () {
                                 #Results = Calculate1$new(private$lob2[[1]])$getOutput()
-                                Results = data.frame()
+                                Results = structure(list(), class = "data.frame")
                                 for (i in seq.int(length.out = length(self$get_lob()))) {
                                   res = Calculate1$new(self$get_lob()[[i]])$getOutput()
                                   #print (res)
@@ -479,6 +479,8 @@ Calculate1 = R6Class ('Calculate1',
                           private$calculateHypo()
                           private$calculateHyper()
                           private$calculateSlope1()
+                          private$calculateSlope2()
+                          private$calculateSlope3()
                           } else {
                           cat ("Insufficient number of measurement time points (needed at least 496) to calculate parameters in file", private$Measurement$id,".\n", sep = ' ')
                             private$Output$Mean = NA
@@ -496,7 +498,9 @@ Calculate1 = R6Class ('Calculate1',
                             private$Output$CONGA6h = NA
                             private$Output$Percent_of_measurements_below_70mgdl = NA
                             private$Output$Percent_of_measurements_over_180mgdl = NA
-                            private$Output$Alpha_DFA = NA
+                            private$Output$Alpha1_DFA = NA
+                            private$Output$Alpha2_DFA = NA
+                            private$Output$Alpha3_DFA = NA
                         }
                       }
                       ),
@@ -702,11 +706,26 @@ Calculate1 = R6Class ('Calculate1',
                         calculateSlope1 = function () {
                           df = private$Measurement$file[1:private$NoRecords, ]
                           Glucose = as.vector(df$Glucose)
-                          alpha = DFA(Glucose, scale.min = 2, scale.max = private$Measurement$perday/12)[[1]]
-                          private$Output$Alpha_DFA = alpha
+                          alpha1 = DFA(Glucose, scale.min = 2, scale.max = private$Measurement$perday/12)[[1]]
+                          private$Output$Alpha1_DFA = alpha1
+                        },
+                        
+                        calculateSlope2 = function() {
+                          df = private$Measurement$file[1:private$NoRecords, ]
+                          Glucose = as.vector (df$Glucose)
+                          alpha2 = DFA(Glucose, scale.min = private$Measurement$perday/12, scale.max = private$Measurement$perday/4)[[1]]
+                          private$Output$Alpha2_DFA = alpha2
+                        },
+                        
+                        calculateSlope3 = function() {
+                          df = private$Measurement$file[1:private$NoRecords, ]
+                          Glucose = as.vector (df$Glucose)
+                          alpha3 = DFA(Glucose, scale.min = private$Measurement$perday/4, scale.max = private$Measurement$perday)[[1]]
+                          private$Output$Alpha3_DFA = alpha3
                         }
 ),
                       active = list (
     
                       )
 )
+
