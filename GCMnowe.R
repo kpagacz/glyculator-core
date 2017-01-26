@@ -63,8 +63,9 @@ Measurement = R6Class ('Measurement',
                          
                          areBreaks = function() {
                            datediff = abs(difftime(self$file$DT[-1], head(self$file$DT, -1), units = 'secs'))
-                           logical = datediff < self$interval*60 + 30 + ((self$perday == 96) * 35)
-                           #cat (datediff, logical)
+                           logical = datediff < self$interval*60 + 30
+                           #cat (logical, "\n")
+                           #print (!all(logical))
                            return(!all(logical))
                          },
                          
@@ -237,7 +238,7 @@ Measurement = R6Class ('Measurement',
                           },
                          
                          getIndOf10PM = function () {
-                           logic = hour(self$file[,1])==20
+                           logic = hour(self$file[,1])==22
                            first = min(which(logic==T))
                            return (first)
                          }
@@ -274,7 +275,7 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                 
                                 self$idrow = idrow
                                 self$idcol = idcol
-                                self$headnrows = headnrows
+                                self$headnrows = headnrowslo 
                                 self$dtcol = dtcol
                                 self$glucosecol = glucosecol
                                 self$perday = perday
@@ -284,19 +285,21 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                 self$max.days = max.days
                                 
                                 if(!is.na(list)) private$aftertrim = list else self$loadFromDir(dir, perday = self$perday, dtformat = self$dtformat, max.days = self$max.days)
+                                #print(private$lob2)
                                 self$removeMeasurementsWithBreaks()
+                                #print(self$get_lob())
                                 
                               },
                               
                               loadFromDir = function (dir = getwd(), perday, dtformat, max.days) {
                                 private$beforetrim = private$readCSVs (dir = dir)
-                                cat ('Done loading. \n')
+                                cat ('Done loading.\n')
                                 private$aftertrim = private$trimAll ()
-                                cat('Done trimming .\n')
+                                cat('Done trimming.\n')
                                 
                                 listofobjects = lapply (private$aftertrim, function (x) {
                                   NewMeasure = Measurement$new(x,perday,dtformat = dtformat,max.days = max.days)
-                                  #NewMeasure$makePretty()
+                                  #NewMeasure$makePretty() print (NewMeasure)
                                   return (NewMeasure)
                                 } 
                                 )
@@ -354,7 +357,7 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                               },
                               
                               removeMeasurementsWithNAs = function () {
-                                NAsLogicVector = vector()
+                                print("haha")
                                 NAsLogicVector = sapply (self$get_lob(), function(x) {
                                   return (x$areNAs())  
                                 }
