@@ -702,8 +702,12 @@ Calculate1 = R6Class ('Calculate1',
                           private$Output$Alpha3_DFA = alpha3
                         },
                         
-                        moving9PF = function (vector) {
-                          
+                        moving9PF = function (v) {
+                          smoothed = v
+                          for (i in 5:(length(vector)-4)) {
+                            smoothed[i] = (sum(v[i-4]:v[i+4]))/9
+                          }
+                          return(smoothed)
                         }
 ),
                       active = list (
