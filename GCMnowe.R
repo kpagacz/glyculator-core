@@ -301,7 +301,6 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                 } 
                                 )
                                 
-                                #print (listofobjects)
                                 private$lob2 = listofobjects
                                 
                               },
@@ -528,12 +527,8 @@ Calculate1 = R6Class ('Calculate1',
                         calculateNoDaysAndNoRecords = function () {
                           NoDays = floor(nrow(private$Measurement$file)/private$Measurement$perday)
                           private$NoDays = NoDays
-                          if (NoDays > 1) {
-                            private$NoDays = 2
-                          } else {
-                            #cat(paste('Insufficient number of days (needed at least 2) in file', private$Measurement$id, '\n'))
-                          }
-                          private$NoRecords = as.numeric(NoDays*private$Measurement$perday)
+                          #IMPORTANT: next line is setting the days to calculate
+                          private$NoRecords = NoDays*private$Measurement$perday
                           private$Output[1,1] = nrow (private$Measurement$file)
                         },
     
