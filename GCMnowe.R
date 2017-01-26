@@ -574,41 +574,7 @@ Calculate1 = R6Class ('Calculate1',
                         },
                         
                         calculateMAGE = function() {
-                          v = private$Measurement$file$Glucose[1:private$NoRecords]
-                          #print (c(private$Measurement$id, " \n"))
-                          #v = as.vector(df$Glucose)
-                          #printing vector
-                          #cat (v, '\n', length(v), "\n")
-                          if (v[1] < v[2]){
-                            up = 0
-                          } else if (v[1] > v[2]){
-                            up = 1
-                          } else if (v[1] == v[2]) {
-                            up = 2
-                          }
-                          PeaksNadirs = vector()
-                          for (i in seq.int(length.out = (length(v)-1))) {
-                            if (v[i] - v[i+1] > 0) {
-                              if (up == 1) PeaksNadirs = append(PeaksNadirs, v[i])
-                              up = 0
-                            } else if (v[i] - v[i+1] < 0) {
-                              if (up == 0) PeaksNadirs = append(PeaksNadirs, v[i])
-                              up = 1
-                            }
-                          }
-                          PeaksNadirs = append(PeaksNadirs, v[length(v)])
-                          #printingPeaksNadirs
-                          #cat(PeaksNadirs)
-                          PeaksNadirsDiff = vector()
-                          for (j in seq.int(length.out = (length(PeaksNadirs)-1))){
-                            #important line here - defining what excursion is
-                            if (abs(PeaksNadirs[j] - PeaksNadirs[j+1]) - 2*private$Output$SD > 0){
-                              PeaksNadirsDiff = append(PeaksNadirsDiff, abs(PeaksNadirs[j]-PeaksNadirs[j+1]))
-                            }
-                          }
-                          #printing PNDiff
-                          #cat(PeaksNadirsDiff)
-                          MAGE = mean(PeaksNadirsDiff)
+                          
                           private$Output$MAGE = MAGE
                         },
                         
@@ -734,6 +700,10 @@ Calculate1 = R6Class ('Calculate1',
                           Glucose = as.vector (df$Glucose)
                           alpha3 = DFA(Glucose, scale.min = private$Measurement$perday/4, scale.max = private$Measurement$perday)[[1]]
                           private$Output$Alpha3_DFA = alpha3
+                        },
+                        
+                        moving9PF = function (vector) {
+                          
                         }
 ),
                       active = list (
