@@ -61,9 +61,9 @@ Measurement = R6Class ('Measurement',
                            return(all(logical))
                          },
                          
-                         areBreaks = function() {
+                         areBreaks = function(perday = self$perday) {
                            datediff = abs(difftime(self$file$DT[-1], head(self$file$DT, -1), units = 'secs'))
-                           logical = datediff < self$interval*60 + 30
+                           logical = datediff < self$interval*60 + 30 + (perday == 96)*45
                            #cat (logical, "\n")
                            #print (!all(logical))
                            return(!all(logical))
@@ -270,12 +270,13 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                               max.days = F,
                               
                               
+                              
                               initialize = function (list = NA, dir = getwd(), max.days = F, perday = 288, idrow = 3, idcol = 2, headnrows = 13, datecol = 2, timecol = 3, dtcol = 4, glucosecol = 10, separator = ',', extension = '.csv', dtformat = 'dmy_hms') {
                                 #self$removeMeasurementsWithNAs()
                                 
                                 self$idrow = idrow
                                 self$idcol = idcol
-                                self$headnrows = headnrowslo 
+                                self$headnrows = headnrows
                                 self$dtcol = dtcol
                                 self$glucosecol = glucosecol
                                 self$perday = perday
@@ -285,9 +286,10 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                 self$max.days = max.days
                                 
                                 if(!is.na(list)) private$aftertrim = list else self$loadFromDir(dir, perday = self$perday, dtformat = self$dtformat, max.days = self$max.days)
-                                #print(private$lob2)
+                                #print(head(private$lob2))
                                 self$removeMeasurementsWithBreaks()
                                 #print(self$get_lob())
+                                #print(head(private$lob2))
                                 
                               },
                               
@@ -305,7 +307,7 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                 )
                                 
                                 private$lob2 = listofobjects
-                                
+                                #print(private$lob2)
                               },
                               
                               get_aftertrim = function () {
@@ -409,7 +411,7 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                              ),
                              
                              private = list (
-                               lob2 = list(),
+                               lob2 = NA,
                                beforetrim = NA,
                                aftertrim = NA,
                                
@@ -485,7 +487,7 @@ Calculate1 = R6Class ('Calculate1',
                           private$calculateCV()
                           private$calculateM100()
                           private$calculateJ()
-                          private$calculateMAGE()
+                          #private$calculateMAGE()
                           private$calculateMODD()
                           private$calculateCONGA1h()
                           private$calculateCONGA2h()
@@ -505,7 +507,7 @@ Calculate1 = R6Class ('Calculate1',
                             private$Output$CV = NA
                             private$Output$M100 = NA
                             private$Output$J = NA
-                            private$Output$MAGE = NA
+                            #private$Output$MAGE = NA
                             private$Output$MODD = NA
                             private$Output$CONGA1h = NA
                             private$Output$CONGA2h = NA
