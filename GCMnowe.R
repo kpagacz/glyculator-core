@@ -706,10 +706,50 @@ Calculate1 = R6Class ('Calculate1',
                         
                         moving9PF = function (v) {
                           smoothed = v
-                          for (i in 5:(length(vector)-4)) {
-                            smoothed[i] = (sum(v[i-4]:v[i+4]))/9
+                          for (i in seq.int(from = 5, to = length(smoothed)-4)) {
+                            smoothed[i] = (sum(v[(i-4):(i+4)]))/9
                           }
                           return(smoothed)
+                        },
+                        
+                        identifyMinMax = function(v) {
+                          logic = logical()
+                          Mins = numeric()
+                          Maxs = numeric()
+                          up=2
+                          
+                          if (v[1] > v[2]) {Maxs = append(Maxs, 1)} 
+                          if (v[1] < v[2]) {Mins = append(Mins, 1)}
+                          for (i in seq.int(length.out = (length(v)-1))) {
+                            if (v[i] - v[i+1] > 0) {
+                              if (up == 1) Maxs = append(Maxs, i)
+                              up = 0
+                            } else if (v[i] - v[i+1] < 0) {
+                              if (up == 0) Mins = append(Mins, i)
+                              up = 1
+                            }
+                          }
+                          if (v[length(v)] > v[length(v)-1]) {Maxs = append(Maxs, length(v))}
+                          if (v[length(v)] < v[length(v)-1]) {Mins = append(Mins, length(v))}
+                          return(list(v1=Mins,v2=Maxs))
+                        },
+                        
+                        identifyLocalMinMax = function(v, mins, maxs) {
+                          LocalMins = numeric()
+                          LocalMaxs = numeric()
+                          mins = mins
+                          maxs = maxs
+                          print(mins)
+                          print(maxs)
+                          
+                          for (i in seq.int(length.out = length(maxs)-1)) {
+                            LocalMins = append(LocalMins, which.min(v[maxs[i]:maxs[i+1]])+maxs[i]-1)
+                          }
+                          for (i in seq.int(length.out = length(mins)-1)) {
+                            LocalMaxs = append(LocalMaxs, which.max(v[mins[i]:mins[i+1]])+mins[i]-1)
+                          }
+                          
+                          return(list(LocalMins, LocalMaxs))
                         }
 ),
                       active = list (
