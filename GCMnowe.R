@@ -926,6 +926,22 @@ Calculate1 = R6Class ('Calculate1',
                           }
                           
                           return (list(mins, maxs))
+                        },
+                        
+                        AreUncountableExcursions = function (smoothed, mins, maxs, limit = private$ExcursionLimit) {
+                          smoothed = smoothed
+                          mins = mins
+                          maxs = maxs
+                          limit = limit
+                          tps = c(mins,maxs)
+                          diffs = vector(mode = "numeric", length = length(tps)-1)
+                          
+                          for (i in 1:(length(tps)-1)) {
+                            diffs[i] = abs(tps[i] - tps[i+1])
+                          }
+                          
+                          logic = all(diffs>limit)
+                          return (!logic)
                         }
             
 ),
