@@ -837,9 +837,8 @@ Calculate1 = R6Class ('Calculate1',
                           
                           tps = sort.int (mins,maxs)
                           newtps = tps
-                          #do poprawki!
                           for (i in 2:(length(tps)-1)) {
-                            triad = c(tps[i-1], tps[i], tps[i+1])
+                            triad = c(smoothed[tps[i-1]], smoothed[tps[i]], smoothed[tps[i+1]])
                             if (triad == cummax(triad)) {
                               newtps[i] = NA
                             }
