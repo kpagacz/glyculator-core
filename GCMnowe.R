@@ -63,6 +63,7 @@ Measurement = R6Class ('Measurement',
                          
                          areBreaks = function() {
                            datediff = abs(difftime(self$file$DT[-1], head(self$file$DT, -1), units = 'secs'))
+                           print (datediff)
                            logical = datediff < self$interval*60 + 30
                            #cat (logical, "\n")
                            #print (!all(logical))
@@ -275,7 +276,7 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                 
                                 self$idrow = idrow
                                 self$idcol = idcol
-                                self$headnrows = headnrowslo 
+                                self$headnrows = headnrows
                                 self$dtcol = dtcol
                                 self$glucosecol = glucosecol
                                 self$perday = perday
@@ -283,6 +284,8 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                 self$separator = separator
                                 self$dtformat = dtformat
                                 self$max.days = max.days
+                                self$datecol = datecol
+                                self$timecol = timecol
                                 
                                 if(!is.na(list)) private$aftertrim = list else self$loadFromDir(dir, perday = self$perday, dtformat = self$dtformat, max.days = self$max.days)
                                 #print(private$lob2)
@@ -414,21 +417,27 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                aftertrim = NA,
                                
                                readCSVs = function (dir = getwd(), ext = self$extension, separator = self$separator) {
-                                 
                                  FileNames = list.files (dir, pattern = paste('*', ext, sep = ''), full.names = TRUE)
-                                 ListOfDfs = lapply (FileNames, read.csv, sep = separator, header = FALSE, encoding = "UTF-16")
-                                 return (ListOfDfs)
+                                 if (ext == '.xlsx' || ext == '.xls') {
+                                   ListOfDfs = lapply (FileNames, read.xlsx, sheetIndex = 1, header = FALSE, stringsAsFactors = F)
+                                 } else {
+                                    ListOfDfs = lapply (FileNames, read.csv, sep = separator, header = FALSE, encoding = "UTF-16", stringsAsFactors = F)
+                                    return (ListOfDfs)
+                                 }
                                },
                                
                                trimDf = function (df, dtcol = self$dtcol, datecol = self$datecol, timecol = self$timecol, glucosecol = self$glucosecol) {
                                  id = as.character(df[self$idrow[[1]], self$idcol[[1]]])
                                  #cat(id)
                                  #print(NewDf)
+                                 #print (c(datecol, timecol, glucosecol))
+                                 
                                  if(is.na(dtcol)) {
                                    dtcol = ncol(df)+1
                                    df = private$joinDateAndTime(df, datecol = datecol, timecol = timecol, dtcol = dtcol)
                                  }
                                  NewDf = df[self$headnrows:nrow(df),]
+                                 print (head(NewDf))
                                  NewDf = NewDf[,c(dtcol,glucosecol)]
                                  norows = nrow(NewDf)-10
                                  NewDf = NewDf[1:norows,]
@@ -485,7 +494,7 @@ Calculate1 = R6Class ('Calculate1',
                           private$calculateCV()
                           private$calculateM100()
                           private$calculateJ()
-                          private$calculateMAGE()
+                          #private$calculateMAGE()
                           private$calculateMODD()
                           private$calculateCONGA1h()
                           private$calculateCONGA2h()
@@ -505,7 +514,7 @@ Calculate1 = R6Class ('Calculate1',
                             private$Output$CV = NA
                             private$Output$M100 = NA
                             private$Output$J = NA
-                            private$Output$MAGE = NA
+                            #private$Output$MAGE = NA
                             private$Output$MODD = NA
                             private$Output$CONGA1h = NA
                             private$Output$CONGA2h = NA
