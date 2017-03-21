@@ -19,6 +19,7 @@ Measurement = R6Class ('Measurement',
                          interval = NA,
                          dtformat = '',
                          max.days = F,
+                         days = 2,
                          
                          initialize = function (file, perday = 288, dtformat, max.days) {
                            
@@ -32,7 +33,7 @@ Measurement = R6Class ('Measurement',
                            if (validation==FALSE) cat('Your input is incorrect. Check whether the number of measurements per day is correct. Only 288 or 96 are being accepted.\n')
                            self$makePretty()
                            if (max.days == F) {
-                             self$file = self$file[private$getIndOf10PM():(private$getIndOf10PM()-1+self$perday*2),]
+                             self$file = self$file[private$getIndOf10PM():(private$getIndOf10PM()-1+self$perday*self$days),]
                            }
                          },
                          
@@ -61,10 +62,10 @@ Measurement = R6Class ('Measurement',
                            return(all(logical))
                          },
                          
-                         areBreaks = function() {
+                         areBreaks = function(perday = self$perday) {
                            datediff = abs(difftime(self$file$DT[-1], head(self$file$DT, -1), units = 'secs'))
-                           print (datediff)
-                           logical = datediff < self$interval*60 + 30
+
+                           logical = datediff < self$interval*60 + 30 + (perday == 96)*45
                            #cat (logical, "\n")
                            #print (!all(logical))
                            return(!all(logical))
@@ -271,6 +272,7 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                               max.days = F,
                               
                               
+                              
                               initialize = function (list = NA, dir = getwd(), max.days = F, perday = 288, idrow = 3, idcol = 2, headnrows = 13, datecol = 2, timecol = 3, dtcol = 4, glucosecol = 10, separator = ',', extension = '.csv', dtformat = 'dmy_hms') {
                                 #self$removeMeasurementsWithNAs()
                                 
@@ -288,9 +290,10 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                 self$timecol = timecol
                                 
                                 if(!is.na(list)) private$aftertrim = list else self$loadFromDir(dir, perday = self$perday, dtformat = self$dtformat, max.days = self$max.days)
-                                #print(private$lob2)
+                                #print(head(private$lob2))
                                 self$removeMeasurementsWithBreaks()
                                 #print(self$get_lob())
+                                #print(head(private$lob2))
                                 
                               },
                               
@@ -308,7 +311,7 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                 )
                                 
                                 private$lob2 = listofobjects
-                                
+                                #print(private$lob2)
                               },
                               
                               get_aftertrim = function () {
@@ -412,7 +415,7 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                              ),
                              
                              private = list (
-                               lob2 = list(),
+                               lob2 = NA,
                                beforetrim = NA,
                                aftertrim = NA,
                                
@@ -487,6 +490,7 @@ Calculate1 = R6Class ('Calculate1',
     
                         calculateEverything = function () {
                           private$calculateNoDaysAndNoRecords()
+                          #print (private$Measurement$id)
                           if (private$NoDays >= 2) {
                           private$calculateMean()
                           private$calculateSD()
@@ -534,6 +538,7 @@ Calculate1 = R6Class ('Calculate1',
                         Output = data.frame (matrix(nrow = 1)),
                         NoDays = NULL,
                         NoRecords = NULL,
+                        ExcursionLimit = numeric(),
     
     
                         calculateNoDaysAndNoRecords = function () {
@@ -554,6 +559,7 @@ Calculate1 = R6Class ('Calculate1',
                           df = private$Measurement$file[1:private$NoRecords, ]
                           SD = sd(df$Glucose, na.rm = TRUE)
                           private$Output$SD = SD
+                          private$ExcursionLimit = SD
                         },
     
                         calculateMedian = function() {
@@ -584,41 +590,67 @@ Calculate1 = R6Class ('Calculate1',
                         
                         calculateMAGE = function() {
                           v = private$Measurement$file$Glucose[1:private$NoRecords]
-                          #print (c(private$Measurement$id, " \n"))
-                          #v = as.vector(df$Glucose)
-                          #printing vector
-                          #cat (v, '\n', length(v), "\n")
-                          if (v[1] < v[2]){
-                            up = 0
-                          } else if (v[1] > v[2]){
-                            up = 1
-                          } else if (v[1] == v[2]) {
-                            up = 2
+                          
+                          if(max(v) - min(v) <= private$ExcursionLimit) { 
+                            private$Output$MAGE = "There are no excursion in the file." 
+                            return(NULL) 
                           }
-                          PeaksNadirs = vector()
-                          for (i in seq.int(length.out = (length(v)-1))) {
-                            if (v[i] - v[i+1] > 0) {
-                              if (up == 1) PeaksNadirs = append(PeaksNadirs, v[i])
-                              up = 0
-                            } else if (v[i] - v[i+1] < 0) {
-                              if (up == 0) PeaksNadirs = append(PeaksNadirs, v[i])
-                              up = 1
+
+                          #getting turning points and local minima maxima
+                          smoothed = private$moving9PF(v)
+                          minmax = private$identifyMinMax(smoothed)
+                          mins = minmax[[1]]
+                          maxs = minmax[[2]]
+                          localminmax = private$identifyLocalMinMax(v, mins = mins, maxs = maxs)
+                          lmins = localminmax[[1]]
+                          lmaxs = localminmax[[2]]
+                          #print(private$ExcursionLimit)
+                          
+                          #deleting turning points with uncountable excursions on both sides
+                          for (i in 1:5) {
+                            #print(smoothed[sort.int(c(mins,maxs))])
+                            #print(private$areUncountableExcursions(smoothed, mins, maxs) == TRUE)
+                            if (private$areUncountableExcursions(smoothed, mins, maxs) == TRUE) {
+                              output = private$removeUncountableTurningPoints(smoothed = smoothed, original = v, mins = mins, maxs = maxs, lmins = lmins, lmaxs = lmaxs)
+                              mins = output[[1]]
+                              maxs = output[[2]]
+                              #print(smoothed[sort.int(c(mins,maxs))])
+                              output = private$removeNotTurningPoints(smoothed = smoothed, mins = mins, maxs = maxs)
+                              mins = output[[1]]
+                              maxs = output[[2]]
+                              #print(c('bothsides',i, 'tps', smoothed[sort.int(c(mins,maxs))]))
                             }
                           }
-                          PeaksNadirs = append(PeaksNadirs, v[length(v)])
-                          #printingPeaksNadirs
-                          #cat(PeaksNadirs)
-                          PeaksNadirsDiff = vector()
-                          for (j in seq.int(length.out = (length(PeaksNadirs)-1))){
-                            #important line here - defining what excursion is
-                            if (abs(PeaksNadirs[j] - PeaksNadirs[j+1]) - 2*private$Output$SD > 0){
-                              PeaksNadirsDiff = append(PeaksNadirsDiff, abs(PeaksNadirs[j]-PeaksNadirs[j+1]))
+                          
+                          #deleting turning points with uncountable exursion on one side
+                          for (i in 1:5) {
+                            if (private$areUncountableExcursions(smoothed, mins, maxs) == TRUE) {
+                              #print(smoothed[sort.int(c(mins,maxs))])
+                              output = private$removeUncountableTurningPointsOneExc(smoothed = smoothed, original = v, mins = mins, maxs = maxs, lmins = lmins, lmaxs = lmaxs)
+                              mins = output[[1]]
+                              maxs = output[[2]]
+                              output = private$removeNotTurningPoints(smoothed = smoothed, mins = mins, maxs = maxs)
+                              mins = output[[1]]
+                              maxs = output[[2]]
                             }
                           }
-                          #printing PNDiff
-                          #cat(PeaksNadirsDiff)
-                          MAGE = mean(PeaksNadirsDiff)
-                          private$Output$MAGE = MAGE
+                          
+                          #print(smoothed[sort.int(c(mins,maxs))])
+                          #removing uncountable excursions at the beginning or end
+                          output = private$removeUncountableExcFromBegAndEnd(smoothed = smoothed, mins = mins, maxs = maxs)
+                          mins = output[[1]]
+                          maxs = output[[2]]
+                          #print(smoothed[sort.int(c(mins,maxs))])
+                          
+                          logic = private$areUncountableExcursions(smoothed = smoothed, mins = mins, maxs = maxs)
+                          #print(logic)
+                          
+                          if(logic == FALSE) {
+                            MAGE = private$calculateAmplitudes(vector = v, mins = mins, maxs = maxs)
+                            private$Output$MAGE = MAGE
+                          } else {
+                            private$Output$MAGE = "Unable to calculate MAGE. Visual analysis should be performed."
+                          }
                         },
                         
                         calculateMODD = function() {
@@ -743,7 +775,402 @@ Calculate1 = R6Class ('Calculate1',
                           Glucose = as.vector (df$Glucose)
                           alpha3 = DFA(Glucose, scale.min = private$Measurement$perday/4, scale.max = private$Measurement$perday)[[1]]
                           private$Output$Alpha3_DFA = alpha3
+                        },
+                        
+                        moving9PF = function (v) {
+                          smoothed = v
+                          for (i in seq.int(from = 5, to = length(smoothed)-4)) {
+                            smoothed[i] = (sum(v[(i-4):(i+4)]))/9
+                          }
+                          
+                          smoothed[1] = sum(v[1:5])/5
+                          smoothed[2] = sum(v[1:6])/6
+                          smoothed[3] = sum(v[1:7])/7
+                          smoothed[4] = sum(v[1:8])/8
+                          smoothed[length(v)-3] = sum(v[(length(v)-7):length(v)])/8
+                          smoothed[length(v)-2] = sum(v[(length(v)-6):length(v)])/7
+                          smoothed[length(v)-1] = sum(v[(length(v)-5):length(v)])/6
+                          smoothed[length(v)] = sum(v[(length(v)-4):length(v)])/5
+                          return(smoothed)
+                        },
+                        
+                        identifyMinMax = function(v) {
+                          logic = logical()
+                          Mins = numeric()
+                          Maxs = numeric()
+                          up=2
+                          
+                          if (v[1] > v[2]) {Maxs = append(Maxs, 1)} 
+                          if (v[1] < v[2]) {Mins = append(Mins, 1)}
+                          for (i in seq.int(length.out = (length(v)-1))) {
+                            if (v[i] - v[i+1] > 0) {
+                              if (up == 1) Maxs = append(Maxs, i)
+                              up = 0
+                            } else if (v[i] - v[i+1] < 0) {
+                              if (up == 0) Mins = append(Mins, i)
+                              up = 1
+                            }
+                          }
+                          if (v[length(v)] > v[length(v)-1]) {Maxs = append(Maxs, length(v))}
+                          if (v[length(v)] < v[length(v)-1]) {Mins = append(Mins, length(v))}
+                          return(list(v1=Mins,v2=Maxs))
+                        },
+                        
+                        identifyLocalMinMax = function(v, mins, maxs) {
+                          LocalMins = numeric()
+                          LocalMaxs = numeric()
+                          mins = mins
+                          maxs = maxs
+                          #print(mins)
+                          #print(maxs)
+                          
+                          for (i in seq.int(length.out = length(maxs)-1)) {
+                            LocalMins = append(LocalMins, which.min(v[maxs[i]:maxs[i+1]])+maxs[i]-1)
+                          }
+                          for (i in seq.int(length.out = length(mins)-1)) {
+                            LocalMaxs = append(LocalMaxs, which.max(v[mins[i]:mins[i+1]])+mins[i]-1)
+                          }
+                          
+                          return(list(LocalMins, LocalMaxs))
+                        },
+                        
+                        removeUncountableTurningPoints = function (smoothed, original, mins, maxs, lmins, lmaxs, limit = private$ExcursionLimit) {
+                          smoothed = smoothed
+                          original = original
+                          mins = mins
+                          maxs = maxs
+                          lmins = lmins
+                          lmaxs = lmaxs
+                          limit = limit
+                          
+                          newmins = mins
+                          newmaxs = maxs
+                          
+                          for (i in 2:(min(length(mins),length(maxs))-(length(mins)==length(maxs))*1)) {
+                            #lower index, checking for meaningful excursions on both sides
+                            LowInd = min(mins[i], maxs[i]) 
+                            LowIndDownExc = abs(smoothed[LowInd] - smoothed[max(maxs[i-1], mins[i-1])])
+                            LowIndUpExc = abs(smoothed[mins[i]] - smoothed[maxs[i]])
+                            #print (LowIndUpExc)
+                            #print(LowIndDownExc)
+                            #print(c("low ind Both side excursions",LowInd, LowIndDownExc < limit && LowIndUpExc < limit))
+                            if(LowIndDownExc < limit && LowIndUpExc < limit) {
+                              #finding out whether LowInd is a min
+                              #print (c('lowind == mins[i]', LowInd == mins[i]))
+                              if (LowInd == mins[i]) {
+                                #finding adjacent local minima
+                                lower = Position(f = function(x) {x < LowInd}, x = lmins, nomatch = F, right = T)
+                                upper = Position(f = function(x) {x > LowInd}, x = lmins, nomatch = F, right = F)
+                                #print(c('lower upper', lower, upper))
+                                #checking whether position is out of bounds
+                                #print (c("not out of bounds", lower != F && upper != F))
+                                if (lower != F && upper != F) {
+                                  #checking whether the minima are higher than the mins[i]
+                                  #print (c('are adjacent minima higher',original[lower] > smoothed[LowInd] && original[upper] > smoothed[LowInd]))
+                                  if (original[lmins[lower]] > smoothed[LowInd] && original[lmins[upper]] > smoothed[LowInd]) {
+                                    
+                                  } else {
+                                    #removing the turning point from a newmins vector
+                                    newmins[i] = NA
+                                  }
+                                }
+                              } else {
+                                #LowInd is a max
+                                lower = Position(f = function(x) {x < LowInd}, x = lmaxs, nomatch = F, right = T)
+                                upper = Position(f = function(x) {x > LowInd}, x = lmaxs, nomatch = F)
+                                if (lower != F && upper != F) {
+                                  #checking whether the maxima are lower than the maxs[i]
+                                  if (original[lmaxs[lower]] < smoothed[LowInd] && original[lmaxs[upper]] < smoothed[LowInd]) {
+                                    
+                                  } else {
+                                    #removing the turning point from a newmins vector
+                                    newmaxs[i] = NA
+                                  }
+                                }
+                              }
+                            }
+                            
+                            #higher index checking for meaningful excursions on both sides
+                            HighInd = max(mins[i], maxs[i]) 
+                            HighIndUpExc = abs(smoothed[HighInd] - smoothed[min(maxs[i+1], mins[i+1], na.rm = T)])
+                            HighIndDownExc = abs(smoothed[mins[i]] - smoothed[maxs[i]])
+                            #print (HighIndUpExc)
+                            #print(HighIndDownExc)
+                            #print(c("high ind Both side excursions",HighInd, HighIndDownExc < limit && HighIndUpExc < limit))
+                            if(HighIndDownExc < limit && HighIndUpExc < limit) {
+                              #finding out whether LowInd is a min
+                              #print (c('highind == mins[i]', HighInd == mins[i]))
+                              if (HighInd == mins[i]) {
+                                #finding adjacent local minima
+                                lower = Position(f = function(x) {x < HighInd}, x = lmins, nomatch = F, right = T)
+                                upper = Position(f = function(x) {x > HighInd}, x = lmins, nomatch = F, right = F)
+                                #print(c('lower upper', lower, upper))
+                                #checking whether position is out of bounds
+                                #print (c("not out of bounds", lower != F && upper != F))
+                                if (lower != F && upper != F) {
+                                  #checking whether the minima are higher than the mins[i]
+                                  #print (c('are adjacent minima higher',original[lower] > smoothed[HighInd] && original[upper] > smoothed[HighInd]))
+                                  if (original[lmins[lower]] > smoothed[HighInd] && original[lmins[upper]] > smoothed[HighInd]) {
+                                    
+                                  } else {
+                                    #removing the turning point from a newmins vector
+                                    newmins[i] = NA
+                                  }
+                                }
+                              } else {
+                                #HighInd is a max
+                                lower = Position(f = function(x) {x < HighInd}, x = lmaxs, nomatch = F, right = T)
+                                upper = Position(f = function(x) {x > HighInd}, x = lmaxs, nomatch = F)
+                                if (lower != F && upper != F) {
+                                  #checking whether the maxima are lower than the maxs[i]
+                                  if (original[lmaxs[lower]] < smoothed[HighInd] && original[lmaxs[upper]] < smoothed[HighInd]) {
+                                    
+                                  } else {
+                                    #removing the turning point from a newmins vector
+                                    newmaxs[i] = NA
+                                  }
+                                }
+                              }
+                            }
+                          }
+                          
+                          newmins = as.vector(na.omit(newmins))
+                          newmaxs = as.vector(na.omit(newmaxs))
+                          return(list(newmins, newmaxs))
+                        },
+                        
+                        removeNotTurningPoints = function (smoothed, mins, maxs) {
+                          smoothed = smoothed
+                          mins = mins
+                          maxs = maxs
+                          newmins = numeric()
+                          newmaxs = numeric()
+                          
+                          tps = sort.int (c(mins,maxs))
+                          newtps = tps
+                          for (i in 2:(length(tps)-1)) {
+                            triad = c(smoothed[tps[i-1]], smoothed[tps[i]], smoothed[tps[i+1]])
+                            if (all(triad == cummax(triad)) || all(triad == cummin(triad))) {
+                              newtps[i] = NA
+                            }
+                          }
+                          
+                          newtps = as.vector(na.omit(newtps))
+                          if(newtps[1]>newtps[2]) {
+                            newmaxs = newtps[c(T,F)]
+                            newmins = newtps[c(F,T)]
+                          } else {
+                            newmaxs = newtps[c(F,T)]
+                            newmins = newtps[c(T,F)]
+                          }
+                          
+                          return (list(newmins,newmaxs))
+                        },
+                        
+                        removeUncountableTurningPointsOneExc = function (smoothed, original, mins, maxs, lmins, lmaxs, limit = private$ExcursionLimit) {
+                          smoothed = smoothed
+                          original = original
+                          mins = mins
+                          maxs = maxs
+                          lmins = lmins
+                          lmaxs = lmaxs
+                          limit = limit
+                          
+                          newmins = mins
+                          newmaxs = maxs
+                          if(length(mins) < 2 || length(maxs) < 2) { return (list(mins,maxs))}
+                          for (i in 2:(min(length(mins),length(maxs))-(length(mins)==length(maxs))*1)) {
+                            #lower index, checking for meaningful excursions on both sides
+                            LowInd = min(mins[i], maxs[i]) 
+                            LowIndDownExc = abs(smoothed[LowInd] - smoothed[max(maxs[i-1], mins[i-1])])
+                            LowIndUpExc = abs(smoothed[mins[i]] - smoothed[maxs[i]])
+                            if(LowIndDownExc < limit || LowIndUpExc < limit) {
+                              #finding out whether LowInd is a min
+                              if (LowInd == mins[i]) {
+                                #finding adjacent local minima
+                                lower = Position(f = function(x) {x < LowInd}, x = lmins, nomatch = F, right = T)
+                                upper = Position(f = function(x) {x > LowInd}, x = lmins, nomatch = F, right = F)
+                                if (lower != F && upper != F) {
+                                  #checking whether the minima are higher than the mins[i]
+                                  #print (c(original[lmins[lower]], smoothed[LowInd], original[lmins[upper]], smoothed[LowInd]))
+                                  if (original[lmins[lower]] > smoothed[LowInd] && original[lmins[upper]] > smoothed[LowInd]) {
+                                    
+                                  } else {
+                                    #removing the turning point from a newmins vector
+                                    newmins[i] = NA
+                                  }
+                                } else {
+                                  if (i == 2 && original[lmins[upper]] > smoothed[LowInd]) {
+                                    
+                                  } else {
+                                    #removing the turning point from a newmins vector
+                                    newmins[i] = NA
+                                  }
+                                }
+                              } else {
+                                #LowInd is a max
+                                lower = Position(f = function(x) {x < LowInd}, x = lmaxs, nomatch = F, right = T)
+                                upper = Position(f = function(x) {x > LowInd}, x = lmaxs, nomatch = F)
+                                if (lower != F && upper != F) {
+                                  #checking whether the maxima are lower than the maxs[i]
+                                  if (original[lmaxs[lower]] < smoothed[LowInd] && original[lmaxs[upper]] < smoothed[LowInd]) {
+                                    
+                                  } else {
+                                    #removing the turning point from a newmins vector
+                                    newmaxs[i] = NA
+                                  }
+                                } else {
+                                  #contingency for border cases
+                                  #print (c(original[lmaxs[upper]], smoothed[HighInd]))
+                                  if (i == 2 && original[lmaxs[upper]] < smoothed[HighInd]) {
+                                    
+                                  } else {
+                                    #removing the turning point from a newmins vector
+                                    newmaxs[i] = NA
+                                  }
+                                }
+                              }
+                            }
+                            
+                            #higher index checking for meaningful excursions on both sides
+                            HighInd = max(mins[i], maxs[i]) 
+                            HighIndUpExc = abs(smoothed[HighInd] - smoothed[min(maxs[i+1], mins[i+1], na.rm = T)])
+                            HighIndDownExc = abs(smoothed[mins[i]] - smoothed[maxs[i]])
+                            if(HighIndDownExc < limit || HighIndUpExc < limit) {
+                              #finding out whether LowInd is a min
+                              if (HighInd == mins[i]) {
+                                #finding adjacent local minima
+                                lower = Position(f = function(x) {x < HighInd}, x = lmins, nomatch = F, right = T)
+                                upper = Position(f = function(x) {x > HighInd}, x = lmins, nomatch = F, right = F)
+                                #checking whether position is out of bounds
+                                if (lower != F && upper != F) {
+                                  #checking whether the minima are higher than the mins[i]
+                                  if (original[lmins[lower]] > smoothed[HighInd] && original[lmins[upper]] > smoothed[HighInd]) {
+                                    
+                                  } else {
+                                    #removing the turning point from a newmins vector
+                                    newmins[i] = NA
+                                  }
+                                } else {
+                                  if (i == 1 && original[lmins[upper]] > smoothed[LowInd]) {
+                                    
+                                  } else {
+                                    #removing the turning point from a newmins vector
+                                    newmins[i] = NA
+                                  }
+                                }
+                              } else {
+                                #HighInd is a max
+                                lower = Position(f = function(x) {x < HighInd}, x = lmaxs, nomatch = F, right = T)
+                                upper = Position(f = function(x) {x > HighInd}, x = lmaxs, nomatch = F)
+                                #print (c('lower uppper', lower, upper,'checking if upper and lower exist',lower != F && upper != F))
+                                if (lower != F && upper != F) {
+                                  #checking whether the maxima are lower than the maxs[i]
+                                  #print(c(original[lmaxs[lower]] < smoothed[HighInd] && original[lmaxs[upper]] < smoothed[HighInd]))
+                                  if (original[lmaxs[lower]] < smoothed[HighInd] && original[lmaxs[upper]] < smoothed[HighInd]) {
+                                    
+                                  } else {
+                                    #removing the turning point from a newmins vector
+                                    newmaxs[i] = NA
+                                  }
+                                } else {
+                                  #contingency for border cases
+                                  #print(c('FALSE here means cutting',i == min(length(mins),length(maxs))-(length(mins)==length(maxs))*1,original[lmaxs[lower]] < smoothed[HighInd]))
+                                  if (i == min(length(mins),length(maxs))-(length(mins)==length(maxs))*1 && original[lmaxs[lower]] < smoothed[HighInd]) {
+                                    
+                                  } else {
+                                    #removing the turning point from a newmins vector
+                                    newmaxs[i] = NA
+                                  }
+                                }
+                              }
+                            }
+                          }
+                          
+                          newmins = as.vector(na.omit(newmins))
+                          newmaxs = as.vector(na.omit(newmaxs))
+                          return(list(newmins, newmaxs))
+                        },
+                        
+                        removeUncountableExcFromBegAndEnd = function (smoothed, mins, maxs, limit = private$ExcursionLimit) {
+                          smoothed = smoothed
+                          mins = mins
+                          maxs = maxs
+                          limit = limit
+                          
+                          
+                          LowIndBeg = min(mins[1], maxs[1])
+                          HighIndBeg = max(mins[1], maxs[1])
+                          HighIndEnd = max(mins[length(mins)], maxs[length(maxs)])
+                          LowIndEnd = min(mins[length(mins)], maxs[length(maxs)])
+                          
+                          #print(limit)
+                          #print(abs(smoothed[LowIndBeg] - smoothed[HighIndBeg]))
+                          #print(abs(smoothed[LowIndBeg] - smoothed[HighIndBeg])<limit)
+                          if (abs(smoothed[LowIndBeg] - smoothed[HighIndBeg])<limit) {
+                            if(LowIndBeg == mins[1]) {
+                              mins = mins[-1]
+                            } else {
+                              maxs = maxs[-1]
+                            }
+                          }
+                          
+                          #print(c(abs(smoothed[HighIndEnd] - smoothed[LowIndEnd]),abs(smoothed[HighIndEnd] - smoothed[LowIndEnd])<limit))
+                          if (abs(smoothed[HighIndEnd] - smoothed[LowIndEnd])<limit) {
+                            if (HighIndEnd == mins[length(mins)]) {
+                              mins = mins[-length(mins)]
+                            } else {
+                              maxs = maxs[-length(maxs)]
+                            }
+                          }
+                          
+                          return (list(mins, maxs))
+                        },
+                        
+                        areUncountableExcursions = function (smoothed, mins, maxs, limit = private$ExcursionLimit) {
+                          smoothed = smoothed
+                          mins = mins
+                          maxs = maxs
+                          limit = limit
+                          tps = sort.int(c(mins,maxs))
+                          diffs = vector(mode = "numeric", length = length(tps)-1)
+                          
+                          for (i in 1:(length(tps)-1)) {
+                            diffs[i] = abs(smoothed[tps[i]] - smoothed[tps[i+1]])
+                          }
+                          
+                          logic = all(diffs>limit)
+                          
+                          #print(c(diffs, logic, limit))
+                          return (!logic)
+                        },
+                        
+                        calculateAmplitudes = function (vector, mins, maxs) {
+                          v = vector
+                          mins = mins
+                          maxs = maxs
+                          tps = c(mins,maxs)
+                          diffs = length(tps)-1
+                          for (i in seq.int(length.out = length(tps)-1)) {
+                            diffs[i] = abs(v[tps[i]]-v[tps[i+1]])
+                          }
+                          
+                          out = mean(diffs)
+                          return(out)
+                        },
+                        
+                        findIndOfFirstExcursion = function (v, limit = private$ExcursionLimit) {
+                          v = v
+                          limit = limit
+                          diff = vector (mode = 'numeric', length = length (v)-1)
+                          for (i in seq.int(length.out = length(v)-1)) {
+                            diff[i] = abs(v[i]-v[i+1])
+                          }
+                          
+                          Ind = Position (f = function(x) {x>limit}, diff)
+                          return (Ind)
                         }
+            
 ),
                       active = list (
     
