@@ -440,7 +440,7 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                    df = private$joinDateAndTime(df, datecol = datecol, timecol = timecol, dtcol = dtcol)
                                  }
                                  NewDf = df[self$headnrows:nrow(df),]
-                                 print (head(NewDf))
+                                 #print (head(NewDf))
                                  NewDf = NewDf[,c(dtcol,glucosecol)]
                                  norows = nrow(NewDf)-10
                                  NewDf = NewDf[1:norows,]
@@ -498,7 +498,7 @@ Calculate1 = R6Class ('Calculate1',
                           private$calculateCV()
                           private$calculateM100()
                           private$calculateJ()
-                          #private$calculateMAGE()
+                          private$calculateMAGE()
                           private$calculateMODD()
                           private$calculateCONGA1h()
                           private$calculateCONGA2h()
@@ -518,7 +518,7 @@ Calculate1 = R6Class ('Calculate1',
                             private$Output$CV = NA
                             private$Output$M100 = NA
                             private$Output$J = NA
-                            #private$Output$MAGE = NA
+                            private$Output$MAGE = NA
                             private$Output$MODD = NA
                             private$Output$CONGA1h = NA
                             private$Output$CONGA2h = NA
