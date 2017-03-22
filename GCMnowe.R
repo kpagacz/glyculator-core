@@ -12,9 +12,11 @@ library ('fractal')
 fillGaps = function (vector) {
   v = vector
   na = which(is.na(v))
-  if (na[1] == 1) {na = na[-1]}
-  for (i in na) {
+  if (is.na(na) != TRUE) {
+    if (na[1] == 1) { na = na[-1] }
+    for (i in na) {
     v[i] = v[i-1] + v[i+1]
+    }
   }
   return (vector)
 }
@@ -27,6 +29,7 @@ getIndOfHour = function (vector, hour) {
 }
 
 # lom = ListOfMeasurments$new(extension = '.txt', separator = '\t', max.days = T, glucosecol = 4, dtcol = 2, datecol = NA, timecol = NA, dtformat = 'ymd_hm', idcol = 1, idrow = 1, perday = 96)
+# lom = ListOfMeasurments$new(extension = '.xlsx', glucosecol = 31, dtcol = NA, timecol = 3, datecol = 2, max.days = T, headnrows = 10, idrow = 1, idcol = 2, dtformat = 'ymd_hms')
 
 
 ###########################
