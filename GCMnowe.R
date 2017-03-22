@@ -9,6 +9,24 @@ library ('ggplot2')
 library ('fractal')
 #source ('theme_default.R')
 
+fillGaps = function (vector) {
+  v = vector
+  na = which(is.na(v))
+  if (na[1] == 1) {na = na[-1]}
+  for (i in na) {
+    v[i] = v[i-1] + v[i+1]
+  }
+  return (vector)
+}
+
+getIndOfHour = function (vector, hour) {
+  v = vector
+  h = hour
+  Ind = Position (f = function(x) {hour(x) == h}, x = v, right = F, nomatch = F)
+  return (Ind)
+}
+
+
 
 ###########################
 Measurement = R6Class ('Measurement',
@@ -32,15 +50,11 @@ Measurement = R6Class ('Measurement',
                            validation = private$validate()
                            if (validation==FALSE) cat('Your input is incorrect. Check whether the number of measurements per day is correct. Only 288 or 96 are being accepted.\n')
                            self$makePretty()
-                           if (max.days == F) {
-                             self$file = self$file[private$getIndOf10PM():(private$getIndOf10PM()-1+self$perday*self$days),]
-                           }
                          },
                          
                          makePretty = function () {
+                           self$file$Glucose = private$fillGaps(self$file$Glucose)
                            private$cutNAs()
-                           #suppressWarnings(private$cutNAsFromBeg())
-                           #suppressWarnings(private$cutNAsFromEnd())
                            suppressWarnings(private$cutDup())
                            suppressWarnings(private$cutTTTTTT())
                            suppressWarnings(private$cutTTTT())
@@ -50,6 +64,21 @@ Measurement = R6Class ('Measurement',
                            if (self$areNAs() == TRUE) cat ('NAs w wynikach glikemii w pliku', self$id, '.xls. Opracuj plik recznie.\n')
                            private$appendIndex()
                            rownames(self$file) = NULL
+                         },
+                         
+                         limitToMaxDays = function() {
+                           # logic for max.days == F, it cuts down the number of records
+                             Ind = private$getIndOfHour(vector = self$file$DT, hour = 22)
+                             # print(Ind)
+                             # if (Ind == F) {print (self$file$DT)}
+                             if ((Ind-1+self$perday*self$days)<=nrow(self$file)) {
+                               self$file = self$file[Ind:(Ind-1+self$perday*self$days),]
+                               return (T)
+                             } else {
+                               cat("There is no continous 48 hours-long part of" , self$id, " file. The measurement will be excluded from further analysis.)\n")
+                               return (F)
+                             }
+                             # print(nrow(self$file))
                          },
                          
                          areDiff5 = function() {
@@ -205,8 +234,8 @@ Measurement = R6Class ('Measurement',
                            datediff = abs(difftime(self$file$DT[-1], head (self$file$DT, -1), units = 'mins'))
                            StartIndex = 1
                            EndIndex = 1
-                           StartIndexLongest = 0
-                           EndIndexLongest = 0
+                           StartIndexLongest = 1
+                           EndIndexLongest = 1
                            Longest = 0
                            for (i in 1:length(datediff)) {
                              if (datediff[i] < self$interval + 0.08 * self$interval) {
@@ -228,10 +257,11 @@ Measurement = R6Class ('Measurement',
                              Longest = EndIndex - StartIndex
                            }
                            
-                           if (Longest < self$perday * 2) {
+                           #print(Longest)
+                           if (Longest < self$perday*2) {
                              cat ("There is no continous 48 hours-long part of", self$id, "file. The measurement will be excluded from further analysis. \n", sep = " ")
                            } else {
-                             self$file = self$file[StartIndexLongest:EndIndexLongest+1,]
+                             self$file = self$file[StartIndexLongest:(EndIndexLongest+1),]
                            }
                           },
                          
@@ -239,11 +269,9 @@ Measurement = R6Class ('Measurement',
                            self$file = self$file[!is.na(self$file$Glucose),]
                           },
                          
-                         getIndOf10PM = function () {
-                           logic = hour(self$file[,1])==22
-                           first = min(which(logic==T))
-                           return (first)
-                         }
+                         getIndOfHour = getIndOfHour,
+                         
+                         fillGaps = fillGaps
                            
                            ),
                        active = list(
@@ -291,10 +319,20 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                 
                                 if(!is.na(list)) private$aftertrim = list else self$loadFromDir(dir, perday = self$perday, dtformat = self$dtformat, max.days = self$max.days)
                                 #print(head(private$lob2))
+                                self$removeShortMeasurements()
                                 self$removeMeasurementsWithBreaks()
+                                self$limitMeasurementsToMaxDays()
                                 #print(self$get_lob())
                                 #print(head(private$lob2))
                                 
+                              },
+                              
+                              limitMeasurementsToMaxDays = function () {
+                                Logic = vector()
+                                Logic = sapply (self$get_lob(), function (x) {
+                                  return (x$limitToMaxDays())
+                                })
+                                private$lob2 = private$lob2[Logic]
                               },
                               
                               loadFromDir = function (dir = getwd(), perday, dtformat, max.days) {
@@ -378,8 +416,20 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                   return (x$areBreaks())
                                 }
                                 )
-                                #print (BreaksLogicVector)
+                                # print (BreaksLogicVector)
                                 private$lob2 = private$lob2[!BreaksLogicVector]
+                              },
+                              
+                              removeShortMeasurements = function() {
+                                ShortLogicVector = vector ()
+                                v = sapply(self$get_lob(), function(x) {
+                                  return(nrow(x$file))
+                                }
+                                )
+                                # print(v)
+                                ShortLogicVector = v>(self$perday*2)-1
+                                # print(ShortLogicVector)
+                                private$lob2 = private$lob2[ShortLogicVector]
                               },
                               
                               printIDs = function () {
@@ -511,7 +561,7 @@ Calculate1 = R6Class ('Calculate1',
                           private$calculateSlope2()
                           private$calculateSlope3()
                           } else {
-                          cat ("Insufficient number of measurement time points (needed at least 496) to calculate parameters in file", private$Measurement$id,".\n", sep = ' ')
+                          cat ("Insufficient number of measurement time points (needed at least 576) to calculate parameters in file", private$Measurement$id,".\n", sep = ' ')
                             private$Output$Mean = NA
                             private$Output$SD = NA
                             private$Output$Median = NA
@@ -647,7 +697,7 @@ Calculate1 = R6Class ('Calculate1',
                           
                           if(logic == FALSE) {
                             MAGE = private$calculateAmplitudes(vector = v, mins = mins, maxs = maxs)
-                            private$Output$MAGE = MAGE
+                            private$Output$MAGE = as.numeric(MAGE)
                           } else {
                             private$Output$MAGE = "Unable to calculate MAGE. Visual analysis should be performed."
                           }
