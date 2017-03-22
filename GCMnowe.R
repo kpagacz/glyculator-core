@@ -12,7 +12,7 @@ library ('fractal')
 fillGaps = function (vector) {
   v = vector
   na = which(is.na(v))
-  if (is.na(na) != TRUE) {
+  if (length(na)>0) {
     if (na[1] == 1) { na = na[-1] }
     for (i in na) {
     v[i] = v[i-1] + v[i+1]
@@ -98,8 +98,6 @@ Measurement = R6Class ('Measurement',
                          areBreaks = function(perday = self$perday) {
                            datediff = abs(difftime(self$file$DT[-1], head(self$file$DT, -1), units = 'secs'))
                            logical = datediff < self$interval*60 + 30 + (perday == 96)*45
-                           #cat (logical, "\n")
-                           #print (!all(logical))
                            return(!all(logical))
                          },
                          
