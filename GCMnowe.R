@@ -26,6 +26,7 @@ getIndOfHour = function (vector, hour) {
   return (Ind)
 }
 
+# lom = ListOfMeasurments$new(extension = '.txt', separator = '\t', max.days = T, glucosecol = 4, dtcol = 2, datecol = NA, timecol = NA, dtformat = 'ymd_hm', idcol = 1, idrow = 1, perday = 96)
 
 
 ###########################
@@ -93,7 +94,6 @@ Measurement = R6Class ('Measurement',
                          
                          areBreaks = function(perday = self$perday) {
                            datediff = abs(difftime(self$file$DT[-1], head(self$file$DT, -1), units = 'secs'))
-
                            logical = datediff < self$interval*60 + 30 + (perday == 96)*45
                            #cat (logical, "\n")
                            #print (!all(logical))
@@ -318,12 +318,13 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                 self$timecol = timecol
                                 
                                 if(!is.na(list)) private$aftertrim = list else self$loadFromDir(dir, perday = self$perday, dtformat = self$dtformat, max.days = self$max.days)
-                                #print(head(private$lob2))
+                                # print(head(private$lob2))
+                                # sapply (self$get_lob(), function (x) {print (head(x$file))})
                                 self$removeShortMeasurements()
                                 self$removeMeasurementsWithBreaks()
-                                self$limitMeasurementsToMaxDays()
+                                if (self$max.days == F) self$limitMeasurementsToMaxDays()
                                 #print(self$get_lob())
-                                #print(head(private$lob2))
+                                
                                 
                               },
                               
@@ -427,7 +428,7 @@ ListOfMeasurments = R6Class ('ListOfMeasurments',
                                 }
                                 )
                                 # print(v)
-                                ShortLogicVector = v>(self$perday*2)-1
+                                ShortLogicVector = v >= (self$perday*2)
                                 # print(ShortLogicVector)
                                 private$lob2 = private$lob2[ShortLogicVector]
                               },
