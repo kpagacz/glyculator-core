@@ -636,7 +636,7 @@ Calculate1 = R6Class ('Calculate1',
                           df = private$Measurement$file[1:private$NoRecords, ]
                           Mean = mean(df$Glucose, na.rm = TRUE)
                           SD = sd(df$Glucose, na.rm  = TRUE)
-                          J = 0.001 * (Mean + SD)
+                          J = 0.001*(Mean + SD)
                           private$Output$J = J
                         },
                         
@@ -1201,7 +1201,7 @@ Calculate1 = R6Class ('Calculate1',
                           v = vector
                           mins = mins
                           maxs = maxs
-                          tps = c(mins,maxs)
+                          tps = sort.int(c(mins,maxs))
                           diffs = length(tps)-1
                           for (i in seq.int(length.out = length(tps)-1)) {
                             diffs[i] = abs(v[tps[i]]-v[tps[i+1]])
