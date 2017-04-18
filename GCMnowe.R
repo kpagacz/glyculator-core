@@ -562,6 +562,7 @@ Calculate1 = R6Class ('Calculate1',
                           private$calculateSlope1()
                           private$calculateSlope2()
                           private$calculateSlope3()
+                          private$calculateGRADE()
                           } else {
                           cat ("Insufficient number of measurement time points (needed at least 576) to calculate parameters in file", private$Measurement$id,".\n", sep = ' ')
                             private$Output$Mean = NA
@@ -582,6 +583,10 @@ Calculate1 = R6Class ('Calculate1',
                             private$Output$Alpha1_DFA = NA
                             private$Output$Alpha2_DFA = NA
                             private$Output$Alpha3_DFA = NA
+                            private$Output$GRADE = NA
+                            private$Output$GRADE_hypo_percent = NA
+                            private$Output$GRADE_eu_percent = NA
+                            private$Output$GRADE_hyper_percent = NA
                         }
                       }
                       ),
@@ -597,8 +602,8 @@ Calculate1 = R6Class ('Calculate1',
                           NoDays = floor(nrow(private$Measurement$file)/private$Measurement$perday)
                           private$NoDays = NoDays
                           #IMPORTANT: next line is setting the days to calculate
-                          private$NoRecords = NoDays*private$Measurement$perday
-                          private$Output[1,1] = nrow (private$Measurement$file)
+                          private$NoRecords = nrow (private$Measurement$file)
+                          private$Output[1,1] = private$NoRecords
                         },
     
                         calculateMean = function() {
@@ -636,7 +641,7 @@ Calculate1 = R6Class ('Calculate1',
                           df = private$Measurement$file[1:private$NoRecords, ]
                           Mean = mean(df$Glucose, na.rm = TRUE)
                           SD = sd(df$Glucose, na.rm  = TRUE)
-                          J = 0.001*(Mean + SD)
+                          J = 0.001*(Mean + SD)*(Mean + SD)
                           private$Output$J = J
                         },
                         
@@ -1221,6 +1226,29 @@ Calculate1 = R6Class ('Calculate1',
                           
                           Ind = Position (f = function(x) {x>limit}, diff)
                           return (Ind)
+                        },
+                        
+                        calculateGRADE = function () {
+                          df = private$Measurement$file[1:private$NoRecords, ]
+                          Glucose = as.vector(df$Glucose)
+                          GRADEs = 425 * ((log10(log10(Glucose/18)) + 0.16)^2)
+                          GRADE = mean(GRADEs)
+                          private$Output$GRADE = GRADE
+                          
+                          #calculating GRADE hypoglycaemia percent
+                          hypos = which(Glucose < 90)
+                          HypoPercent = 100*sum(GRADEs[hypos])/sum(GRADEs)
+                          private$Output$GRADE_hypo_percent = HypoPercent
+                          
+                          #calculating GRADE euglycaemia percent
+                          eus = which (Glucose>=90 & Glucose<=140)
+                          EuPercent = 100*sum(GRADEs[eus])/sum(GRADEs)
+                          private$Output$GRADE_eu_percent = EuPercent
+                          
+                          #calculating GRADE hyperglycaemia percent
+                          hypers = which(Glucose > 140)
+                          HyperPercent = 100*sum(GRADEs[hypers])/sum(GRADEs)
+                          private$Output$GRADE_hyper_percent = HyperPercent
                         }
             
 ),
