@@ -4,28 +4,17 @@ shinyUI (tagList(fluidPage(
   includeScript("./text.js"),
   titlePanel("Glyculator v2 alpha"),
   fluidRow(
-    numericInput ("idrow", label = "idrow", value = 3, min = 0)
-    ),
-  fluidRow(
-    numericInput ("idcol", label = "idcol", value = 2, min = 0)
-  ),
-  fluidRow(
-    numericInput ("perday", label = "perday", value = 288, min = 0)
-  ),
-  fluidRow(
-    numericInput ("headnrows", label = "headnrows", value = 13, min = 0)
-  ),
-  fluidRow(
-    numericInput ("datecol", label = "datecol", value = 2, min = 0)
-  ),
-  fluidRow(
-    numericInput ("timecol", label = "timecol", value = 3, min = 0)
-  ),
-  fluidRow(
-    numericInput ("dtcol", label = "dtcol", value = 4, min = 0)
-  ),
-  fluidRow(
-    numericInput ("glucosecol", label = "glucosecol", value = 10, min = 0)
+    numericInput ("idrow", label = "idrow", value = 3),
+    numericInput ("idcol", label = "idcol", value = 2),
+    numericInput ("perday", label = "perday", value = 288),
+    numericInput ("headnrows", label = "headnrows", value = 13),
+    numericInput ("datecol", label = "datecol", value = 2),
+    numericInput ("timecol", label = "timecol", value = 3),
+    numericInput ("dtcol", label = "dtcol", value = 4),
+    numericInput ("glucosecol", label = "glucosecol", value = 10),
+    textInput ("max days", label = "maxdays", value = "F"),
+    textInput ("extension", label = "ext", value = ".csv"),
+    textInput ("separator", label = "sep", value = ",")
   ),
   fluidRow(
     wellPanel(
