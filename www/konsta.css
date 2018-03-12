@@ -1,0 +1,21 @@
+.row { 
+  padding: 15px !important;
+}
+
+body {
+    background-color: #f0f0f0;
+}
+
+a {
+  color: #333333 !important;
+}
+.container-fluid {  
+  background-color: white; max-width: 1024px; /* or 950px */
+  border-radius: 5px;
+  border: 1px solid #e0e0e0;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  
+  
+  
+}
