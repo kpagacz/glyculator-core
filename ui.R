@@ -150,15 +150,16 @@ shinyUI (
                     tags$div(
                       tags$p("Further instructions and explanations can be found in a manual document.",
                              tags$a(href="https://zbimt-cloud.konsta.com.pl/s/h45u414p1yqyfsS", "Click here to download manual.")
-                      )
+                      ),
+                      tags$a(href="https://zbimt-cloud.konsta.com.pl/s/bJY6pVUkD7IoX4s", "Click here to download the old version of GlyCulator - GlyCulator1.")
                     )
                 )
     )
     )),
     hr(),
-    p(HTML("<a href=\"#\">This software is a part of paper entitled 'Glyculator2 – an open access, research tool for calculation of glycemic variability indices in continuous glucose monitoring data' and authored by Konrad Pagacz, Konrad Stawiski, Wojciech Młynarski, Wojciech Fendler.</a>"),
+    p(HTML("<a href=\"#\">This software is a part of paper entitled 'GlyCulator2: an update on a web application for calculation of glycemic variability indices' and authored by Konrad Pagacz, Konrad Stawiski, Agnieszka Szadkowska, Wojciech Mlynarski, Wojciech Fendler.</a>"),
       br(),
-        
+    HTML("<a href=\"https://zbimt-cloud.konsta.com.pl/s/bJY6pVUkD7IoX4s\"> Click here to download old version of GlyCulator - GlyCulator 1.0.</a>"),
         HTML(paste0("<table border='0' width='100%'><tr><td><i>© Version 2.0 revision ", system("git rev-list HEAD --count", intern = TRUE) ," (", system("git log -1 --pretty='%H'", intern = TRUE) ,")</i><br /><a href='http://biostat.umed.pl'><font size='1'>Software author, technical issues: <br/><b>Konrad Pagacz, MD</b> (contact: konrad.pagacz@umed.lodz.pl; Department of Biostatistics and Translational Medicine, Medical University of Lodz, Poland)</font></a></td><td><img align='right' width='200' src='logo.png'/></td></tr></table>"))
   ))
 )
