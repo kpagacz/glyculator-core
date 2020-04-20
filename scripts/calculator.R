@@ -1617,4 +1617,3 @@ Calculate1 = R6Class ('Calculate1',
                         
                       )
 )
-
