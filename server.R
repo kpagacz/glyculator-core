@@ -1,6 +1,8 @@
 library (shiny)
 source(paste0(getwd(), "/scripts/calculator.R"))
 
+options(shiny.maxRequestSize=10*1024^2)
+
 shinyServer(function(input, output, session) {
   
 # observeEvent reacts to pressing the submit button.
