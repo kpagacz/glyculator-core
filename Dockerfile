@@ -28,8 +28,8 @@ RUN gpg -a --export E084DAB9 | apt-key add -
 RUN curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x51716619E084DAB9' | gpg --import
 RUN gpg -a --export 51716619E084DAB9 | apt-key add -
    
-ENV R_BASE_VERSION 3.6.1
-LABEL version=3.6.1
+ENV R_BASE_VERSION 3.6.3
+LABEL version=3.6.3
 
 # Now install R and littler, and create a link for littler in /usr/local/bin
 # Also set a default CRAN repo, and make sure littler knows about it too
@@ -37,9 +37,9 @@ RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		littler \
         r-cran-littler \
-		r-base=${R_BASE_VERSION}* \
-		r-base-dev=${R_BASE_VERSION}* \
-		r-recommended=${R_BASE_VERSION}* \
+		r-base \
+		r-base-dev \
+		r-recommended \
         && echo 'options(repos = c(CRAN = "https://cloud.r-project.org/"), download.file.method = "libcurl")' >> /etc/R/Rprofile.site \
         && echo 'source("/etc/R/Rprofile.site")' >> /etc/littler.r \
 	&& ln -s /usr/share/doc/littler/examples/install.r /usr/local/bin/install.r \
