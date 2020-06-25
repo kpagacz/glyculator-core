@@ -1,7 +1,8 @@
 if (!require("shinythemes")) { install.packages("shinythemes")}
+if (!require("shiny")) { install.packages("shiny")}
 library (shiny)
 library (shinythemes)
-library(shinyBS)
+# library(shinyBS)
 
 
 
@@ -42,8 +43,8 @@ shinyUI (
                    column (6,
                      textInput ("dtformat", label = "Date format", value = "dmy_hms"),
                      #textInput ("maxdays", label = "Calculate from maximum number of whole days?", value = "F"),
-                     bsTooltip("dtformat", "Please specify the order of day, month, year as well as hours, minutes and optionally seconds. E.g.: mdy_hm for a format like this: 9/27/99 13:13; ymd_hms for a format like this: 17.10.21 13:41:59. The seperator can be: :, ., /",
-                               "right", options = list(container = "body")),
+                     # bsTooltip("dtformat", "Please specify the order of day, month, year as well as hours, minutes and optionally seconds. E.g.: mdy_hm for a format like this: 9/27/99 13:13; ymd_hms for a format like this: 17.10.21 13:41:59. The seperator can be: :, ., /",
+                     #           "right", options = list(container = "body")),
                      #textInput ("extension", label = "File extension", value = ".csv"),
                      selectInput("extension", "File extension",
                                  c("Comma-seperated (.csv)" = ".csv",

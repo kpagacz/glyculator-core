@@ -1,11 +1,20 @@
+if (!require("R6")) { install.packages("R6")}
 require (R6)
+if (!require("xlsx")) { install.packages("xlsx")}
 require (xlsx)
+if (!require("dplyr")) { install.packages("dplyr")}
 require (dplyr)
+if (!require("ttutils")) { install.packages("ttutils")}
 require (ttutils)
+if (!require("lubridate")) { install.packages("lubridate")}
 require (lubridate)
+if (!require("stringr")) { install.packages("stringr")}
 require (stringr)
+if (!require("ggplot2")) { install.packages("ggplot2")}
 require (ggplot2)
+if (!require("MESS")) { install.packages("MESS")}
 require(MESS)
+if (!require("data.table")) { install.packages("data.table")}
 require(data.table)
 
 fillGaps = function (vector) {

@@ -1,4 +1,8 @@
+if (!require("shiny")) { install.packages("shiny")}
 library (shiny)
+if (!require("rmarkdown")) { install.packages("rmarkdown")}
+library(rmarkdown)
+
 source(paste0(getwd(), "/scripts/calculator.R"))
 
 options(shiny.maxRequestSize=10*1024^2)
