@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install gnupg2 -y && \
     apt-key adv --keyserver keyserver.ubuntu.com \
     --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \
     echo "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/" \
-    | sudo tee -a /etc/apt/sources.list 
+    | tee -a /etc/apt/sources.list 
 RUN apt-get update && \
     apt-get install r-base r-base-dev default-jre default-jdk gdebi-core git -y && \
     rm -rf /var/lib/apt/lists/* && \
