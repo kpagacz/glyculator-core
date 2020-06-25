@@ -1,5 +1,6 @@
 # Instruct Shiny Server to run applications as the user "shiny"
 run_as shiny;
+preserve_logs true;
 
 # Define a server that listens on port 3838
 server {
