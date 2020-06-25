@@ -35,7 +35,7 @@ LABEL version=3.6.3
 
 # Now install R and littler, and create a link for littler in /usr/local/bin
 # Also set a default CRAN repo, and make sure littler knows about it too
-RUN apt-get update \
+RUN DEBIAN_FRONTEND="noninteractive" TZ="Europe/Paris" apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		littler \
         r-cran-littler \
