@@ -1,13 +1,54 @@
 FROM ubuntu:18.04
 
-RUN apt-get update && apt-get install gnupg2 -y && \
-    apt-key adv --keyserver keyserver.ubuntu.com \
-    --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \
-    echo "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/" \
-    | tee -a /etc/apt/sources.list && \
-    apt-get update && \
-    apt-get install r-base r-base-dev default-jre default-jdk gdebi-core git -y && \
-    rm -rf /var/lib/apt/lists/* && \
+RUN apt-get update \ 
+	&& apt-get install -y --no-install-recommends \
+	    apt-utils \
+		ed \
+		less \
+		locales \
+		vim-tiny \
+		wget \
+		ca-certificates \
+		apt-transport-https \
+		gsfonts \
+		gnupg2 \
+		curl \
+	&& rm -rf /var/lib/apt/lists/*
+
+RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
+	&& locale-gen en_US.utf8 \
+	&& /usr/sbin/update-locale LANG=en_US.UTF-8
+
+ENV LC_ALL en_US.UTF-8
+ENV LANG en_US.UTF-8
+
+# note the proxy for gpg
+RUN curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE084DAB9' | gpg --import
+RUN gpg -a --export E084DAB9 | apt-key add -
+RUN curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x51716619E084DAB9' | gpg --import
+RUN gpg -a --export 51716619E084DAB9 | apt-key add -
+   
+ENV R_BASE_VERSION 3.6.3
+LABEL version=3.6.3
+
+# Now install R and littler, and create a link for littler in /usr/local/bin
+# Also set a default CRAN repo, and make sure littler knows about it too
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends \
+		littler \
+        r-cran-littler \
+		r-base=${R_BASE_VERSION}* \
+		r-base-dev=${R_BASE_VERSION}* \
+		r-recommended=${R_BASE_VERSION}* \
+        && echo 'options(repos = c(CRAN = "https://cloud.r-project.org/"), download.file.method = "libcurl")' >> /etc/R/Rprofile.site \
+        && echo 'source("/etc/R/Rprofile.site")' >> /etc/littler.r \
+	&& ln -s /usr/share/doc/littler/examples/install.r /usr/local/bin/install.r \
+	&& ln -s /usr/share/doc/littler/examples/install2.r /usr/local/bin/install2.r \
+	&& ln -s /usr/share/doc/littler/examples/installGithub.r /usr/local/bin/installGithub.r \
+	&& ln -s /usr/share/doc/littler/examples/testInstalled.r /usr/local/bin/testInstalled.r \
+	&& install.r docopt \
+	&& rm -rf /tmp/downloaded_packages/ /tmp/*.rds \
+	&& rm -rf /var/lib/apt/lists/* && \
     R -e "install.packages('xlsx')" && \
     R -e "install.packages('dplyr')" && \
     R -e "install.packages('ttutils')" && \
