@@ -12,8 +12,8 @@ if (!require("stringr")) { install.packages("stringr")}
 require (stringr)
 if (!require("ggplot2")) { install.packages("ggplot2")}
 require (ggplot2)
-# if (!require("MESS")) { install.packages("MESS")}
-# require(MESS)
+if (!require("MESS")) { install.packages("MESS")}
+require(MESS)
 if (!require("data.table")) { install.packages("data.table")}
 require(data.table)
 
