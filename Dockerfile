@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-RUN apt-get install gnupg2 -y && \
+RUN apt-get update && apt-get install gnupg2 -y && \
     apt-key adv --keyserver keyserver.ubuntu.com \
     --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \
     echo "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/" \
