@@ -195,11 +195,13 @@ RUN wget --no-verbose https://download3.rstudio.org/ubuntu-14.04/x86_64/VERSION 
     cp -R /usr/local/lib/R/site-library/shiny/examples/* /srv/shiny-server/ && \
     chown shiny:shiny /var/lib/shiny-server
 
+EXPOSE 3838
+
 # Copying glyculator into /srv/shiny-server/
 COPY . /srv/shiny-server/glyculator
 RUN chmod -R 755 /srv/shiny-server/
 COPY shiny-conf /etc/shiny-server/shiny-server.conf
 
-EXPOSE 3838
+COPY shiny-server.sh /usr/bin/shiny-server.sh
 
-CMD ["/bin/bash"]
+CMD ["/usr/bin/shiny-server.sh"]
