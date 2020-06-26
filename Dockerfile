@@ -197,6 +197,9 @@ RUN wget --no-verbose https://download3.rstudio.org/ubuntu-14.04/x86_64/VERSION 
 
 EXPOSE 3838
 
+# shinythemes has a git dependency :O
+RUN apt-get install -y git
+
 # Copying glyculator into /srv/shiny-server/
 COPY . /srv/shiny-server/glyculator
 RUN chmod -R 755 /srv/shiny-server/
