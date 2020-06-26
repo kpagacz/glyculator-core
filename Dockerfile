@@ -203,5 +203,6 @@ RUN chmod -R 755 /srv/shiny-server/
 COPY shiny-conf /etc/shiny-server/shiny-server.conf
 
 COPY shiny-server.sh /usr/bin/shiny-server.sh
+RUN chmod 744 /usr/bin/shiny-server.sh
 
 CMD ["/usr/bin/shiny-server.sh"]
