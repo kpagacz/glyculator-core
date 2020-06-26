@@ -171,13 +171,31 @@ RUN echo "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/" | tee
     R -e "install.packages('MESS')" && \
     R -e "install.packages('data.table')" && \
     R -e "install.packages('shiny')" && \
-    R -e "install.packages('shiny')" && \
     R -e "install.packages('shinythemes')" && \
-    R -e "install.packages('rmarkdown')" && \
-    wget "https://download3.rstudio.org/ubuntu-12.04/x86_64/shiny-server-1.5.5.872-amd64.deb" && \
-    gdebi -n shiny-server-1.5.5.872-amd64.deb 
+    R -e "install.packages('rmarkdown')"
 
-# app copy
+# Install shiny
+RUN apt-get update && apt-get install -y \
+    sudo \
+    gdebi-core \
+    pandoc \
+    pandoc-citeproc \
+    libcurl4-gnutls-dev \
+    libcairo2-dev \
+    libxt-dev \
+    xtail \
+    wget
+
+RUN wget --no-verbose https://download3.rstudio.org/ubuntu-14.04/x86_64/VERSION -O "version.txt" && \
+    VERSION=$(cat version.txt)  && \
+    wget --no-verbose "https://download3.rstudio.org/ubuntu-14.04/x86_64/shiny-server-$VERSION-amd64.deb" -O ss-latest.deb && \
+    gdebi -n ss-latest.deb && \
+    rm -f version.txt ss-latest.deb && \
+    . /etc/environment && \
+    cp -R /usr/local/lib/R/site-library/shiny/examples/* /srv/shiny-server/ && \
+    chown shiny:shiny /var/lib/shiny-server
+
+# Copying glyculator into /srv/shiny-server/
 COPY . /srv/shiny-server/glyculator
 RUN chmod -R 755 /srv/shiny-server/
 COPY shiny-conf /etc/shiny-server/shiny-server.conf
