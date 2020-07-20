@@ -5,3 +5,9 @@ ACCEPTED_EXTENSIONS = [
     "txt",
     "tsv"
 ]
+
+TEXT_EXTENSIONS = [
+    "csv",
+    "txt",
+    "tsv",
+]

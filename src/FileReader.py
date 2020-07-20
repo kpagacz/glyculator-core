@@ -3,7 +3,7 @@ import os
 import xlrd
 
 from .configs import ReadConfig
-from .utils import ACCEPTED_EXTENSIONS
+from .utils import ACCEPTED_EXTENSIONS, TEXT_EXTENSIONS
 
 
 class FileReader:
@@ -28,7 +28,7 @@ class FileReader:
     delimited = None
     string_io = None
     bytes_io = None
-    read_report = {}
+    read_report = {} #TODO (konrad.pagacz@gmail.com) specify the read report
 
     def __init__(self, file_name: str = None, string_io = None, bytes_io = None, read_config: ReadConfig = None):
         self.file_name = file_name
@@ -39,10 +39,21 @@ class FileReader:
 
 
     def validate_file_type(self):
+        """Validates the file type.
+
+        It validates the file type is one of the accepted file types based
+        on its extension.
+        Side effects: sets the delimited attribute to True if the file
+        is expected to be a comma-seperated values file.
+
+        Returns:
+            bool: True if the file is one of the accepted types, false otherwise
+
+        """
         if(self.extension not in ACCEPTED_EXTENSIONS):
             return False
         else:
-            if(self.extension in "csv tsv txt".split()):
+            if(self.extension in TEXT_EXTENSIONS):
                 self.delimited = True
             return True
 
@@ -51,7 +62,19 @@ class FileReader:
         """Reads a file.
 
         Performs pre-read checks and reads a file supplied by a file_name with
-        configuration stored in read_config.
+        configuration stored in read_config. Also calls validate_file_type to set
+        the delimited attribute and check for the type validity. Uses the configuration
+        stored in the read_config attribute.
+
+        Returns:
+            pandas.DataFrame: Read file
+
+        Raises:
+            TypeError: if no ReadConfig is supplied
+            TypeError: if no file name, stringIO or bytesIO is supplided
+            ValueError: if the file type of a file is not supported
+            FileNotFoundError: if the file specified by `file_name` is not found
+            ValueError: if the supplied ReadConfig fails to validate
 
         """
         # Pre-read checks
@@ -60,20 +83,26 @@ class FileReader:
             raise TypeError("Tried reading the file with no supplied ReadConfig. Try supplying a ReadConfig with set_config().\n")
         if(self.file_name == None and self.string_io == None and self.bytes_io == None):
             raise TypeError("Tried reading the file with no supplied source. Try supplying a file name with set_file_name() or a source.\n")
-        if(self.validate_file_type() == False):
-            raise ValueError("File type {} not supported.\n".format(self.extension))
-        if(os.path.isfile(self.file_name) == False):
-                raise FileNotFoundError("{} not found.\n".format(self.file_name))
-        if(self.read_config.validate == False):
-            raise ValueError("The supplied ReadConfig fails to validate.\n")
+        if(self.string_io == None and self.bytes_io == None):
+            if(self.validate_file_type() == False):
+                raise ValueError("File type {} not supported.\n".format(self.extension))
+            if(os.path.isfile(self.file_name) == False):
+                    raise FileNotFoundError("{} not found\n".format(self.file_name))
+            if(self.read_config.validate() == False):
+                raise ValueError("The supplied ReadConfig fails to validate.\n")
 
         
         # Reading to a list of lists
-        if(self.delimited):
-            data = self.read_delimited()
+        if(self.file_name != None):
+            if(self.delimited):
+                data = self.read_delimited()
+            else:
+                data = self.read_excel()
         else:
-            data = self.read_excel()
-
+            if(self.bytes_io != None): #TODO (konrad.pagacz@gmail.com) Make the IO reading
+                data = self.read_bytes_io()
+            else:
+                data = self.read_string_io()
 
         # Creating a dict from a list of lists
 
@@ -97,7 +126,11 @@ class FileReader:
         Reads an excel file using xlrd package.
 
         Returns:
-            file(list): list of rows
+            list: list of lists (rows)
+
+        Raises:
+            RuntimeError: When file is empty or could not read its contents.
+
         """
         file_ = []
 
@@ -115,6 +148,18 @@ class FileReader:
                 format(self.file_name))
 
         return file_
+
+
+    def read_string_io(self):
+        print("String io")
+        file = None
+        return file
+
+
+    def read_bytes_io(self):
+        print("Bytes IO")
+        file = None
+        return file
 
 
     def set_file_name(self, file_name: str):

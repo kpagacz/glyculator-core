@@ -15,29 +15,25 @@ class ReadConfig:
         time_column: int = None,
         glucose_values_column: int = None):
 
-        # Validation
-        self.validateNonnegative(header_skip)
-        self.validateNonnegative(date_time_column)
-        self.validateNonnegative(date_column)
-        self.validateNonnegative(time_column)
-        self.validateNonnegative(glucose_values_column)
-
         # Assignment
-        self.header_skip = header_skip
-        self.date_column = date_column
-        self.date_time_column = date_time_column
-        self.time_column = time_column
-        self.glucose_values_column = glucose_values_column
+        self.set_header_skip(header_skip)
+        self.set_date_time_column(date_time_column)
+        self.set_date_column(date_column)
+        self.set_time_column(time_column)
+        self.set_glucose_values_column(glucose_values_column)
 
     def validate(self):
-        if(self.glucose_values_column == None):
-            return False
-        
-        if(self.header_skip == None):
-            return False
+        try:
+            if(self.glucose_values_column == None):
+                return False
+            
+            if(self.header_skip == None):
+                return False
 
-        if(self.date_time_column == None and 
-            (self.date_column == None or self.time_column == None)):
+            if(self.date_time_column == None and 
+                (self.date_column == None or self.time_column == None)):
+                return False
+        except:
             return False
 
         return True
@@ -45,25 +41,39 @@ class ReadConfig:
     def validateNonnegative(self, value: int):
         if(value != None):
             if(value < 0):
-                raise ValueError("Header skip, column number must be nonnegative\n")
+                raise ValueError("Number must be non-negative\n")
 
-    
     def set_header_skip(self, value: int):
-        self.validateNonnegative(value)
+        try:
+            self.validateNonnegative(value)
+        except ValueError:
+            raise ValueError("Header skip must be non-negative\n")
         self.header_skip = value
 
     def set_date_column(self, value: int):
-        self.validateNonnegative(value)
+        try:
+            self.validateNonnegative(value)
+        except ValueError:
+            raise ValueError("Date column must be non-negative\n")
         self.date_column = value
 
     def set_date_time_column(self, value: int):
-        self.validateNonnegative(value)
+        try:
+            self.validateNonnegative(value)
+        except ValueError:
+            raise ValueError("Date and time column must be non-negative\n")
         self.date_time_column = value
 
     def set_time_column(self, value: int):
-        self.validateNonnegative(value)
+        try:
+            self.validateNonnegative(value)
+        except ValueError:
+            raise ValueError("Time column must be non-negative\n")
         self.time_column = value
 
     def set_glucose_values_column(self, value: int):
-        self.validateNonnegative(value)
+        try:
+            self.validateNonnegative(value)
+        except ValueError:
+            raise ValueError("Glucose values column must be non-negative\n")
         self.glucose_values_column = value

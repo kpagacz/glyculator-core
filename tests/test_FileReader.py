@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 import src.FileReader as fr
 
 
@@ -71,11 +71,66 @@ class TestFileReader(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.FileReader.read_file()
 
-    @patch("os.path.isfile()", False, create=True)
-    def test_read_file_not_found_exception(self):
+    @patch("os.path")
+    def test_read_file_not_found_exception(self, mock_path):
+        mock_path.isfile.return_value = False
         self.FileReader.read_config = "mock"
         self.FileReader.file_name = "Mock"
         self.FileReader.extension = "csv"
         with self.assertRaises(FileNotFoundError):
             self.FileReader.read_file()
 
+    @patch("os.path")
+    def test_read_file_config_validation_false(self, mock_path):
+        mock_path.isfile.return_value = True
+        mock_read_config = Mock()
+        mock_read_config.validate.return_value = False
+        self.FileReader.read_config = mock_read_config
+        self.FileReader.file_name = "Mock"
+        self.FileReader.extension = "csv"
+        with self.assertRaises(ValueError):
+            self.FileReader.read_file()
+
+
+    @patch("os.path")
+    def test_read_file_delimited_call(self, mock_path):
+        # os.path mock config
+        mock_path.isfile.return_value = True
+
+        # self.read_config mock config
+        mock_read_config = Mock()
+        mock_read_config.validate.return_value = True
+        self.FileReader.read_config = mock_read_config
+        
+        # self.read_delimited() mock config
+        mock_read_delimited = Mock()
+        self.FileReader.read_delimited = mock_read_delimited
+
+        self.FileReader.file_name = "Mock"
+        self.FileReader.extension = "csv"
+        self.FileReader.read_file()
+        self.FileReader.read_delimited.assert_called()
+
+
+    def test_read_file_delimited_set_to_true(self):
+        self.FileReader.read_config = "Mock"
+        self.FileReader.file_name = "test"
+        self.FileReader.extension = "csv"
+        try:
+            self.FileReader.read_file()
+        except:
+            pass
+        self.assertTrue(expr=self.FileReader.delimited, msg="Failed to set \
+            delimited to True in read_file() via validate_file_type()")
+
+    def test_read_file_delimited_stays_false(self):
+        self.FileReader.read_config = "Mock"
+        self.FileReader.file_name = "test"
+        self.FileReader.extension = "xlsx"
+        try:
+            self.FileReader.read_file()
+        except:
+            pass
+        self.assertFalse(expr=self.FileReader.delimited,
+         msg="delimited set to true in read_file() when extenstion is xlsx")       
+        
