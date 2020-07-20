@@ -11,3 +11,8 @@ TEXT_EXTENSIONS = [
     "txt",
     "tsv",
 ]
+
+DT = "date-time"
+GLUCOSE = "Glucose"
+DATE = "date"
+TIME = "time"

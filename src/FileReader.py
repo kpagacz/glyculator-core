@@ -1,9 +1,10 @@
 import csv
 import os
 import xlrd
+import pandas as pd 
 
 from .configs import ReadConfig
-from .utils import ACCEPTED_EXTENSIONS, TEXT_EXTENSIONS
+from .utils import ACCEPTED_EXTENSIONS, TEXT_EXTENSIONS, DT, GLUCOSE, DATE, TIME
 
 
 class FileReader:
@@ -105,12 +106,32 @@ class FileReader:
                 data = self.read_string_io()
 
         # Creating a dict from a list of lists
+        # using the read_config
+        data_dict = {
+            DT : [],
+            GLUCOSE : [],
+            DATE : [],
+            TIME : [],
+        }
 
-
-
+        data = data[self.read_config.header_skip:]
+        dt_column_number = self.read_config.date_time_column
+        date_column_number = self.read_config.date_column
+        time_column_number = self.read_config.time_column
+        glucose_column_number = self.read_config.glucose_values_column
+        
+        if (dt_column_number != None):
+            for row in data:
+                data_dict[GLUCOSE].append(row[glucose_column_number])
+                data_dict[DT].append(row[dt_column_number])
+        else:
+            for row in data:
+                data_dict[GLUCOSE].append(row[glucose_column_number]) 
+                data_dict[DATE].append(row[date_column_number])
+                data_dict[TIME].append(row[time_column_number])
 
         # Initialize the dict as a pandas.DataFrame()
-
+        data = pd.DataFrame(data_dict)
         
         return data
         
@@ -136,7 +157,7 @@ class FileReader:
 
         sheet = xlrd.open_workbook(self.file_name).sheet_by_index(0)
 
-        self.read_report["Shape"] = (sheet.nrows, sheet.ncols)
+        self.read_report["Raw Excel Shape"] = (sheet.nrows, sheet.ncols)
         for row_number in range(sheet.nrows):
             row = []
             for col_number in range(sheet.ncols):
