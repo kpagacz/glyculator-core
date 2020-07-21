@@ -13,6 +13,6 @@ TEXT_EXTENSIONS = [
 ]
 
 DT = "date-time"
-GLUCOSE = "Glucose"
+GLUCOSE = "glucose"
 DATE = "date"
 TIME = "time"

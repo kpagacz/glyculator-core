@@ -1,7 +1,8 @@
 import csv
 import os
 import xlrd
-import pandas as pd 
+import pandas as pd
+import logging
 
 from .configs import ReadConfig
 from .utils import ACCEPTED_EXTENSIONS, TEXT_EXTENSIONS, DT, GLUCOSE, DATE, TIME
@@ -34,9 +35,12 @@ class FileReader:
     def __init__(self, file_name: str = None, string_io = None, bytes_io = None, read_config: ReadConfig = None):
         self.file_name = file_name
         self.read_config = read_config
+        self.logger = logging.getLogger(__name__)
+        print(__name__)
 
         if(file_name != None):
             self.substring_extension()
+        
 
 
     def validate_file_type(self):
@@ -79,7 +83,7 @@ class FileReader:
 
         """
         # Pre-read checks
-        print("Read file")
+        self.logger.debug("FileReader - started reading file")
         if(self.read_config == None):
             raise TypeError("Tried reading the file with no supplied ReadConfig. Try supplying a ReadConfig with set_config().\n")
         if(self.file_name == None and self.string_io == None and self.bytes_io == None):
@@ -107,32 +111,22 @@ class FileReader:
 
         # Creating a dict from a list of lists
         # using the read_config
-        data_dict = {
-            DT : [],
-            GLUCOSE : [],
-            DATE : [],
-            TIME : [],
-        }
+        data_dict = self.lists_to_dict(data)
 
-        data = data[self.read_config.header_skip:]
-        dt_column_number = self.read_config.date_time_column
-        date_column_number = self.read_config.date_column
-        time_column_number = self.read_config.time_column
-        glucose_column_number = self.read_config.glucose_values_column
+        # Merge Date and Time column as needed
+        # if not needed remove them
+        if(self.read_config.date_time_column == None):
+            data_dict = self.merge_date_and_time(data_dict)
         
-        if (dt_column_number != None):
-            for row in data:
-                data_dict[GLUCOSE].append(row[glucose_column_number])
-                data_dict[DT].append(row[dt_column_number])
-        else:
-            for row in data:
-                data_dict[GLUCOSE].append(row[glucose_column_number]) 
-                data_dict[DATE].append(row[date_column_number])
-                data_dict[TIME].append(row[time_column_number])
+        # Date and Time are no longer needed
+        # all the information is stored in dt
+        del data_dict[DATE]
+        del data_dict[TIME]
 
         # Initialize the dict as a pandas.DataFrame()
         data = pd.DataFrame(data_dict)
-        
+        self.logger.debug("FileReader - read_file - return:\n{}".format(data))
+
         return data
         
     def read_delimited(self):
@@ -168,6 +162,7 @@ class FileReader:
             raise RuntimeError("File {} empty or could not read its content.\n".\
                 format(self.file_name))
 
+        self.logger.debug("FileReader - read_excel - result of reading:\n{}".format(file_))
         return file_
 
 
@@ -200,10 +195,45 @@ class FileReader:
             self.extension = self.file_name.split(".")[1]
         else:
             self.extension = None
-    
 
 
+    def lists_to_dict(self, data: list):
+        data_dict = {
+            DT : [],
+            GLUCOSE : [],
+            DATE : [],
+            TIME : [],
+        }
 
+        data = data[self.read_config.header_skip:]
+        dt_column_number = self.read_config.date_time_column
+        date_column_number = self.read_config.date_column
+        time_column_number = self.read_config.time_column
+        glucose_column_number = self.read_config.glucose_values_column
+
+        if (dt_column_number != None):
+            for row in data:
+                data_dict[GLUCOSE].append(row[glucose_column_number])
+                data_dict[DT].append(row[dt_column_number])
+        else:
+            for row in data:
+                data_dict[GLUCOSE].append(row[glucose_column_number]) 
+                data_dict[DATE].append(row[date_column_number])
+                data_dict[TIME].append(row[time_column_number])
+
+        self.logger.debug("FileReader - lists_to_dict - return \n{}".format(data_dict))
+        return data_dict
+
+
+    def merge_date_and_time(self, data_dict: dict):
+        """Merges date and time columns.
+
+        Performs an element-wise paste operation on DATE and TIME lists
+        and assigns the result to DT key in data_dict
+        """
+        dt_list = [" ".join([date, time]) for (date, time) in zip(data_dict[DATE], data_dict[TIME])]
+        data_dict[DT] = dt_list
+        return data_dict
 
 
 

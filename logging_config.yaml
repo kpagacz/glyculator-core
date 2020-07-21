@@ -1,0 +1,33 @@
+version: 1
+disable_existing_loggers: false
+
+formatters:
+    short:
+        format: "%(asctime)s | %(levelname)s | %(message)s"
+    
+    long:
+        format: "%(asctime)s | %(name)s | %(levelname)s | %(message)s"
+
+handlers:
+    console:
+        class: logging.StreamHandler
+        level: DEBUG
+        formatter: long
+        stream: ext://sys.stdout
+    
+    file:
+        class: logging.handlers.RotatingFileHandler
+        level: INFO
+        formatter: short
+        filename: glyculator.log
+        maxBytes: 1024
+        backupCount: 3
+        encoding: utf8
+
+loggers:
+    dev:
+        handlers: [console, file]
+
+root:
+    level: INFO
+    handlers: [file]
