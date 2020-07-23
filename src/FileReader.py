@@ -1,27 +1,28 @@
-import csv
 import os
 import xlrd
-import pandas as pd
+import csv
 import logging
+import datetime
+
+import numpy as np
+import pandas as pd
+from pandas.core.tools.datetimes import _guess_datetime_format
 
 from .configs import ReadConfig
 from .utils import ACCEPTED_EXTENSIONS, TEXT_EXTENSIONS, DT, GLUCOSE, DATE, TIME
 
 
 class FileReader:
-    """Reads a CGM file.
-
-    Responsible for reading a raw CGM files. Uses csv.Sniffer
-    for auto-detection of delimiter. Can read excel files.
+    """Responsible for reading files and parsing them.
 
     Attributes:
-        file_name: name of the file to read
-        read_config: configuration for reading 
-        delimited: flag for delimited text files
+        file_name (str): name of the file to read
+        read_config (ReadConfig): configuration for reading 
+        delimited (bool): flag for delimited text files
         extension (str): contains file extension
         string_io:
         bytes_io:
-        read_report (dict):
+        read_report (dict): contains diagnostic information about the reading process
     
     """
     file_name = None
@@ -36,12 +37,10 @@ class FileReader:
         self.file_name = file_name
         self.read_config = read_config
         self.logger = logging.getLogger(__name__)
-        print(__name__)
 
         if(file_name != None):
             self.substring_extension()
         
-
 
     def validate_file_type(self):
         """Validates the file type.
@@ -68,7 +67,8 @@ class FileReader:
 
         Performs pre-read checks and reads a file supplied by a file_name with
         configuration stored in read_config. Also calls validate_file_type to set
-        the delimited attribute and check for the type validity. Uses the configuration
+        the delimited attribute determining whether to treat the file as delimited
+        or excel; and check for the type validity. Uses the configuration
         stored in the read_config attribute.
 
         Returns:
@@ -129,16 +129,11 @@ class FileReader:
 
         return data
         
+
     def read_delimited(self):
-        file = None
+        """Reads a csv file
 
-        return file
-
-
-    def read_excel(self):
-        """Reads an excel file
-
-        Reads an excel file using xlrd package.
+        Tries to sniff the format of the csv and then attempts to read it.
 
         Returns:
             list: list of lists (rows)
@@ -149,9 +144,89 @@ class FileReader:
         """
         file_ = []
 
-        sheet = xlrd.open_workbook(self.file_name).sheet_by_index(0)
+        # Open and sniff the formatting of the file
+        # Read the file row by row appending to file_
+        with open(self.file_name, newline='') as csv_file:
+            dialect = csv.Sniffer().sniff(csv_file.read(1024))
+            csv_file.seek(0)
+            csv_reader = csv.reader(csv_file, dialect=dialect)
 
+            for row in csv_reader:
+                file_.append(row)
+
+        self.logger.debug("FileReader - read_delimited - read file:\n{}".format(file_))
+
+
+        # This transposition makes it a little bit more efficient to subset the
+        # columns DT DATE and TIME
+        transposed_file_ = list(zip(*file_))
+        # Detect datetime format using _guess_datetime_format from Pandas library
+        for col_name, index in zip([DT, DATE], [self.read_config.date_time_column,
+                                                        self.read_config.date_column]):
+            if(index != None):
+                # Detect format of the datetime 
+                dt_array = list(transposed_file_[index])    \
+                    [self.read_config.header_skip:]
+                first_nonzero = pd.notnull(dt_array).nonzero()[0][0]
+                dt_format = _guess_datetime_format(dt_array[first_nonzero], dayfirst=True)
+                self.logger.debug("FileReader - read_delimited - detected {} format: {}"    \
+                    .format(col_name, dt_format))
+            
+                for row in file_:
+                    col = index
+                    try:
+                        row[col] = datetime.datetime.strptime(row[col], dt_format)
+                    except:
+                        row[col] = ""
+
+        for col_name, index in zip([TIME], [self.read_config.time_column]):
+            if(index != None):
+                # Detect format of the datetime 
+                dt_array = list(transposed_file_[index])    \
+                    [self.read_config.header_skip:]
+                first_nonzero = pd.notnull(dt_array).nonzero()[0][0]
+                if(len(dt_array[first_nonzero].split(":")) == 2):
+                    dt_format = "%H:%M"
+                else:
+                    dt_format = "%H:%M:%S"
+                self.logger.debug("FileReader - read_delimited - detected {} format: {}"    \
+                    .format(col_name, dt_format))
+
+                for row in file_:
+                    col = index
+                    try:
+                        row[col] = datetime.datetime.strptime(row[col], dt_format)
+                    except:
+                        row[col] = ""
+
+        self.logger.debug("FileReader - read_delimited - return: {}".format(file_))
+        return file_
+
+
+    def read_excel(self):
+        """Reads an excel file
+
+        Reads an excel file using xlrd package. Also attempts to translate
+        the Excel date formatting to datetime ISO format.
+
+        Returns:
+            list: list of lists (rows)
+
+        Raises:
+            RuntimeError: When file is empty or could not read its contents.
+
+        """
+        file_ = []
+
+        # Open sheet and report its shape
+        wb = xlrd.open_workbook(self.file_name)
+        sheet = wb.sheet_by_index(0)
         self.read_report["Raw Excel Shape"] = (sheet.nrows, sheet.ncols)
+
+        # Read in the whole file
+        # Could read only relevant columns, but it gets messy,
+        # because the order of appending cells to row[]
+        # would dictate the order of DATE TIME DT GLUCOSE columns
         for row_number in range(sheet.nrows):
             row = []
             for col_number in range(sheet.ncols):
@@ -161,8 +236,39 @@ class FileReader:
         if(len(file_) == 0):
             raise RuntimeError("File {} empty or could not read its content.\n".\
                 format(self.file_name))
+        
+        self.logger.debug("FileReader - read_excel - read the whole file:\n{}".format(file_))
 
-        self.logger.debug("FileReader - read_excel - result of reading:\n{}".format(file_))
+        # Translate the Excel date time format
+        for row in file_:
+            # DT
+            if(self.read_config.date_time_column != None):
+                col = self.read_config.date_time_column
+                try:
+                    row[col] = xlrd.xldate.xldate_as_datetime(row[col],
+                        datemode=wb.datemode)
+                except:
+                    row[col] = ""
+
+            # DATE
+            if(self.read_config.date_column != None):
+                col = self.read_config.date_column
+                try:
+                    row[col] = xlrd.xldate.xldate_as_datetime(row[col],
+                        datemode=wb.datemode)
+                except:
+                    row[col] = ""
+
+            # TIME
+            if(self.read_config.time_column != None):
+                col = self.read_config.time_column
+                try:
+                    row[col] = xlrd.xldate.xldate_as_datetime(row[col],
+                        datemode=wb.datemode)
+                except:
+                    row[col] = ""
+
+        self.logger.debug("FileReader - read_excel - return:\n{}".format(file_))
         return file_
 
 
@@ -221,7 +327,7 @@ class FileReader:
                 data_dict[DATE].append(row[date_column_number])
                 data_dict[TIME].append(row[time_column_number])
 
-        self.logger.debug("FileReader - lists_to_dict - return \n{}".format(data_dict))
+        self.logger.debug("FileReader - lists_to_dict - return {}".format(data_dict))
         return data_dict
 
 
@@ -229,11 +335,22 @@ class FileReader:
         """Merges date and time columns.
 
         Performs an element-wise paste operation on DATE and TIME lists
-        and assigns the result to DT key in data_dict
+        and assigns the result to DT key in data_dict. Assumes dates are
+        datetime.datetime objects.
+
+        Arguments:
+            data_dict (dict): should contain date and time keys
+
+        Returns:
+            dict: Dictionary with additional DT key, which contains
+                the results of pasting
+
         """
-        dt_list = [" ".join([date, time]) for (date, time) in zip(data_dict[DATE], data_dict[TIME])]
+        dt_list = [datetime.datetime.combine(date.date(), time.time()) for  \
+            (date, time) in zip(data_dict[DATE], data_dict[TIME])]
         data_dict[DT] = dt_list
         return data_dict
 
+    
 
 

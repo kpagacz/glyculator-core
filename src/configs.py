@@ -77,3 +77,24 @@ class ReadConfig:
         except ValueError:
             raise ValueError("Glucose values column must be non-negative\n")
         self.glucose_values_column = value
+
+class CleanConfig:
+    """Configuration for cleaning a CGM file.
+
+    """
+    interval = None
+
+    def __init__(self, interval: int = None):
+        self.set_interval(interval)
+
+    def set_interval(self, interval: int):
+        """Interval setter.
+
+        Arguments:
+            interval (int): interval of a CGM measurement
+
+        Raises:
+            ValueError: if the interval is not 5 and not 15
+        """
+        if(interval not in [5, 15]):
+            raise ValueError("Interval needs to be 5 or 15")

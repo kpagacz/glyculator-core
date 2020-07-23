@@ -1,6 +1,14 @@
+from datetime import datetime
+
 import unittest
 from unittest.mock import patch, Mock
+
+import pandas as pd
+
 import src.FileReader as fr
+from src.utils import DATE, TIME, DT, GLUCOSE
+
+
 
 
 class TestFileReader(unittest.TestCase):
@@ -91,7 +99,6 @@ class TestFileReader(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.FileReader.read_file()
 
-
     @patch("os.path")
     def test_read_file_delimited_call(self, mock_path):
         # os.path mock config
@@ -108,9 +115,12 @@ class TestFileReader(unittest.TestCase):
 
         self.FileReader.file_name = "Mock"
         self.FileReader.extension = "csv"
-        self.FileReader.read_file()
-        self.FileReader.read_delimited.assert_called()
-
+        try:
+            self.FileReader.read_file()
+        except:
+            pass
+        finally:
+            self.FileReader.read_delimited.assert_called()
 
     def test_read_file_delimited_set_to_true(self):
         self.FileReader.read_config = "Mock"
@@ -134,3 +144,20 @@ class TestFileReader(unittest.TestCase):
         self.assertFalse(expr=self.FileReader.delimited,
          msg="delimited set to true in read_file() when extenstion is xlsx")       
         
+    def test_merge_date_and_time(self):
+        now = datetime.now()
+        test_dict = {
+            TIME : [now],
+            DATE : [now]
+        }
+
+        res = self.FileReader.merge_date_and_time(test_dict)
+        self.assertEqual(res,
+            {
+                TIME : [now],
+                DATE : [now],
+                DT : [now],
+            }
+        )
+
+
