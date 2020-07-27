@@ -11,6 +11,7 @@ from pandas.core.tools.datetimes import _guess_datetime_format
 from .configs import ReadConfig
 from .utils import ACCEPTED_EXTENSIONS, TEXT_EXTENSIONS, DT, GLUCOSE, DATE, TIME
 
+# TODO (konrad.pagacz@gmail.com) expand docs
 
 class FileReader:
     """Responsible for reading files and parsing them.

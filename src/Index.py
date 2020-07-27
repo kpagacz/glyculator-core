@@ -7,6 +7,7 @@ import scipy
 from .utils import DT, GLUCOSE
 from .configs import CalcConfig
 
+# TODO (konrad.pagacz@gmail.com) expand docs
 
 class GVIndex():
     def __init__(self, df: pd.DataFrame, calc_config: CalcConfig):

@@ -6,6 +6,8 @@ import numpy as np
 from .utils import DT, GLUCOSE
 from .configs import CleanConfig
 
+# TODO (konrad.pagacz@gmail.com) expand docs
+# TODO (konrad.pagacz@gmail.com) finish tidy function in FileCleaner
 
 class FileCleaner():
     """Cleans the raw datafile

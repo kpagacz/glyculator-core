@@ -1,5 +1,7 @@
 from .utils import MAGE_EXCURSION_THRESHOLDS
 
+# TODO (konrad.pagacz@gmail.com) expand docs
+
 class ReadConfig:
     """Configuration for reading a CGM file.
 
