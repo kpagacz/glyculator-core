@@ -22,7 +22,7 @@ try:
     # logger.debug("Read excel-example1.xlsx:\n{}".format(data))
 except Exception as e:
     logger.debug("Erorr reading in excel-example1.xlsx: {}".format(e.with_traceback()))
-
+logger.debug("=============================")
 
 # excel-example2.xlsx
 # DT not supplied
@@ -32,6 +32,7 @@ try:
     example2 = fr.read_file()
 except Exception as error:
     logger.debug(traceback.format_exc())
+logger.debug("=============================")
 
 
 # csv-example1.csv
@@ -41,6 +42,7 @@ try:
     example3 = fr.read_file()
 except Exception as error:
     logger.debug(traceback.format_exc())
+logger.debug("=============================")
 
 # csv-example2.csv
 # DT not supplied
@@ -50,3 +52,4 @@ try:
     example4 = fr.read_file()
 except Exception as error:
     logger.debug(traceback.format_exc())
+logger.debug("=============================")

@@ -1,6 +1,9 @@
 import unittest
+import logging
+import logging.config
 from mock import Mock
 
+import yaml
 import numpy as np
 import pandas as pd 
 
@@ -12,6 +15,14 @@ from src.configs import CalcConfig
 class TestGVIndices(unittest.TestCase):
     def setUp(self):
         dates = pd.date_range(start="27-07-2020 12:00", end="29-07-2020 12:00", freq="5min"),
+        
+        # Logging setup
+        # with open("logging_config.yaml", 'rt') as config:
+        #     cfg = yaml.safe_load(config.read())
+        #     logging.config.dictConfig(cfg)
+
+        self.logger = logging.getLogger(__name__)
+        self.logger.addHandler(logging.NullHandler)
 
         self.non_nan_df = pd.DataFrame({
             DT : dates,
@@ -100,3 +111,47 @@ class TestGVIndices(unittest.TestCase):
         self.assertTrue(np.array_equal(index._moving_average(arr, window_size),
             np.array([2, 3.5, 5, 6.5])))
 
+    def test_mage_join_extremas_util(self):
+        index = indices.GVmage(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        minimas = [1, 3, 5]
+        maximas = [2, 4, 6]
+        joined = [1]
+        minimas_turn = False
+        index._join_extremas_util(joined, minimas, maximas, 1, 0, minimas_turn)
+        self.assertListEqual(
+            list1=[1, 2, 3, 4, 5, 6],
+            list2=joined
+        )
+
+    def test_mage_join_extremas_util_different_lengths_arrays(self):
+        index = indices.GVmage(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        minimas = [1, 3, 5]
+        maximas = [2, 4, 6, 7]
+        joined = [1]
+        minimas_turn = False
+        index._join_extremas_util(joined, minimas, maximas, 1, 0, minimas_turn)
+        self.assertListEqual(
+            list1=[1, 2, 3, 4, 5, 6],
+            list2=joined
+        )
+
+    def test_mage_join_extremas_util_maximas_first(self):
+        index = indices.GVmage(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        minimas = [2, 4, 6]
+        maximas = [1, 3, 5]
+        joined = [1]
+        minimas_turn = True
+        index._join_extremas_util(joined, minimas, maximas, 0, 1, minimas_turn)
+        self.assertListEqual(
+            list1=[1, 2, 3, 4, 5, 6],
+            list2=joined
+        )
+
+    def test_mage_join_extremas(self):
+        index = indices.GVmage(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        minimas = [2, 4, 6]
+        maximas = [1, 3, 5]
+        self.assertListEqual(
+            list1=[1, 2, 3, 4, 5, 6],
+            list2=index._join_extremas(minimas, maximas)
+        )

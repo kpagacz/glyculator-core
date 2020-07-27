@@ -126,20 +126,35 @@ class GVmage(GVIndex):
                 value of MAGE
 
         """
+        # Mean substitution of nans
         nans_replaced = self.df[GLUCOSE].replace(to_replace=np.nan, value=np.nanmean(self.df[GLUCOSE]))
         self.logger.debug("GVmage - calculate - nans_replaced: {}".format(nans_replaced))
 
+        # Smoothing
         smoothed = self._moving_average(nans_replaced,
             window=self.calc_config.mage_moving_average_window_size)
         self.logger.debug("GVmage - calculate - smoothed: {}".format(smoothed))
 
-        maximas = scipy.signal.find_peaks(smoothed, distance=self.calc_config.mage_peak_distance)
-        minimas = scipy.signal.find_peaks(-1 * smoothed, distance=self.calc_config.mage_peak_distance)
-
+        # Finding local maximas and minimas
+        maximas = scipy.signal.find_peaks(smoothed, distance=self.calc_config.mage_peak_distance)[0]
+        minimas = scipy.signal.find_peaks(-1 * smoothed, distance=self.calc_config.mage_peak_distance)[0]
         self.logger.debug("GVmage - calculate - minimas: {}".format(minimas))
         self.logger.debug("GVmage - calculate - maximas: {}".format(maximas))
-        
-        return "mage-placeholder" # TODO (konrad.pagacz@gmail.com) implement mage
+
+        # minimas and maximas are joined in an alternating manner
+        # example: minimas[0] maximas[0] minimas[1] maximas[1]
+        joined = self._join_extremas(minimas, maximas)
+
+        joined_values = smoothed[joined]
+        value_differences = np.diff(a=joined_values)
+
+        if(self.calc_config.mage_excursion_threshold == "sd"):
+            threshold = np.nanstd(self.df[GLUCOSE])
+        if(self.calc_config.mage_excursion_threshold == "half_sd"):
+            threshold = np.nanstd(self.df[GLUCOSE]) * 0.5
+
+        value_differences = value_differences[value_differences > threshold]
+        return np.nanmean(value_differences)
 
     def _moving_average(self, arr: pd.Series, window: int):
         """Calculates moving average smoothing.
@@ -169,7 +184,56 @@ class GVmage(GVIndex):
 
         return np.convolve(a=arr, v=np.ones((window,)) / window, mode="valid")
 
+    def _join_extremas(self, minimas, maximas):
+        """Joins indices of minimas and maximas in an alternating manner.
 
+        Arguments:
+            minimas:
+                list-like of glucose minimas
+            maximas:
+                list-like of glucose maximas
+
+        Returns:
+            list:
+                joined minimas and maximas
+
+        """
+        joined = []
+        if(minimas[0] < maximas[0]):
+            minimas_turn = False
+            joined.append(minimas[0])
+        else:
+            minimas_turn = True
+            joined.append(maximas[0])
+
+        self._join_extremas_util(joined, minimas, maximas, not minimas_turn, minimas_turn, minimas_turn)
+        return joined
+
+    def _join_extremas_util(self, joined, minimas, maximas, minimas_ind, maximas_ind, minimas_turn):
+        self.logger.debug("GVmage - _join_extremas_util - called with: joined {} \nminimas {} \nmaximas {} \nminimas_ind {} \nmaximas_ind {} \nminimas_turn {}"    \
+            .format(joined, minimas, maximas, minimas_ind, maximas_ind, minimas_turn))
+        
+
+        if(minimas_turn):
+            if(minimas_ind >= len(minimas)):
+                self.logger.debug("GVmage - _join_extremas_util - return: {}".format(joined))
+                return joined
+
+            if(minimas[minimas_ind] > joined[len(joined) - 1]):
+                joined.append(minimas[minimas_ind])
+                minimas_turn = False
+            self._join_extremas_util(joined, minimas, maximas, minimas_ind + 1, maximas_ind, minimas_turn)
+        else:
+            if(maximas_ind >= len(maximas)):
+                self.logger.debug("GVmage - _join_extremas_util - return: {}".format(joined))
+                return joined
+
+            if(maximas[maximas_ind] > joined[len(joined) - 1]):
+                joined.append(maximas[maximas_ind])
+                minimas_turn = True
+            self._join_extremas_util(joined, minimas, maximas, minimas_ind, maximas_ind + 1, minimas_turn)
+
+        
 class GVmodd(GVIndex):
     def __init__(self, **kwargs):
         super(GVmodd, self).__init__(**kwargs)
@@ -456,5 +520,24 @@ INDICES_TO_CALC = {
     "Variance" : GVVariance,
     "CV" : GVCV,
     "Missing values" : GVNanFraction,
-    "Total time points No" : GVRecordsNo
+    "Total time points No" : GVRecordsNo,
+    "Standard deviation" : GVstd,
+    "M100" : GVm100,
+    "J-index" : GVj,
+    "MAGE" : GVmage,
+    "MODD" : GVmodd,
+    "CONGA" : GVcongaX,
+    "Hypoglycemia fraction" : GVhypoglycemia,
+    "Hyperglycemia fraction" : GVhyperglycemia,
+    "GRADE" : GVgrade,
+    "GRADE hypoglycemia" : GVgrade_hypo,
+    "GRADE hyperglycemia" : GVgrade_hyper,
+    "Low Blood Glucose Index" : GVlbgi,
+    "High Blood Glucose Index" : GVhbgi,
+    "eA1c" : GVeA1c,
+    "AUC" : GVauc,
+    "Hypoglycemic events No" : GVhypo_events_count,
+    "Time in hypoglycemia" : GVtime_in_hypo,
+    "Mean duration of hypoglycemic event" : GVmean_hypo_event_duration,
+
 }

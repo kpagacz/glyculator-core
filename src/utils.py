@@ -20,5 +20,5 @@ TIME = "time"
 
 MAGE_EXCURSION_THRESHOLDS = [
     "sd",
-    "half-sd"
+    "half_sd"
 ]
