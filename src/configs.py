@@ -121,6 +121,7 @@ class CalcConfig:
         self.mage_excursion_threshold = self.set_excursion_threshold(
             kwargs.pop("mage_exc", "sd")
         )
+        self.mage_moving_average_windows_size = self.set_mage_moving_average(kwargs.pop("mage_window", 9))
 
     def set_interval(self, interval: int):
         """Interval setter.
@@ -167,3 +168,11 @@ class CalcConfig:
                 raise ValueError("mage_excursion_threshold must be int or one of {}".format(MAGE_EXCURSION_THRESHOLDS))
             else:
                 return exc_threshold
+
+    def set_mage_moving_average(self, window_size: int):
+        if(type(window_size) != int):
+            raise ValueError("window_size must be an int")
+        
+        return window_size
+
+    

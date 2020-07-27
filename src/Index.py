@@ -1,5 +1,6 @@
 import numpy as np
-import pandas as pd 
+import pandas as pd
+import scipy
 
 from .utils import DT, GLUCOSE
 from .configs import CalcConfig
@@ -50,12 +51,12 @@ class GVVariance(GVIndex):
         return np.nanvar(self.df[GLUCOSE])
 
 
-class GVNanCount(GVIndex):
+class GVNanFraction(GVIndex):
     def __init__(self, **kwargs):
-        super(GVNanCount, self).__init__(**kwargs)
+        super(GVNanFraction, self).__init__(**kwargs)
 
     def calculate(self):
-        return np.isnan(self.df[GLUCOSE]) / len(self.df)
+        return np.nansum(np.isnan(self.df[GLUCOSE])) / len(self.df)
 
 
 class GVRecordsNo(GVIndex):
@@ -110,7 +111,53 @@ class GVmage(GVIndex):
         super(GVmage, self).__init__(**kwargs)
 
     def calculate(self):
+        """Calculates MAGE (mean average of glucose excursions)
+
+        Steps undertaken:
+        1. Replace nans with mean
+        2. Moving average with window size equal to 9
+        3. Search excursions and calculate the average
+
+        Returns:
+            float:
+                value of MAGE
+
+        """
+        nans_replaced = self.df[GLUCOSE].replace(to_replace=np.nan, value=np.nanmean(self.df[GLUCOSE]))
+        smoothed = self._moving_average(nans_replaced,
+            window=self.calc_config.mage_moving_average_window_size)
+
+        
+
         return "mage-placeholder" # TODO (konrad.pagacz@gmail.com) implement mage
+
+    def _moving_average(self, arr: pd.Series, window: int):
+        """Calculates moving average smoothing.
+
+        Arguments:
+            arr (pandas.Series):
+                pandas.Series of glucose values
+            window (int):
+                size of the moving average window
+
+        Returns:
+            pandas.Series
+                Series with smoothed glucose values.
+
+        Raises:
+            ValueError:
+                if arr is not a pandas.Series
+            ValueError:
+                if window is not int
+        
+        """
+        if(not isinstance(arr, pd.core.series.Series)):
+            raise ValueError("arr must be a pandas.Series")
+
+        if(type(window) != int):
+            raise ValueError("window must be an int")
+
+        return np.convolve(a=arr, v=np.ones((window,)) / window, mode="valid")
 
 
 class GVmodd(GVIndex):
@@ -283,20 +330,121 @@ class GVhypo_events_count(GVIndex):
     def __init__(self, **kwargs):
         super(GVhypo_events_count, self).__init__(**kwargs)
 
+    def calculate(self, threshold: int, hypo_event_records_threshold_duration: int = 15):
+        """Calculates number of hypoglycemic events.
+
+        Arguments:
+            threshold (int):
+                Values of glycemia below this are treated as hypoglycemias
+            hypo_event_records_threshold_duration (int):
+                Sequence of hypoglycemic glucose values must have duration
+                greater than this to be counted as a hypoglycemic event.
+                Value is expressed in minutes. Default = 15
+
+        Returns:
+            int:
+                number of hypoglycemic events
+        
+        Raises:
+            ValueError:
+                if threshold or hypo_event_records_threshold_duration
+                are not int
+
+        """
+        if(type(threshold) != int):
+            raise ValueError("threshold must be int")
+
+        hypoglycemias = self.df[GLUCOSE] < threshold
+
+        hypo_event_records_threshold = hypo_event_records_threshold_duration / self.calc_config.interval
+
+        current_hypo_records = 0
+        total_hypo_event_count = 0
+        for record in hypoglycemias:
+            if(record):
+                current_hypo_records = current_hypo_records + 1
+            else:
+                if(current_hypo_records > hypo_event_records_threshold):
+                    total_hypo_event_count = total_hypo_event_count + 1
+                current_hypo_records = 0
+
+        return total_hypo_event_count
+
+
+class GVtime_in_hypo(GVIndex):
+    def __init__(self, **kwargs):
+        super(GVtime_in_hypo, self).__init__(**kwargs)
+
     def calculate(self, threshold: int):
         if(type(threshold) != int):
             raise ValueError("threshold must be int")
 
         hypoglycemias = self.df[GLUCOSE] < threshold
 
+        return np.nansum(hypoglycemias) * self.calc_config.interval
 
-    
+
+class GVmean_hypo_event_duration(GVIndex):
+    """Calculates mean duration of hypoglycemic events.
+
+    Hypoglycemic event is defined as a sequence of hypoglycemic
+    glucose values.
+
+    """
+    def __init__(self, **kwargs):
+        super(GVmean_hypo_event_duration, self).__init__(**kwargs)
+
+    def calculate(self, threshold: int, hypo_event_records_threshold_duration: int = 15):
+        """Calculates mean duration of hypoglycemic events.
+
+        Arguments:
+            threshold (int):
+                Values of glycemia below this are treated as hypoglycemias
+            hypo_event_records_threshold_duration (int):
+                Sequence of hypoglycemic glucose values must have duration
+                greater than this to be counted as a hypoglycemic event.
+                Value is expressed in minutes. Default = 15
+
+        Returns:
+            float:
+                mean duration of hypoglycemic events
+        
+        Raises:
+            ValueError:
+                if threshold or hypo_event_records_threshold_duration
+                are not int
+
+        """
+        if(type(threshold) != int):
+            raise ValueError("threshold must be int")
+
+        if(type(hypo_event_records_threshold_duration) != int):
+            raise ValueError("hypo_event_records_threshold_duration must be an int")
+
+        hypoglycemias = self.df[GLUCOSE] < threshold
+
+        hypo_event_records_threshold = hypo_event_records_threshold_duration / self.calc_config.interval
+
+        current_hypo_records = 0
+        total_hypo_event_count = 0
+        hypo_events_duration = []
+        for record in hypoglycemias:
+            if(record):
+                current_hypo_records = current_hypo_records + 1
+            else:
+                if(current_hypo_records > hypo_event_records_threshold):
+                    total_hypo_event_count = total_hypo_event_count + 1
+                    hypo_events_duration.append(current_hypo_records)
+                current_hypo_records = 0
+
+        return np.nanmean(hypo_events_duration) * self.calc_config.interval
+
 
 INDICES_TO_CALC = {
     "Mean" : GVMean,
     "Median" : GVMedian,
     "Variance" : GVVariance,
     "CV" : GVCV,
-    "Missing values" : GVNanCount,
+    "Missing values" : GVNanFraction,
     "Total time points No" : GVRecordsNo
 }
