@@ -99,3 +99,4 @@ class TestGVIndices(unittest.TestCase):
         window_size = 2
         self.assertTrue(np.array_equal(index._moving_average(arr, window_size),
             np.array([2, 3.5, 5, 6.5])))
+

@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import pandas as pd
 import scipy
@@ -10,6 +12,7 @@ class GVIndex():
     def __init__(self, df: pd.DataFrame, calc_config: CalcConfig):
         self.df = self.set_df(df)
         self.calc_config = self.set_calc_config(calc_config)
+        self.logger = logging.getLogger(__name__)
 
     def calculate(self):
         raise NotImplementedError
@@ -124,11 +127,18 @@ class GVmage(GVIndex):
 
         """
         nans_replaced = self.df[GLUCOSE].replace(to_replace=np.nan, value=np.nanmean(self.df[GLUCOSE]))
+        self.logger.debug("GVmage - calculate - nans_replaced: {}".format(nans_replaced))
+
         smoothed = self._moving_average(nans_replaced,
             window=self.calc_config.mage_moving_average_window_size)
+        self.logger.debug("GVmage - calculate - smoothed: {}".format(smoothed))
 
+        maximas = scipy.signal.find_peaks(smoothed, distance=self.calc_config.mage_peak_distance)
+        minimas = scipy.signal.find_peaks(-1 * smoothed, distance=self.calc_config.mage_peak_distance)
+
+        self.logger.debug("GVmage - calculate - minimas: {}".format(minimas))
+        self.logger.debug("GVmage - calculate - maximas: {}".format(maximas))
         
-
         return "mage-placeholder" # TODO (konrad.pagacz@gmail.com) implement mage
 
     def _moving_average(self, arr: pd.Series, window: int):

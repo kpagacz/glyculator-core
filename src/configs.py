@@ -122,6 +122,7 @@ class CalcConfig:
             kwargs.pop("mage_exc", "sd")
         )
         self.mage_moving_average_windows_size = self.set_mage_moving_average(kwargs.pop("mage_window", 9))
+        self.mage_peak_distance = self.set_mage_peak_distance(kwargs.pop("mage_distance", 10))
 
     def set_interval(self, interval: int):
         """Interval setter.
@@ -175,4 +176,9 @@ class CalcConfig:
         
         return window_size
 
+    def set_mage_peak_distance(self, mage_distance: int):
+        if(type(mage_distance) != int):
+            raise ValueError("mage_distance must be an int")
+        return mage_distance
+    
     
