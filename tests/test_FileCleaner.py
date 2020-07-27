@@ -14,7 +14,7 @@ class TestFileCleaner(unittest.TestCase):
     def test_clean_file_nan_as_empty_string(self):
         test_df = pd.DataFrame(
             {
-                DT: ["test", "", "test"],
+                DT: ["2020-07-27 08:00:00", "", "2020-07-27 08:05:00"],
                 GLUCOSE: ["8", "8", "8"]
             }
         )
@@ -22,9 +22,9 @@ class TestFileCleaner(unittest.TestCase):
         res = self.FileCleaner.clean_file(test_df)
         other = pd.DataFrame(
                 {
-                    DT : ["test", "test"],
                     GLUCOSE : ["8", "8"]
-                }
+                },
+                index=["2020-07-27 08:00:00", "2020-07-27 08:05:00"],
             )
 
         self.assertTrue(
@@ -41,5 +41,18 @@ class TestFileCleaner(unittest.TestCase):
         self.FileCleaner.untidy = Mock()
         with self.assertRaises(RuntimeError):
             self.FileCleaner.tidy()
+
+    def test_set_untidy_non_df(self):
+        with self.assertRaises(ValueError):
+            self.FileCleaner.set_untidy("test")
+
+    def test_set_untidy_df_example_1(self):
+        test_df = pd.DataFrame({"Test": [1, 2]})
+        self.FileCleaner.set_untidy(test_df)
+        self.assertTrue(test_df.equals(self.FileCleaner.untidy))
+
+    def test_set_clean_config_config_wrong_type(self):
+        with self.assertRaises(ValueError):
+            self.FileCleaner.set_clean_config("Test")
 
     

@@ -60,15 +60,16 @@ class FileCleaner():
         columns: DT and GLUCOSE.
 
         It performs following cleaning procedures:
-        1. Removing rows with empty DT cells.
+            Remove rows with empty DT cells.
+            Set DT as index
 
         Arguments:
             data_df (pandas.DataFrame): 
 
         Returns:
             pandas.DataFrame:
-                cleaned dataframe with two columns:
-                DT and GLUCOSE
+                cleaned dataframe with one column GLUCOSE
+                and DT as index
 
         """
         self.logger.debug("FileCleaner - clean_file - input file: {}".format(data_df))
@@ -76,17 +77,19 @@ class FileCleaner():
         # I STAGE
         # Replacing empty strings with nans
         # Dropping row with nans as date
-        cleaned = data_df   \
-            .replace(to_replace="", value=np.nan)   \
-            .dropna(axis="index", subset=[DT])
+        cleaned = self.replace_empty_strings_with_nans(data_df) \
+            .dropna(axis="index", subset=[DT, how="any")
         self.logger.debug("FileCleaner - clean_file - after I STAGE:{}".format(cleaned))
-
-        # Adding to report
         self.tidy_report["Date NAs dropped"] = cleaned.shape[0] - data_df.shape[0]
 
-
-        # Resetting index  
+        
         cleaned = cleaned.reset_index(drop=True)
+
+        # Set DT as index
+        try:
+            cleaned.set_index(DT, inplace=True, drop=True)
+        except:
+            raise RuntimeError("Error setting DT as index")
 
 
         self.logger.debug("FileCleaner - clean_file - return: {}".format(cleaned))
@@ -94,14 +97,14 @@ class FileCleaner():
 
 
     def set_untidy(self, data_df: pd.DataFrame):
-        if(data_df != None):
+        if(data_df is not None):
             if(type(data_df) != pd.core.frame.DataFrame):
                 raise ValueError("data_df must be a pd.DataFrame")
             self.untidy = data_df
 
 
     def set_clean_config(self, clean_config: CleanConfig):
-        if(clean_config != None):
+        if(clean_config is not None):
             if(type(clean_config) != CleanConfig):
                 raise ValueError("clean_config must be a CleanConfig instance")
             self.clean_config = clean_config
@@ -109,3 +112,27 @@ class FileCleaner():
 
     def fix_dates(self, data_df: pd.DataFrame):
         print(data_df[DT].date)
+
+    def replace_empty_strings_with_nans(self, data_df: pd.DataFrame):
+        """Replaces values in cells containing empty strings with NaN
+
+        Arguments:
+            data_df (pd.DataFrame):
+                DataFrame
+        
+        Returns:
+            pd.DataFrame:
+                DataFrame, where empty strings were replaced with NaNs
+        
+        Raises:
+            RuntimeError: when replacement returns an error
+        """
+        try:
+            cleaned = data_df   \
+                .replace(to_replace="", value=np.nan)
+        except:
+            raise RuntimeError("Error removing NAN values from the dataset.")
+
+        return cleaned
+
+
