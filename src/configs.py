@@ -1,3 +1,5 @@
+from .utils import MAGE_EXCURSION_THRESHOLDS
+
 class ReadConfig:
     """Configuration for reading a CGM file.
 
@@ -78,6 +80,7 @@ class ReadConfig:
             raise ValueError("Glucose values column must be non-negative\n")
         self.glucose_values_column = value
 
+
 class CleanConfig:
     """Configuration for cleaning a CGM file.
 
@@ -98,3 +101,69 @@ class CleanConfig:
         """
         if(interval not in [5, 15]):
             raise ValueError("Interval needs to be 5 or 15")
+
+
+class CalcConfig:
+    """Configuration for calculating glycemic variability indices.
+
+    Attributes:
+        interval (int):
+            time in minutes between glycemic measurements
+        unit (str): 
+            "mg" or "mmol" unit of glycemic measurement
+        mage_excursion_threshold:
+            int or "sd", "half-sd"
+
+    """
+    def __init__(self, interval: int = 5, **kwargs):
+        self.interval = self.set_interval(interval)
+        self.unit = self.set_unit(kwargs.pop("unit", "mg"))
+        self.mage_excursion_threshold = self.set_excursion_threshold(
+            kwargs.pop("mage_exc", "sd")
+        )
+
+    def set_interval(self, interval: int):
+        """Interval setter.
+
+        Arguments:
+            interval (int): interval of a CGM measurement
+
+        Raises:
+            ValueError: if the interval is not 5 and not 15
+        """
+        if(interval not in [5, 15]):
+            raise ValueError("Interval needs to be 5 or 15")
+        return interval
+
+    def set_unit(self, unit: str):
+        """Unit setter.
+
+        Arguments:
+            unit (str):
+                Unit used in glucose measurement.
+                Must be "mg" or "mmol"
+
+        Returns:
+            str: unit
+
+        Raises:
+            ValueError: if ``unit`` is not "mg" nor "mmol"
+
+        """
+        if(unit not in ["mg", "mmol"]):
+            raise ValueError("unit needs to be mg or mmol")
+
+        return unit
+        
+    def set_excursion_threshold(self, exc_threshold):
+        if(type(exc_threshold) not in [int, str]):
+            raise ValueError("mage_excursion_threshold must be int or one of {}".format(MAGE_EXCURSION_THRESHOLDS))
+
+        if(type(exc_threshold) == int):
+            return exc_threshold
+
+        if(type(exc_threshold) == str):
+            if(exc_threshold not in MAGE_EXCURSION_THRESHOLDS):
+                raise ValueError("mage_excursion_threshold must be int or one of {}".format(MAGE_EXCURSION_THRESHOLDS))
+            else:
+                return exc_threshold

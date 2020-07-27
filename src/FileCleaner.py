@@ -113,6 +113,7 @@ class FileCleaner():
     def fix_dates(self, data_df: pd.DataFrame):
         print(data_df[DT].date)
 
+
     def replace_empty_strings_with_nans(self, data_df: pd.DataFrame):
         """Replaces values in cells containing empty strings with NaN
 
