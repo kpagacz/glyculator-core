@@ -78,7 +78,7 @@ class FileCleaner():
         # Replacing empty strings with nans
         # Dropping row with nans as date
         cleaned = self.replace_empty_strings_with_nans(data_df) \
-            .dropna(axis="index", subset=[DT, how="any")
+            .dropna(axis="index", subset=[DT], how="any")
         self.logger.debug("FileCleaner - clean_file - after I STAGE:{}".format(cleaned))
         self.tidy_report["Date NAs dropped"] = cleaned.shape[0] - data_df.shape[0]
 
@@ -135,5 +135,6 @@ class FileCleaner():
             raise RuntimeError("Error removing NAN values from the dataset.")
 
         return cleaned
+
 
 
