@@ -11,6 +11,8 @@ import src.Index as indices
 from src.utils import DT, GLUCOSE
 from src.configs import CalcConfig
 
+# TODO (konrad.pagacz@gmail.com) write tests for indices for non nan array
+# TODO (konrad.pagacz@gmail.com) write tests for indices for nan array
 
 class TestGVIndices(unittest.TestCase):
     def setUp(self):
@@ -43,8 +45,11 @@ class TestGVIndices(unittest.TestCase):
         self.mock_5_mg_config.unit = "mg"
         self.mock_5_mg_config.interval = 5
 
-    # TODO (konrad.pagacz@gmail.com) write tests for indices for non nan array
-    # TODO (konrad.pagacz@gmail.com) write tests for indices for nan array
+        self.mock_5_mmol_config = Mock(spec=CalcConfig)
+        self.mock_5_mmol_config.unit = "mmol"
+        self.mock_5_mmol_config.interval = 5
+
+
 
     def test_mean_mg(self):
         mean = indices.GVMean(df=self.simple_df, calc_config=self.mock_5_mg_config)
@@ -155,3 +160,53 @@ class TestGVIndices(unittest.TestCase):
             list1=[1, 2, 3, 4, 5, 6],
             list2=index._join_extremas(minimas, maximas)
         )
+
+    def test_m100_mg_simple_df(self):
+        index = indices.GVm100(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertAlmostEqual(first=1584.16375079, second=index.calculate())
+
+    def test_m100_mmol_simple_df(self):
+        index = indices.GVm100(df=self.simple_df, calc_config=self.mock_5_mmol_config)
+        self.assertAlmostEqual(first=328.891245687168, second=index.calculate())
+
+    def test_m100_mg_all_100(self):
+        self.simple_df[GLUCOSE] = len(self.simple_df) * [100]
+        index = indices.GVm100(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertEqual(first=index.calculate(), second=0)
+
+    def test_m100_mmol_all_100_div_by_18(self):
+        self.simple_df[GLUCOSE] = len(self.simple_df) * [100 / 18]
+        index = indices.GVm100(df=self.simple_df, calc_config=self.mock_5_mmol_config)
+        self.assertEqual(first=index.calculate(), second=0)
+
+    def test_j_mg_simple_df(self):
+        index = indices.GVj(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertAlmostEqual(first=index.calculate(), second=0.01948528137423856)
+
+    def test_j_mg_simple_nan_df(self):
+        index = indices.GVj(df=self.simple_nan_df, calc_config=self.mock_5_mg_config)
+        self.assertAlmostEqual(first=index.calculate(), second=0.01788460970176197)
+
+    def test_hypoglycemia(self):
+        index = indices.GVhypoglycemia(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertEqual(first=index.calculate(3), second=0.4)
+
+    def test_hyperglycemia(self):
+        index = indices.GVhyperglycemia(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertEqual(first=index.calculate(2), second=0.6)
+
+    def test_grade_simple_df_mg(self):
+        self.simple_df[GLUCOSE] = len(self.simple_df) * [90]
+        index = indices.GVgrade(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertAlmostEqual(first=index.calculate(), second=1.85253450028268)
+
+    def test_grade_simple_df_mmol(self):
+        self.simple_df[GLUCOSE] = len(self.simple_df) * [4.96]
+        index = indices.GVgrade(df=self.simple_df, calc_config=self.mock_5_mmol_config)
+        self.assertAlmostEqual(first=index.calculate(), second=1.9530397248653468)
+
+
+    def test_grade_high_glucose_mg(self):
+        self.simple_df[GLUCOSE] = len(self.simple_df) * [200]
+        index = indices.GVgrade(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertAlmostEqual(first=index.calculate(), second=2.80635255992405)

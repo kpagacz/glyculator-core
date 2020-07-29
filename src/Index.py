@@ -92,14 +92,14 @@ class GVm100(GVIndex):
         super(GVm100, self).__init__(**kwargs)
 
     def calculate(self):
-        if(self.calc_config == "mg"):
+        if(self.calc_config.unit == "mg"):
             # np.ma.array is numpy built-in mask function
             # numpy functions will mask elements that are inf in
             # calculations with masked array
-            return np.nanmean(1000 * np.log10(np.ma.array(self.df[GLUCOSE]) / 100))
-        if(self.calc_config == "mmol"):
+            return np.nanmean(1000 * np.abs(np.log10(np.ma.array(self.df[GLUCOSE]) / 100)))
+        if(self.calc_config.unit == "mmol"):
             # glucose: mmol/l * 18 = mg/dl
-            return np.nanmean(1000 * np.log10(np.ma.array(self.df[GLUCOSE]) / (100 / 18)))
+            return np.nanmean(1000 * np.abs(np.log10(np.ma.array(self.df[GLUCOSE]) / (100 / 18))))
 
 
 class GVj(GVIndex):
@@ -271,7 +271,7 @@ class GVhypoglycemia(GVIndex):
         if(type(threshold) != int):
             raise ValueError("threshold must be int")
         
-        return np.nansum(self.df[GLUCOSE] < threshold)
+        return np.nansum(self.df[GLUCOSE] < threshold) / np.sum(np.invert(np.isnan(self.df[GLUCOSE])))
 
 
 class GVhyperglycemia(GVIndex):
@@ -282,7 +282,7 @@ class GVhyperglycemia(GVIndex):
         if(type(threshold) != int):
             raise ValueError("threshold must be int")
 
-        return np.nansum(self.df[GLUCOSE] > threshold)
+        return np.nansum(self.df[GLUCOSE] > threshold) / np.sum(np.invert(np.isnan(self.df[GLUCOSE])))
 
 
 class GVgrade(GVIndex):
@@ -291,12 +291,15 @@ class GVgrade(GVIndex):
 
     def calculate(self):
         if(self.calc_config.unit == "mg"):
-            GRADEs = 425 * np.power(np.log10(np.log10(self.df[GLUCOSE] / 18) + 0.16), 2)
-
+            self.df[GLUCOSE] = self.df[GLUCOSE] / 18
         if(self.calc_config.unit == "mmol"):
-            GRADEs = 425 * np.power(np.log10(np.log10(self.df[GLUCOSE]) + 0.16), 2)
-
+            self.df[GLUCOSE] = self.df[GLUCOSE]
+        
+        GRADEs = self.GRADE(self.df[GLUCOSE])
         return np.nanmean(GRADEs)
+
+    def GRADE(self, array):
+        return 425 * np.power(np.log10(np.log10(np.ma.array(array)) + 0.16), 2)
 
 
 class GVgrade_hypo(GVIndex):
@@ -313,10 +316,13 @@ class GVgrade_hypo(GVIndex):
             glucose_values = self.df[GLUCOSE]
 
 
-        GRADEs = 425 * np.power(np.log10(np.log10(np.ma.array(glucose_values)) + 0.16), 2)
+        GRADEs = self.GRADE(glucose_values)
         hypoglycemias = glucose_values < threshold
 
         return np.nansum(GRADEs[hypoglycemias]) / np.nansum(GRADEs)
+
+    def GRADE(self, array):
+        return 425 * np.power(np.log10(np.log10(np.ma.array(array)) + 0.16), 2)
 
 
 class GVgrade_hyper(GVIndex):
@@ -333,10 +339,13 @@ class GVgrade_hyper(GVIndex):
             glucose_values = self.df[GLUCOSE]
 
 
-        GRADEs = 425 * np.power(np.log10(np.log10(np.ma.array(glucose_values)) + 0.16), 2)
+        GRADEs = self.GRADE(glucose_values)
         hyperglycemias = glucose_values > threshold
 
         return np.nansum(GRADEs[hyperglycemias]) / np.nansum(GRADEs)
+
+    def GRADE(self, array):
+        return 425 * np.power(np.log10(np.log10(np.ma.array(array)) + 0.16), 2)
             
 
 class GVlbgi(GVIndex):
