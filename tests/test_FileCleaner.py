@@ -19,7 +19,7 @@ class TestFileCleaner(unittest.TestCase):
             }
         )
 
-        res = self.FileCleaner.clean_file(test_df)
+        res = self.FileCleaner._clean_file(test_df)
         other = pd.DataFrame(
                 {
                     GLUCOSE : ["8", "8"]

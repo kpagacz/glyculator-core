@@ -205,8 +205,47 @@ class TestGVIndices(unittest.TestCase):
         index = indices.GVgrade(df=self.simple_df, calc_config=self.mock_5_mmol_config)
         self.assertAlmostEqual(first=index.calculate(), second=1.9530397248653468)
 
-
     def test_grade_high_glucose_mg(self):
         self.simple_df[GLUCOSE] = len(self.simple_df) * [200]
         index = indices.GVgrade(df=self.simple_df, calc_config=self.mock_5_mg_config)
         self.assertAlmostEqual(first=index.calculate(), second=2.80635255992405)
+
+    def test_eA1c_simple_df(self):
+        self.simple_df[GLUCOSE] = len(self.simple_df) * [100]
+        index = indices.GVeA1c(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertAlmostEqual(first=index.calculate(), second=5.09752973287909)
+
+    def test_time_in_range_simple_df(self):
+        index = indices.GVtime_in_range(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertEqual(index.calculate(lower_bound=1, upper_bound=5), 0.6)
+
+    def test_time_in_range_value_error(self):
+        index = indices.GVtime_in_range(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        with self.assertRaises(ValueError):
+            index.calculate(lower_bound=1, upper_bound="test")
+
+    def test_time_in_range_value_error2(self):
+        index = indices.GVtime_in_range(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        with self.assertRaises(ValueError):
+            index.calculate(lower_bound="test", upper_bound=1)  
+
+    def test_time_in_range_accept_floats(self):
+        index = indices.GVtime_in_range(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertEqual(
+            index.calculate(lower_bound=1.0, upper_bound=5.0),
+            0.6
+        )
+
+    def test_time_in_hypo(self):
+        index = indices.GVtime_in_hypo(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertEqual(
+            first=index.calculate(threshold=3),
+            second=10
+        )
+
+    def test_time_in_hypo_value_error(self):
+        index = indices.GVtime_in_hypo(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        with self.assertRaises(ValueError):
+            index.calculate(threshold="test")
+
+    
