@@ -1,4 +1,5 @@
 import logging
+import typing
 
 import numpy as np
 import pandas as pd
@@ -8,6 +9,7 @@ from .utils import DT, GLUCOSE
 from .configs import CalcConfig
 
 # TODO (konrad.pagacz@gmail.com) expand docs
+# TODO (konrad.pagacz@gmail.com) make indices callable on (array-like, CalcConfig)
 
 class GVIndex():
     def __init__(self, df: pd.DataFrame, calc_config: CalcConfig):
@@ -459,8 +461,8 @@ class GVtime_in_hypo(GVIndex):
     def __init__(self, **kwargs):
         super(GVtime_in_hypo, self).__init__(**kwargs)
 
-    def calculate(self, threshold: int):
-        if(type(threshold) != int):
+    def calculate(self, threshold: typing.Union[int, float]):
+        if(type(threshold) not in [int, float]):
             raise ValueError("threshold must be int")
 
         hypoglycemias = self.df[GLUCOSE] < threshold
@@ -524,6 +526,19 @@ class GVmean_hypo_event_duration(GVIndex):
         return np.nanmean(hypo_events_duration) * self.calc_config.interval
 
 
+class GVtime_in_range(GVIndex):
+    def __init__(self, **kwargs):
+        super(GVtime_in_range, self).__init__(**kwargs)
+
+    def calculate(self, lower_bound: int, upper_bound: int):
+        if(type(lower_bound) not in [float, int] or type(upper_bound) not in [int, float]):
+            raise ValueError("lower_bound and upper_bound must be int")
+
+        return np.nansum(
+            (self.df[GLUCOSE] > lower_bound) & (self.df[GLUCOSE] < upper_bound)
+            ) / np.nansum(np.invert(np.isnan(self.df[GLUCOSE])))
+
+
 INDICES_TO_CALC = {
     "Mean" : GVMean,
     "Median" : GVMedian,
@@ -549,5 +564,5 @@ INDICES_TO_CALC = {
     "Hypoglycemic events No" : GVhypo_events_count,
     "Time in hypoglycemia" : GVtime_in_hypo,
     "Mean duration of hypoglycemic event" : GVmean_hypo_event_duration,
-
+    "Time in range": GVtime_in_range,
 }

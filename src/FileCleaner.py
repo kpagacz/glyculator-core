@@ -47,14 +47,14 @@ class FileCleaner():
 
 
         # First cleaning
-        cleaned = self.clean_file(self.untidy)
+        cleaned = self._clean_file(self.untidy)
 
 
         # DT manipulations
         self.tidied = cleaned
 
 
-    def clean_file(self, data_df: pd.DataFrame):
+    def _clean_file(self, data_df: pd.DataFrame):
         """Regularizes the formatting of the data frame.
 
         This function accepts the dataframe output by
