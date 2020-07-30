@@ -1,9 +1,13 @@
+import sys
+sys.path.append(".")
+
 from src.FileReader import FileReader
 from src.configs import ReadConfig
 import logging
 import logging.config
 import yaml
 import traceback
+
 
 # Logging setup
 with open("logging_config.yaml", 'rt') as config:

@@ -1,0 +1,1 @@
+# TODO (konrad.pagacz@gmail.com) write cleaner-config integration tests
