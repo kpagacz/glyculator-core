@@ -10,6 +10,10 @@ from src.utils import DT, GLUCOSE
 class TestFileCleaner(unittest.TestCase):
     def setUp(self):
         self.FileCleaner = FileCleaner()
+        self.simple_df = pd.DataFrame({
+            DT : pd.date_range(start="2020-07-29 12:00", end="2020-07-29 12:25", freq="5min"),
+            GLUCOSE : np.random.uniform(low=50, high=150, size=6)
+        })
 
     def test_clean_file_nan_as_empty_string(self):
         test_df = pd.DataFrame(
@@ -31,6 +35,16 @@ class TestFileCleaner(unittest.TestCase):
             res.equals(other),
             msg="\nCleaned DF: {} \nExpected DF: {}".format(res, other)
         )
+
+    def test_clean_file_simple_df(self):
+        self.simple_df.iloc[2, 0] = ""
+        self.simple_df.iloc[3, 1] = ""
+        cleaned = self.FileCleaner._clean_file(self.simple_df)
+        should_be = self.simple_df
+        should_be.iloc[3, 1] = np.nan
+        should_be = should_be.drop(index=[2]).set_index(DT, drop=True)
+        print(should_be, cleaned)
+        self.assertTrue(cleaned.equals(should_be))
 
     def test_clean_no_df_supplied(self):
         self.FileCleaner.clean_config = Mock()
@@ -55,4 +69,25 @@ class TestFileCleaner(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.FileCleaner.set_clean_config("Test")
 
+    def test_tidy_no_dataframe(self):
+        with self.assertRaises(RuntimeError):
+            self.FileCleaner.clean_config = Mock()
+            self.FileCleaner.tidy()
+
+    def test_tidy_no_clean_config(self):
+        with self.assertRaises(RuntimeError):
+            self.FileCleaner.clean_config = Mock()
+            self.FileCleaner.tidy()
     
+    def test_replace_empty_strings_with_nans_error_replacing(self):
+        mock_df = Mock()
+        mock_df.replace.side_effect = Exception
+        with self.assertRaises(RuntimeError):
+            self.FileCleaner._replace_empty_strings_with_nans(mock_df)
+
+    def test_replace_empty_strings_with_nans(self):
+        test_df = pd.DataFrame({"var1": ["", 1, 2], "var2" : [1, "", 2]})
+        replaced = self.FileCleaner._replace_empty_strings_with_nans(test_df)
+        self.assertTrue(replaced.equals(
+            pd.DataFrame({"var1": [np.nan, 1, 2], "var2" : [1, np.nan, 2]})
+        ))

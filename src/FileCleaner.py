@@ -7,6 +7,7 @@ from .utils import DT, GLUCOSE
 from .configs import CleanConfig
 
 # TODO (konrad.pagacz@gmail.com) expand docs
+# TODO (konrad.pagacz@gmail.com) write additional tests!
 # TODO (konrad.pagacz@gmail.com) finish tidy function in FileCleaner
 
 class FileCleaner():
@@ -62,6 +63,7 @@ class FileCleaner():
         columns: DT and GLUCOSE.
 
         It performs following cleaning procedures:
+            Replace empty strings with np.nan
             Remove rows with empty DT cells.
             Set DT as index
 
@@ -79,14 +81,12 @@ class FileCleaner():
         # I STAGE
         # Replacing empty strings with nans
         # Dropping row with nans as date
-        cleaned = self.replace_empty_strings_with_nans(data_df) \
+        cleaned = self._replace_empty_strings_with_nans(data_df) \
             .dropna(axis="index", subset=[DT], how="any")
         self.logger.debug("FileCleaner - clean_file - after I STAGE:{}".format(cleaned))
         self.tidy_report["Date NAs dropped"] = cleaned.shape[0] - data_df.shape[0]
 
         
-        cleaned = cleaned.reset_index(drop=True)
-
         # Set DT as index
         try:
             cleaned.set_index(DT, inplace=True, drop=True)
@@ -116,7 +116,7 @@ class FileCleaner():
         print(data_df[DT].date)
 
 
-    def replace_empty_strings_with_nans(self, data_df: pd.DataFrame):
+    def _replace_empty_strings_with_nans(self, data_df: pd.DataFrame):
         """Replaces values in cells containing empty strings with NaN
 
         Arguments:
