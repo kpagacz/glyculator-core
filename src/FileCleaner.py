@@ -50,6 +50,7 @@ class FileCleaner():
         # First cleaning
         cleaned = self._clean_file(self.untidy)
 
+        # Date fix
 
         # DT manipulations
         self.tidied = cleaned
@@ -135,7 +136,9 @@ class FileCleaner():
                 .replace(to_replace="", value=np.nan)
         except:
             raise RuntimeError("Error removing NAN values from the dataset.")
-
+        
+        self.logger.debug("FileCleaner - _replace_empty_strings_with_nans - "
+            "return: {}".format(cleaned))
         return cleaned
 
 

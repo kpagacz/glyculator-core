@@ -43,8 +43,13 @@ class TestFileCleaner(unittest.TestCase):
         should_be = self.simple_df
         should_be.iloc[3, 1] = np.nan
         should_be = should_be.drop(index=[2]).set_index(DT, drop=True)
-        print(should_be, cleaned)
-        self.assertTrue(cleaned.equals(should_be))
+        should_be[GLUCOSE] = should_be[GLUCOSE].astype(np.float64)
+        pd.testing.assert_frame_equal(
+            left=cleaned,
+            right=should_be,
+            check_exact=False,
+            check_less_precise=2
+        )
 
     def test_clean_no_df_supplied(self):
         self.FileCleaner.clean_config = Mock()
