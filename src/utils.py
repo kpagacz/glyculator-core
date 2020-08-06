@@ -22,3 +22,8 @@ MAGE_EXCURSION_THRESHOLDS = [
     "sd",
     "half_sd"
 ]
+
+
+ACCEPTED_DATES_API = [
+    "metronome"
+]

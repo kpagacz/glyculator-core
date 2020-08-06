@@ -5,7 +5,6 @@ import src.cleaner.config as config
 
 from src.cleaner.Cleaner import Cleaner5
 
-@unittest.skip("Skipped in development, because tf setup takes ages")
 class TestCleaner(unittest.TestCase):
     def setUp(self):
         self.cleaner = Cleaner5()

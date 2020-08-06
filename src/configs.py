@@ -1,5 +1,5 @@
+from typing import Union
 from .utils import MAGE_EXCURSION_THRESHOLDS
-
 # TODO (konrad.pagacz@gmail.com) expand docs
 
 class ReadConfig:
@@ -87,15 +87,22 @@ class CleanConfig:
     """Configuration for cleaning a CGM file.
 
     """
-    interval = None
-
-    def __init__(self, interval: int = None):
+    def __init__(self,
+    interval: int,
+    api_dates: Union[str, bool],
+    api_port: Union[int, None] = None,
+    api_address: Union[str, None] = None,
+    api_endpoint: Union[str, None] = None):
         self.set_interval(interval)
+        self.set_api_dates(api_dates)
+        self.set_api_port(api_port)
+        self.set_api_address(api_address)
+        self.set_api_endpoint(api_endpoint)
 
     def set_interval(self, interval: int):
         """Interval setter.
 
-        Arguments:
+        Args:
             interval (int): interval of a CGM measurement
 
         Raises:
@@ -103,6 +110,73 @@ class CleanConfig:
         """
         if(interval not in [5, 15]):
             raise ValueError("Interval needs to be 5 or 15")
+        else:
+            self.interval = interval
+
+    def set_api_dates(self, api_dates: bool):
+        """api_dates setter.
+
+        Args:
+            api_dates:
+                boolean designating whether to use an HTTP API
+                to clean dates
+
+        Raises:
+            ValueError: if api_dates is not a boolean
+
+        """
+        if(type(api_dates) != bool):
+            raise ValueError("api_dates must be boolean (True or False)")
+        else:
+            self.api_dates = api_dates
+
+    def set_api_port(self, api_port: int):
+        """api_port setter.
+
+        Args:
+            api_port:
+                Port at which the API listens
+
+        Raises:
+            ValueError: if api_port is not int or None
+
+        """
+        if(type(api_port) != int and api_port is not None):
+            raise ValueError("api_port must be an integer or None")
+        else:
+            self.api_port = api_port
+
+    def set_api_address(self, api_port: int):
+        """api_address setter.
+
+        Args:
+            api_address:
+                Port at which the Metronome listens
+
+        Raises:
+            ValueError: if api_port is not int or None
+
+        """
+        if(type(api_port) != int and api_port is not None):
+            raise ValueError("api_port must be an integer or None")
+        else:
+            self.api_port = api_port
+
+    def set_api_endpoint(self, api_port: int):
+        """api_port setter.
+
+        Args:
+            api_port:
+                Port at which the Metronome listens
+
+        Raises:
+            ValueError: if api_port is not int or None
+
+        """
+        if(type(api_port) != int and api_port is not None):
+            raise ValueError("api_port must be an integer or None")
+        else:
+            self.api_port = api_port
 
 
 class CalcConfig:
