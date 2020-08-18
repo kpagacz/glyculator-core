@@ -48,7 +48,6 @@ class TestFileCleaner(unittest.TestCase):
             left=cleaned,
             right=should_be,
             check_exact=False,
-            check_less_precise=2
         )
 
     def test_clean_no_df_supplied(self):

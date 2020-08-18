@@ -3,7 +3,7 @@ import tensorflow as tf
 import numpy as np 
 import src.cleaner.config as config
 
-from src.cleaner.Cleaner import Cleaner5
+from src.cleaner.Cleaner import Cleaner5, Cleaner
 
 class TestCleaner(unittest.TestCase):
     def setUp(self):
@@ -62,9 +62,27 @@ class TestCleaner(unittest.TestCase):
         )
 
     def test_predict_proba_shape_many_cases(self):
-        print(self.many_cases_dict)
         res_proba = self.cleaner.predict_proba(self.many_cases_dict, interval=5)
         self.assertTupleEqual(
             res_proba.shape,
             (4, )
         )
+
+    def test_predict_sanity_check(self):
+        all_300s = { "var" + str(i) : [300] for i in range(config.WINDOW_SIZE - 1)}
+        res = self.cleaner.predict(all_300s, interval=5)
+        print(res)
+
+
+class testCleanerBase(unittest.TestCase):
+    def test_predict_proba_error(self):
+        with self.assertRaises(NotImplementedError):
+            Cleaner().predict_proba()
+    
+    def test_predict_error(self):
+        with self.assertRaises(NotImplementedError):
+            Cleaner().predict()
+
+    def test_set_up_model(self):
+        with self.assertRaises(NotImplementedError):
+            Cleaner().set_up_model()

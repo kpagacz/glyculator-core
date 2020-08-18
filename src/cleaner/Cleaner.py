@@ -9,10 +9,6 @@ import functools
 import src.cleaner.config as config
 
 class Cleaner(object):
-    def __init__(self):
-        self.model = self.set_up_model()
-        self._probabilities = None
-
     def predict_proba(self):
         raise NotImplementedError
 
