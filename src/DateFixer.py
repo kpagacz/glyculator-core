@@ -14,7 +14,6 @@ from src.cleaner.config import WINDOW_SIZE
 
 
 # TODO (konrad.pagacz@gmail.com) expand docs
-# TODO (konrad.pagacz@gmail.com) run code coverage
 
 
 class DateFixer(object):
@@ -137,11 +136,11 @@ class DateFixer(object):
     def _predict_api(self, dates_records: dict):
         payload = json.dumps(dates_records)
         api_full_address = self.clean_config._construct_full_api_address()
-        response = requests.post(api_full_address, json=payload, timeout=2)
 
         try:
+            response = requests.post(api_full_address, json=payload, timeout=0.5)
             response.raise_for_status()
-        except requests.HTTPError as error:
+        except (requests.HTTPError, requests.exceptions.ConnectTimeout) as error:
             self.logger.warning("DateFixer - _predict_api - HTTP exception raised while connecting to Metronome API:{}".format(error))
             self.logger.warning("DateFixer - _predict_api - falling back onto local implementation of Metronome")
             return self._predict_local(dates_records)

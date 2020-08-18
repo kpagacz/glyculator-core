@@ -5,6 +5,7 @@ import numpy as np
 
 from .utils import DT, GLUCOSE
 from .configs import CleanConfig
+import src.DateFixer as DateFixer
 
 # TODO (konrad.pagacz@gmail.com) expand docs
 # TODO (konrad.pagacz@gmail.com) write additional tests!
@@ -51,6 +52,11 @@ class FileCleaner():
         cleaned = self._clean_file(self.untidy)
 
         # Date fix
+        true_measures_flags = self.fix_dates(cleaned)
+        dates_fixed = cleaned.loc[true_measures_flags, :]
+
+        # Fill NaN glucose values with the nearest
+
 
         # DT manipulations
         self.tidied = cleaned
@@ -79,23 +85,16 @@ class FileCleaner():
         """
         self.logger.debug("FileCleaner - clean_file - input file: {}".format(data_df))
         
-        # I STAGE
         # Replacing empty strings with nans
         # Dropping row with nans as date
         cleaned = self._replace_empty_strings_with_nans(data_df) \
-            .dropna(axis="index", subset=[DT], how="any")
+            .dropna(axis="index", subset=[DT], how="any") \
+            .reset_index(drop=True)
         self.logger.debug("FileCleaner - clean_file - after I STAGE:{}".format(cleaned))
         self.tidy_report["Date NAs dropped"] = cleaned.shape[0] - data_df.shape[0]
 
-        
-        # Set DT as index
-        try:
-            cleaned.set_index(DT, inplace=True, drop=True)
-        except:
-            raise RuntimeError("Error setting DT as index")
-
-
         self.logger.debug("FileCleaner - clean_file - return: {}".format(cleaned))
+        
         return cleaned
 
 
@@ -114,7 +113,26 @@ class FileCleaner():
 
 
     def fix_dates(self, data_df: pd.DataFrame):
-        print(data_df[DT].date)
+        """Flags measurements of data_df
+
+        Args:
+            data_df:
+                Dataframe of measurements.
+                Two columns: DT and GLUCOSE
+
+        Returns:
+            numpy.ndarray:
+                Array of 0s and 1s - boolean values
+                1 represents record, which is part of the CGM
+                0 represents additional record, which should be discarded
+
+
+        """
+        dates = data_df[DT]
+        date_fixer = DateFixer.DateFixer(self.clean_config)
+        flags = date_fixer(dates)
+
+        return flags
 
 
     def _replace_empty_strings_with_nans(self, data_df: pd.DataFrame):
@@ -142,4 +160,54 @@ class FileCleaner():
         return cleaned
 
 
+    def _fill_glucose_values_with_nearest(self, date_fixed: pd.DataFrame, not_fixed: pd.DataFrame) -> pd.DataFrame:
+        """Attempts to fill missing glucose values.
 
+        Does not guarantee that missing values will be filled.
+
+        Args:
+            date_fixed:
+                DataFrame of DT and GLUCOSE columns. It is a slice of not_fixed.
+            not_fixed:
+                DataFrame of DT and GLUCOSE columns.
+
+        Returns:
+            pandas.DataFrame:
+                date_fixed dataframe with missing glucose values filled
+                based on not_fixed dataframe.
+
+        """
+        def fill_missing_value(index, row):
+            print(row)
+            if(pd.isnull(row[GLUCOSE])):
+                print("IN IF")
+                filled = np.nan
+                index_no = not_fixed.index.get_loc(index)
+                try:
+                    row_before = not_fixed.iloc[index_no - 1, :]
+                    difference = (row[DT] - row_before[DT]) / np.timedelta64(1, "s")
+                    print("DIFFERENCE: {}\n".format(difference))
+                    print(self.clean_config.fill_glucose_tolerance)
+                    if(difference < self.clean_config.fill_glucose_tolerance * 60):
+                        print("IN BEFORE IF")
+                        filled = row_before[GLUCOSE]
+                except:
+                    pass
+
+                try:
+                    row_after = not_fixed.iloc[index_no + 1, :]
+                    difference = (row_after[DT] - row[DT]) / np.timedelta64(1, "s")
+                    print("DIFFERENCE: {}\n".format(difference))    
+                    if(difference < self.clean_config.fill_glucose_tolerance * 60):
+                        filled = row_after[GLUCOSE]
+                except:
+                    pass
+                return filled
+            else:
+                return row[GLUCOSE]
+        
+        for index, row in date_fixed.iterrows():
+            fill = fill_missing_value(index, row)
+            row[GLUCOSE] = fill
+
+        return date_fixed

@@ -102,15 +102,18 @@ class CleanConfig:
     use_api: Union[str, bool],
     api_port: Union[int, None] = None,
     api_address: Union[str, None] = None,
-    api_endpoint: Union[str, None] = None):
+    api_endpoint: Union[str, None] = None,
+    fill_glucose_tolerance: int = None):
         self.set_interval(interval)
         self.set_use_api(use_api)
         if(api_port is not None):
             self.set_api_port(api_port)
-        if(api_address):
+        if(api_address is not None):
             self.set_api_address(api_address)
-        if(api_endpoint):
+        if(api_endpoint is not None):
             self.set_api_endpoint(api_endpoint)
+        if(fill_glucose_tolerance is not None):
+            self.set_fill_glucose_tolerance
 
     def set_interval(self, interval: int):
         """Interval setter.
@@ -195,6 +198,20 @@ class CleanConfig:
         else:
             self.api_endpoint = api_endpoint
 
+    def set_fill_glucose_tolerance(self, fill_glucose_tolerance: int) -> None:
+        """ fill_glucose_tolerance setter.
+
+        Args:
+            fill_glucose_tolerance:
+                number of minutes, which governs the tolerance of filling missing
+                glucose values in FileCleaner
+
+        """
+        if(type(fill_glucose_tolerance) != int and fill_glucose_tolerance is not None):
+            raise ValueError("fill_glucose_tolerance must an integer")
+        else:
+            self.fill_glucose_tolerance = fill_glucose_tolerance
+
     def _construct_full_api_address(self):
         elements_to_join = []
         elements_to_join.append(self.api_address)
@@ -207,6 +224,8 @@ class CleanConfig:
 
         self._full_api_address = "".join(elements_to_join)
         return self._full_api_address
+
+    
 
 
 class CalcConfig:
