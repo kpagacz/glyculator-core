@@ -24,6 +24,10 @@ MAGE_EXCURSION_THRESHOLDS = [
 ]
 
 
-ACCEPTED_DATES_API = [
+ACCEPTED_API = [
     "metronome"
 ]
+
+METRONOME_ADDRESS = "localhost"
+METRONOME_PORT = 5000
+METRONOME_ENDPOINT = "v1/models/metronome"

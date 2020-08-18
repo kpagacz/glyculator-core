@@ -27,7 +27,7 @@ class TestCleaner(unittest.TestCase):
 
 
     def test_prepare_data_simple_shape(self):
-        res_dict = self.cleaner._prepare_data(self.simple_dict)
+        res_dict = self.cleaner._prepare_data(self.simple_dict, interval=5)
 
         self.assertTupleEqual(
             tuple1=(1, config.WINDOW_SIZE - 1),
@@ -35,7 +35,7 @@ class TestCleaner(unittest.TestCase):
         )
 
     def test_prepare_data_many_cases_shape(self):
-        res_dict = self.cleaner._prepare_data(self.many_cases_dict)
+        res_dict = self.cleaner._prepare_data(self.many_cases_dict, interval=5)
 
         self.assertTupleEqual(
             tuple1=(len(self.many_cases_dict["var0"]), config.WINDOW_SIZE - 1),
@@ -55,7 +55,7 @@ class TestCleaner(unittest.TestCase):
         self.assertAlmostEqual(res_proba, 1138.01330566406)
 
     def test_predict_proba_shape_one_case(self):
-        res_proba = self.cleaner.predict_proba(self.simple_dict)
+        res_proba = self.cleaner.predict_proba(self.simple_dict, interval=5)
         self.assertTupleEqual(
             res_proba.shape,
             (1, )
@@ -63,7 +63,7 @@ class TestCleaner(unittest.TestCase):
 
     def test_predict_proba_shape_many_cases(self):
         print(self.many_cases_dict)
-        res_proba = self.cleaner.predict_proba(self.many_cases_dict)
+        res_proba = self.cleaner.predict_proba(self.many_cases_dict, interval=5)
         self.assertTupleEqual(
             res_proba.shape,
             (4, )

@@ -1,5 +1,7 @@
 from typing import Union
-from .utils import MAGE_EXCURSION_THRESHOLDS
+from .utils import MAGE_EXCURSION_THRESHOLDS, METRONOME_ADDRESS, METRONOME_ENDPOINT, METRONOME_PORT
+
+
 # TODO (konrad.pagacz@gmail.com) expand docs
 
 class ReadConfig:
@@ -86,18 +88,29 @@ class ReadConfig:
 class CleanConfig:
     """Configuration for cleaning a CGM file.
 
+    Attributes:
+        interval
+        use_api
+        api_port
+        api_address
+        api_endpoint
+        _full_api_address
+
     """
     def __init__(self,
     interval: int,
-    api_dates: Union[str, bool],
+    use_api: Union[str, bool],
     api_port: Union[int, None] = None,
     api_address: Union[str, None] = None,
     api_endpoint: Union[str, None] = None):
         self.set_interval(interval)
-        self.set_api_dates(api_dates)
-        self.set_api_port(api_port)
-        self.set_api_address(api_address)
-        self.set_api_endpoint(api_endpoint)
+        self.set_use_api(use_api)
+        if(api_port is not None):
+            self.set_api_port(api_port)
+        if(api_address):
+            self.set_api_address(api_address)
+        if(api_endpoint):
+            self.set_api_endpoint(api_endpoint)
 
     def set_interval(self, interval: int):
         """Interval setter.
@@ -113,11 +126,11 @@ class CleanConfig:
         else:
             self.interval = interval
 
-    def set_api_dates(self, api_dates: bool):
-        """api_dates setter.
+    def set_use_api(self, use_api: Union[bool, str]):
+        """use_api flag setter.
 
         Args:
-            api_dates:
+            use_api:
                 boolean designating whether to use an HTTP API
                 to clean dates
 
@@ -125,10 +138,14 @@ class CleanConfig:
             ValueError: if api_dates is not a boolean
 
         """
-        if(type(api_dates) != bool):
-            raise ValueError("api_dates must be boolean (True or False)")
+        if(type(use_api) != bool and type(use_api) != str):
+            raise ValueError("api_dates must be boolean (True or False) or str")
         else:
-            self.api_dates = api_dates
+            if(use_api == "metronome"):
+                self.set_api_address(METRONOME_ADDRESS)
+                self.set_api_port(METRONOME_PORT)
+                self.set_api_endpoint(METRONOME_ENDPOINT)
+            self.use_api = use_api
 
     def set_api_port(self, api_port: int):
         """api_port setter.
@@ -146,37 +163,50 @@ class CleanConfig:
         else:
             self.api_port = api_port
 
-    def set_api_address(self, api_port: int):
+    def set_api_address(self, api_address: str):
         """api_address setter.
 
         Args:
             api_address:
-                Port at which the Metronome listens
+                Address to the API
 
         Raises:
-            ValueError: if api_port is not int or None
+            ValueError: if api_address is not int or None
 
         """
-        if(type(api_port) != int and api_port is not None):
-            raise ValueError("api_port must be an integer or None")
+        if(type(api_address) != str and api_address is not None):
+            raise ValueError("api_endpoint must be str or None")
         else:
-            self.api_port = api_port
+            self.api_address = api_address
 
-    def set_api_endpoint(self, api_port: int):
-        """api_port setter.
+    def set_api_endpoint(self, api_endpoint: str):
+        """endpoint setter.
 
         Args:
-            api_port:
-                Port at which the Metronome listens
+            api_endpoint:
+                Endpoint of the API
 
         Raises:
-            ValueError: if api_port is not int or None
+            ValueError: if api_address is not int or None
 
         """
-        if(type(api_port) != int and api_port is not None):
-            raise ValueError("api_port must be an integer or None")
+        if(type(api_endpoint) != str and api_endpoint is not None):
+            raise ValueError("api_endpoint must be str or None")
         else:
-            self.api_port = api_port
+            self.api_endpoint = api_endpoint
+
+    def _construct_full_api_address(self):
+        elements_to_join = []
+        elements_to_join.append(self.api_address)
+        if(self.api_port is not None):
+            elements_to_join.append(":")
+            elements_to_join.append(str(self.api_port))
+            elements_to_join.append("/")
+        if(self.api_endpoint is not None):
+            elements_to_join.append(self.api_endpoint)
+
+        self._full_api_address = "".join(elements_to_join)
+        return self._full_api_address
 
 
 class CalcConfig:
