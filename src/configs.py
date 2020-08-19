@@ -29,24 +29,21 @@ class ReadConfig:
         self.set_glucose_values_column(glucose_values_column)
 
     def validate(self):
-        try:
-            if(self.glucose_values_column == None):
-                return False
+        if(self.glucose_values_column is None):
+            return False
             
-            if(self.header_skip == None):
-                return False
+        if(self.header_skip is None):
+            return False
 
-            if(self.date_time_column == None and 
-                (self.date_column == None or self.time_column == None)):
-                return False
-        except:
+        if(self.date_time_column is None and 
+            (self.date_column is None or self.time_column == None)):
             return False
 
         return True
     
     def validateNonnegative(self, value: int):
         if(value != None):
-            if(value < 0):
+            if(type(value) != int or value < 0):
                 raise ValueError("Number must be non-negative\n")
 
     def set_header_skip(self, value: int):
@@ -113,7 +110,7 @@ class CleanConfig:
         if(api_endpoint is not None):
             self.set_api_endpoint(api_endpoint)
         if(fill_glucose_tolerance is not None):
-            self.set_fill_glucose_tolerance
+            self.set_fill_glucose_tolerance(fill_glucose_tolerance)
 
     def set_interval(self, interval: int):
         """Interval setter.
@@ -225,8 +222,6 @@ class CleanConfig:
         self._full_api_address = "".join(elements_to_join)
         return self._full_api_address
 
-    
-
 
 class CalcConfig:
     """Configuration for calculating glycemic variability indices.
@@ -241,13 +236,13 @@ class CalcConfig:
 
     """
     def __init__(self, interval: int = 5, **kwargs):
-        self.interval = self.set_interval(interval)
-        self.unit = self.set_unit(kwargs.pop("unit", "mg"))
-        self.mage_excursion_threshold = self.set_excursion_threshold(
+        self.set_interval(interval)
+        self.set_unit(kwargs.pop("unit", "mg"))
+        self.set_excursion_threshold(
             kwargs.pop("mage_exc", "sd")
         )
-        self.mage_moving_average_windows_size = self.set_mage_moving_average(kwargs.pop("mage_window", 9))
-        self.mage_peak_distance = self.set_mage_peak_distance(kwargs.pop("mage_distance", 10))
+        self.set_mage_moving_average(kwargs.pop("mage_window", 9))
+        self.set_mage_peak_distance(kwargs.pop("mage_distance", 10))
 
     def set_interval(self, interval: int):
         """Interval setter.
@@ -260,7 +255,7 @@ class CalcConfig:
         """
         if(interval not in [5, 15]):
             raise ValueError("Interval needs to be 5 or 15")
-        return interval
+        self.interval = interval
 
     def set_unit(self, unit: str):
         """Unit setter.
@@ -280,30 +275,32 @@ class CalcConfig:
         if(unit not in ["mg", "mmol"]):
             raise ValueError("unit needs to be mg or mmol")
 
-        return unit
+        self.unit = unit
         
-    def set_excursion_threshold(self, exc_threshold):
+    def set_excursion_threshold(self, exc_threshold: Union[int, str]):
         if(type(exc_threshold) not in [int, str]):
             raise ValueError("mage_excursion_threshold must be int or one of {}".format(MAGE_EXCURSION_THRESHOLDS))
 
         if(type(exc_threshold) == int):
-            return exc_threshold
+            if(exc_threshold > 0):
+                self.mage_excursion_threshold = exc_threshold
+            else:
+                raise ValueError("mage_excursion_threshold must be positive int or one of {}".format(MAGE_EXCURSION_THRESHOLDS))
 
         if(type(exc_threshold) == str):
             if(exc_threshold not in MAGE_EXCURSION_THRESHOLDS):
                 raise ValueError("mage_excursion_threshold must be int or one of {}".format(MAGE_EXCURSION_THRESHOLDS))
             else:
-                return exc_threshold
+                self.mage_excursion_threshold = exc_threshold
 
     def set_mage_moving_average(self, window_size: int):
-        if(type(window_size) != int):
+        if(type(window_size) != int or window_size < 1):
             raise ValueError("window_size must be an int")
-        
-        return window_size
+        self.mage_moving_average_windows_size = window_size
 
     def set_mage_peak_distance(self, mage_distance: int):
-        if(type(mage_distance) != int):
+        if(type(mage_distance) != int or mage_distance < 1):
             raise ValueError("mage_distance must be an int")
-        return mage_distance
+        self.mage_peak_distance = mage_distance
     
     

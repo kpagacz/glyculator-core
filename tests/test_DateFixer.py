@@ -105,10 +105,19 @@ class TestDateFixer(unittest.TestCase):
 
     def test_metronome_predict_all_5_minutes(self):
         dates = pd.date_range("2020/08/18 15:00", "2020/08/18 20:00", freq="5min")
-        res = self.fixer_5.metronome_predict(dates)
+        res = self.fixer_5._metronome_predict(dates)
         expect = np.array([1] * len(dates))
 
         np.testing.assert_allclose(res, expect)
+
+    def test_metronome_predict_local_all_5_minutes(self):
+        dates = pd.date_range("2020/08/18 15:00", "2020/08/18 20:00", freq="5min")
+        self.api_config_5.set_use_api(False)
+        res = self.fixer_5._metronome_predict_local(dates)
+        expect = np.array([1] * len(dates))
+
+        np.testing.assert_allclose(res, expect,
+                                   err_msg="\nMethod result:\n{}\nExpected:\n{}\n".format(res, expect))     
 
     @mock.patch("json.loads")
     @mock.patch("requests.post")
@@ -124,7 +133,7 @@ class TestDateFixer(unittest.TestCase):
         self.assertTrue(call_res)
         mocked_post.assert_called_once_with(api_config._construct_full_api_address(),
                                             json=json.dumps(example_dict),
-                                            timeout=2)
+                                            timeout=0.5)
 
     @mock.patch("requests.Response.raise_for_status", side_effect=requests.HTTPError("ERROR!"))
     @mock.patch("json.loads")
@@ -139,5 +148,19 @@ class TestDateFixer(unittest.TestCase):
 
         fixer._predict_local.assert_called_once()
 
+    def test_call_with_wrong_api_name(self):
+        wrong_api_config = configs.CleanConfig(interval=5, use_api="wrong_api_name")
+        array = np.array(80 * [7])
 
-    
+        fixer = DateFixer.DateFixer(wrong_api_config)
+
+        with self.assertRaises(ValueError):
+            fixer(array)
+
+    def test_call_alternative_flagger(self):
+        array = np.array([1,2,3,4])
+        mocked_flagger = mock.Mock()
+
+        self.fixer_5(data=array, alternative_flagger=mocked_flagger)
+
+        mocked_flagger.assert_called_once_with(array)

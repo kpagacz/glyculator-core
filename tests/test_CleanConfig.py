@@ -50,3 +50,7 @@ class TestCleanConfig(unittest.TestCase):
         self.assertEqual(metronome_config.api_address, utils.METRONOME_ADDRESS)
         self.assertEqual(metronome_config.api_port, utils.METRONOME_PORT)
         self.assertEqual(metronome_config.api_endpoint, utils.METRONOME_ENDPOINT)
+
+    def test_wrong_fill_glucose_tolerance(self):
+        with self.assertRaises(ValueError):
+            CleanConfig(interval=5, use_api=False, fill_glucose_tolerance="wrong_value")

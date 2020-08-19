@@ -24,7 +24,6 @@ class TestGVIndices(unittest.TestCase):
         #     logging.config.dictConfig(cfg)
 
         self.logger = logging.getLogger(__name__)
-        self.logger.addHandler(logging.NullHandler)
 
         self.non_nan_df = pd.DataFrame({
             DT : dates,
@@ -86,6 +85,14 @@ class TestGVIndices(unittest.TestCase):
     def test_records_no_nan_mg(self):
         index = indices.GVRecordsNo(df=self.simple_nan_df, calc_config=self.mock_5_mg_config)
         self.assertEqual(index.calculate(), 5)
+
+    def test_cv(self):
+        index = indices.GVCV(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertAlmostEqual(0.4714045207910317, index.calculate())
+
+    def test_cv_nan(self):
+        index = indices.GVCV(df=self.simple_nan_df, calc_config=self.mock_5_mg_config)
+        self.assertAlmostEqual(0.5378254348272379, index.calculate())
 
     def test_std_mg(self):
         index = indices.GVstd(df=self.simple_df, calc_config=self.mock_5_mg_config)
@@ -247,5 +254,57 @@ class TestGVIndices(unittest.TestCase):
         index = indices.GVtime_in_hypo(df=self.simple_df, calc_config=self.mock_5_mg_config)
         with self.assertRaises(ValueError):
             index.calculate(threshold="test")
+
+
+class TestBaseGVIndex(unittest.TestCase):
+    def setUp(self):
+        dates = pd.date_range(start="27-07-2020 12:00", end="29-07-2020 12:00", freq="5min"),
+        
+        # Logging setup
+        # with open("logging_config.yaml", 'rt') as config:
+        #     cfg = yaml.safe_load(config.read())
+        #     logging.config.dictConfig(cfg)
+
+        self.logger = logging.getLogger(__name__)
+
+        self.non_nan_df = pd.DataFrame({
+            DT : dates,
+            GLUCOSE : np.random.uniform(100, 20, len(dates))
+            })
+
+        self.simple_df = pd.DataFrame({
+            DT : pd.date_range(start="27-07-2020 12:00", end="27-07-2020 12:20", freq="5min"),
+            GLUCOSE : [1, 2, 3, 4, 5]
+        })
+
+        self.simple_nan_df = pd.DataFrame({
+            DT : pd.date_range(start="27-07-2020 12:00", end="27-07-2020 12:20", freq="5min"),
+            GLUCOSE : [1, 2, 3, np.nan, 5]
+        })
+
+        self.mock_5_mg_config = Mock(spec=CalcConfig)
+        self.mock_5_mg_config.unit = "mg"
+        self.mock_5_mg_config.interval = 5
+
+        self.mock_5_mmol_config = Mock(spec=CalcConfig)
+        self.mock_5_mmol_config.unit = "mmol"
+        self.mock_5_mmol_config.interval = 5  
+
+    def test_calculate_not_implemented(self):
+        with self.assertRaises(NotImplementedError):
+            indices.GVIndex(df=self.simple_df, calc_config=self.mock_5_mg_config).calculate()
+
+    def test_set_df_not_pandas(self):
+        with self.assertRaises(ValueError):
+            indices.GVIndex(df="test", calc_config=self.mock_5_mg_config)
+
+    def test_set_calc_config_not_calcconfig(self):
+        with self.assertRaises(ValueError):
+            indices.GVIndex(df=self.simple_df, calc_config="wrong_class")
+
+    def test_call_self_calculate_on_call(self):
+        with self.assertRaises(NotImplementedError):
+            base_index = indices.GVIndex(calc_config=self.mock_5_mg_config)
+            base_index(self.simple_df)
 
     

@@ -31,3 +31,13 @@ ACCEPTED_API = [
 METRONOME_ADDRESS = "http://localhost"
 METRONOME_PORT = 5000
 METRONOME_ENDPOINT = "v1/models/metronome"
+
+PANDAS_FILL_FREQUENCIES = {
+    5 : "5min",
+    15 : "15min",
+}
+
+PANDAS_TOLERANCES = {
+    5 : "2.5min",
+    15 : "7.5min",
+}

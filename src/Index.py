@@ -9,28 +9,30 @@ from .utils import DT, GLUCOSE
 from .configs import CalcConfig
 
 # TODO (konrad.pagacz@gmail.com) expand docs
-# TODO (konrad.pagacz@gmail.com) make indices callable on (array-like, CalcConfig)
+# TODO (konrad.pagacz@gmail.com) finish writing tests
 
 class GVIndex():
-    def __init__(self, df: pd.DataFrame, calc_config: CalcConfig):
-        self.df = self.set_df(df)
-        self.calc_config = self.set_calc_config(calc_config)
+    def __init__(self, calc_config: CalcConfig, df: pd.DataFrame = None):
+        self.set_df(df)
+        self.set_calc_config(calc_config)
         self.logger = logging.getLogger(__name__)
 
-    def calculate(self):
+    def calculate(self, **kwargs):
         raise NotImplementedError
 
     def set_df(self, df: pd.DataFrame):
-        if(not isinstance(df, pd.core.frame.DataFrame)):
-            raise ValueError("df needs to be a pandas DataFrame")
-
-        return df
+        if(type(df) != pd.DataFrame and df is not None):
+            raise ValueError("df needs to be a pandas DataFrame. Received type:{}".format(type(df)))
+        self.df = df
 
     def set_calc_config(self, calc_config: CalcConfig):
         if(not isinstance(calc_config, CalcConfig)):
             raise ValueError("calc_config needs to be a CalcConfig")
+        self.calc_config = calc_config
 
-        return calc_config
+    def __call__(self, df: pd.DataFrame, **kwargs):
+        self.set_df(df)
+        return self.calculate(**kwargs)
 
 
 class GVMean(GVIndex):
@@ -78,7 +80,7 @@ class GVCV(GVIndex):
         super(GVCV, self).__init__(**kwargs)
 
     def calculate(self):
-        return np.nanvar(self.df[GLUCOSE]) / np.nanmean(self.df[GLUCOSE])
+        return np.nanstd(self.df[GLUCOSE]) / np.nanmean(self.df[GLUCOSE])
 
 
 class GVstd(GVIndex):

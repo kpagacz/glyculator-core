@@ -27,6 +27,8 @@ handlers:
 loggers:
     src:
         handlers: [console, file]
+    tests:
+        handlers: [console]
 
 root:
     level: DEBUG

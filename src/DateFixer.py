@@ -14,6 +14,7 @@ from src.cleaner.config import WINDOW_SIZE
 
 
 # TODO (konrad.pagacz@gmail.com) expand docs
+# TODO (konrad.pagacz@gmail.com) write unit tests with no integration with CleanConfig
 
 
 class DateFixer(object):
@@ -31,26 +32,38 @@ class DateFixer(object):
         self._cleaner = None
 
     def __call__(self, data: Union[pd.Series, np.ndarray, list], alternative_flagger=None, **kwargs):
-        alternative_flagger = kwargs.pop("flag_fn", None)
         if(alternative_flagger is None):
             if(type(self.clean_config.use_api) == str):
                 if(self.clean_config.use_api == "metronome"):
-                    predictions = self.metronome_predict(data)
+                    predictions = self._metronome_predict(data)
+                elif (self.clean_config.use_api == False):
+                    predictions = self._metronome_predict_local(data)
                 else:
                     raise ValueError("Unsupported API type.")
         else:
             predictions = \
-                alternative_flagger(pd.Series(data.index), **kwargs)
+                alternative_flagger(data, **kwargs)
         
+        self.logger.debug("DateFixer - __call__ - return:\n{}".format(predictions))
 
         return predictions
 
 
-    def metronome_predict(self, data: Union[pd.Series, np.ndarray, list]):
+    def _metronome_predict(self, data: Union[pd.Series, np.ndarray, list]):
         prepared_timepoints_forward, prepared_timepoints_reverse = \
             self._prepare_timepoints_to_metronome(dates=data)
         forward_probas = self._calculate_clean_probas(prepared_timepoints_forward)
         reverse_probas = self._calculate_clean_probas(prepared_timepoints_reverse)
+
+        overall_probas = self._merge_metronome_probabilities(forward_probas, reverse_probas)
+        return self._probas_to_predictions(overall_probas)
+
+
+    def _metronome_predict_local(self, data: Union[pd.Series, np.ndarray, list]):
+        prepared_timepoints_forward, prepared_timepoints_reverse = \
+            self._prepare_timepoints_to_metronome(dates=data)
+        forward_probas = self._predict_local(prepared_timepoints_forward)
+        reverse_probas = self._predict_local(prepared_timepoints_reverse)
 
         overall_probas = self._merge_metronome_probabilities(forward_probas, reverse_probas)
         return self._probas_to_predictions(overall_probas)
@@ -140,8 +153,8 @@ class DateFixer(object):
         try:
             response = requests.post(api_full_address, json=payload, timeout=0.5)
             response.raise_for_status()
-        except (requests.HTTPError, requests.exceptions.ConnectTimeout) as error:
-            self.logger.warning("DateFixer - _predict_api - HTTP exception raised while connecting to Metronome API:{}".format(error))
+        except (requests.HTTPError, requests.exceptions.ConnectTimeout):
+            self.logger.warning("DateFixer - _predict_api - HTTP or ConnectTimeout exception raised while connecting to Metronome API.")
             self.logger.warning("DateFixer - _predict_api - falling back onto local implementation of Metronome")
             return self._predict_local(dates_records)
 

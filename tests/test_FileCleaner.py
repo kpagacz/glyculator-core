@@ -3,6 +3,9 @@ from mock import Mock
 
 import pandas as pd 
 import numpy as np
+import logging
+import logging.config
+import yaml
 
 from src.FileCleaner import FileCleaner
 from src.utils import DT, GLUCOSE
@@ -15,6 +18,20 @@ class TestFileCleaner(unittest.TestCase):
             DT : pd.date_range(start="2020-07-29 12:00", end="2020-07-29 12:25", freq="5min"),
             GLUCOSE : np.random.uniform(low=50, high=150, size=6)
         })
+
+        # Logger setup
+        # with open("logging_config.yaml", 'rt') as config:
+        #     cfg = yaml.safe_load(config.read())
+        #     logging.config.dictConfig(cfg)
+        self.logger = logging.getLogger(__name__)
+        self.logger.addHandler(logging.StreamHandler())
+        self.logger.setLevel(logging.DEBUG)
+        
+        self.mock_config_5_false_api = Mock(spec=configs.CleanConfig)
+        self.mock_config_5_false_api.interval = 5
+        self.mock_config_5_false_api.use_api = False
+        self.mock_config_5_false_api.fill_glucose_tolerance = 2
+
 
     def test_clean_file_nan_as_empty_string(self):
         test_df = pd.DataFrame(
@@ -97,7 +114,7 @@ class TestFileCleaner(unittest.TestCase):
             pd.DataFrame({"var1": [np.nan, 1, 2], "var2" : [1, np.nan, 2]})
         ))
 
-    def test_fix_dates(self):
+    def test_fix_dates_clean_config_int(self):
         long_df = pd.DataFrame({
             DT : pd.date_range("2020/08/18 19:00", "2020/08/18 22:00", freq="5min"),
             GLUCOSE : 37 * [80],
@@ -111,9 +128,10 @@ class TestFileCleaner(unittest.TestCase):
             np.array(37 * [1])
         )
 
-    def test_fill_glucose_values_with_nearest(self):
+    def test_fill_glucose_values_with_nearest_clean_config_int(self):
         dates = pd.Series([
             "2020/08/18 12:00",
+            "2020/08/18 12:01",
             "2020/08/18 12:05",
             "2020/08/18 12:10",
             "2020/08/18 12:11",
@@ -124,19 +142,143 @@ class TestFileCleaner(unittest.TestCase):
             "2020/08/18 12:30",
         ])
         dates = pd.to_datetime(dates)
-        print(dates)
 
-        glucose = pd.Series([1, 2, np.nan, 4, 5, 6, 7, 8, np.nan], dtype=np.float64)
+        glucose = pd.Series([np.nan, 1, 2, np.nan, 4, 5, 6, 7, 8, np.nan], dtype=np.float64)
         not_fixed = pd.DataFrame({DT : dates, GLUCOSE : glucose})
         not_fixed[GLUCOSE] = not_fixed[GLUCOSE].astype(np.float64)
-        print(not_fixed)
 
-        date_fixed = not_fixed.iloc[[0, 1, 2, 4, 5, 6, 8], :]
-        print(date_fixed)
+        date_fixed = not_fixed.iloc[[0, 2, 3, 5, 6, 7, 9], :].copy()     
 
         fill_config = configs.CleanConfig(interval=5, use_api=False, fill_glucose_tolerance=2)
         self.FileCleaner.set_clean_config(fill_config)
-        print(self.FileCleaner.clean_config.fill_glucose_tolerance)
 
         filled = self.FileCleaner._fill_glucose_values_with_nearest(date_fixed, not_fixed)
-        print(filled)
+        
+        expect = pd.DataFrame({
+            DT : pd.date_range("2020-08-18 12:00:00", periods=7, freq="5min"),
+            GLUCOSE : np.array([1,2,4,5,6,7,8], dtype=np.float),
+        }, index=[0, 2, 3, 5, 6, 7, 9])
+
+        self.assertTrue(filled.equals(expect))
+
+    def test_fill_missing_dates_clean_config_int(self):
+        dates = pd.Series([
+            "2020/08/18 12:00",
+            "2020/08/18 12:15",
+            "2020/08/18 12:20",
+            "2020/08/18 12:30",
+        ])
+        dates = pd.to_datetime(dates)
+        glucose = pd.Series([0,1,2,3], dtype=np.float64)
+
+        df = pd.DataFrame({DT : dates, GLUCOSE : glucose})
+
+        # setup result of the method
+        fill_config = configs.CleanConfig(interval=5, use_api=False, fill_glucose_tolerance=2)
+        self.FileCleaner.set_clean_config(fill_config)
+        filled = self.FileCleaner._fill_missing_dates(df)
+
+
+        # setup expected result
+        expect = pd.DataFrame({
+            DT : pd.date_range("2020-08-18 12:00", periods=7, freq="5min"),
+            GLUCOSE : [0.0, np.nan, np.nan, 1.0, 2.0, np.nan, 3.0],
+        })
+
+        self.assertTrue(filled.equals(expect), 
+                        "\nMethod result:\n{}\nExpected:\n{}\n".format(filled, expect))
+
+    def test_fill_missing_dates_shifted_clean_config_int(self):
+        dates = pd.Series([
+            "2020/08/18 12:00",
+            "2020/08/18 12:16",
+            "2020/08/18 12:21",
+            "2020/08/18 12:31",
+        ])
+        dates = pd.to_datetime(dates)
+        glucose = pd.Series([0,1,2,3], dtype=np.float64)
+        df = pd.DataFrame({DT : dates, GLUCOSE : glucose})
+
+        fill_config = configs.CleanConfig(interval=5, use_api=False, fill_glucose_tolerance=2)
+        self.FileCleaner.set_clean_config(fill_config)
+
+        filled = self.FileCleaner._fill_missing_dates(df)
+
+        expect = pd.DataFrame({
+            DT : pd.date_range("2020-08-18 12:00", periods=7, freq="5min"),
+            GLUCOSE : [0.0, np.nan, np.nan, 1.0, 2.0, np.nan, 3.0]
+        })
+
+        self.assertTrue(filled.equals(expect),
+                        "\nMethod result:\n{}\nExpected:\n{}\n".format(filled, expect))
+
+    def test_tidy_simple_df_clean_config_int(self):
+        # DF setup
+        # couple of issues to solve in this dates
+        dates = [
+            "2020/08/18 12:00",
+            "2020/08/18 12:05",
+            "2020/08/18 12:05:01", # shift by 1sec 
+            "2020/08/18 12:10:01",
+            "2020/08/18 12:15:01",
+            "2020/08/18 12:20:02", # another shift
+            "2020/08/18 12:25:02",
+            np.nan,                # nan
+            "2020/08/18 12:30:02",
+            "2020/08/18 12:35:02",
+            "2020/08/18 12:35:57", # additional timepoints
+            "2020/08/18 12:37:00",
+            "2020/08/18 12:40:02",
+            "2020/08/18 12:45:02",
+            "2020/08/18 12:50:02",
+            "2020/08/18 12:55:02",
+            "2020/08/18 13:00:02",
+            "2020/08/18 13:05:02",
+            "2020/08/18 13:10:02",
+            "2020/08/18 13:15:01",
+            "2020/08/18 13:20:01",
+            "2020/08/18 13:25",
+            "2020/08/18 13:30",
+            "2020/08/18 13:35",
+            "2020/08/18 13:40",
+            "2020/08/18 13:50",    # missing timepoint
+            "2020/08/18 13:55",
+            "2020/08/18 14:00",
+            "2020/08/18 14:05",
+            "2020/08/18 14:10",
+            "2020/08/18 14:15",
+            "2020/08/18 14:20",
+            "2020/08/18 14:25",
+            "2020/08/18 14:30",
+            "2020/08/18 14:35",
+            "2020/08/18 14:40",
+        ]
+        dates = pd.to_datetime(dates)
+
+        glucose = np.array(len(dates) * [80], dtype=np.float)
+        glucose[9] = np.nan
+
+        df = pd.DataFrame({
+            DT : dates,
+            GLUCOSE : glucose,
+        })
+
+        # Clean config setup
+        clean_config = configs.CleanConfig(interval=5, use_api="metronome",
+                        fill_glucose_tolerance=2)
+        cleaner = FileCleaner(df, clean_config)
+
+        # Tidy!
+        res = cleaner.tidy()
+
+        # Expected setup
+        expect_index = pd.date_range("2020-08-18 12:00", "2020-08-18 14:40", freq="5min")
+        glucose = len(expect_index) * [80]
+        glucose[7] = np.nan 
+        glucose[21] = np.nan
+        expect = pd.DataFrame({
+            DT : expect_index,
+            GLUCOSE : glucose,
+        })
+
+        self.assertTrue(res.equals(expect))
