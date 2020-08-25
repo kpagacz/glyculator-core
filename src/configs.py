@@ -305,7 +305,10 @@ class CalcConfig:
         self.mage_peak_distance = mage_distance
 
     def set_tir_range(self, tir_range: Tuple[float, float]):
-        if(type(tir_range) != Tuple[int, int] or tir_range[0] > tir_range[1]):
+        if(type(tir_range) is not tuple or
+           not isinstance(tir_range[0], (int ,float)) or
+           not isinstance(tir_range[1], (int ,float)) or
+           tir_range[0] > tir_range[1]):
             raise ValueError("tir_range must be a tuple of (float, float) values; the second greater than the first.")
         self.tir_range = tir_range
     

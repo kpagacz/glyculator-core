@@ -12,6 +12,7 @@ from .configs import ReadConfig
 from .utils import ACCEPTED_EXTENSIONS, TEXT_EXTENSIONS, DT, GLUCOSE, DATE, TIME
 
 # TODO (konrad.pagacz@gmail.com) expand docs
+# TODO (konrad.pagacz@gmail.com) add unit tests
 
 class FileReader:
     """Responsible for reading files and parsing them.
@@ -173,7 +174,7 @@ class FileReader:
                 self.logger.debug("FileReader - read_delimited - detected {} format: {}"    \
                     .format(col_name, dt_format))
             
-                for row in file_:
+                for row in file_[self.read_config.header_skip: ]:
                     col = index
                     try:
                         row[col] = datetime.datetime.strptime(row[col], dt_format)
@@ -193,12 +194,16 @@ class FileReader:
                 self.logger.debug("FileReader - read_delimited - detected {} format: {}"    \
                     .format(col_name, dt_format))
 
-                for row in file_:
+                for row in file_[self.read_config.header_skip: ]:
                     col = index
                     try:
                         row[col] = datetime.datetime.strptime(row[col], dt_format)
                     except:
                         row[col] = ""
+
+        # Glucose values are read as strings, so there is a need to convert them to numeric
+        for row in file_[self.read_config.header_skip: ]:
+            row[self.read_config.glucose_values_column] = float(row[self.read_config.glucose_values_column])
 
         self.logger.debug("FileReader - read_delimited - return: {}".format(file_))
         return file_
@@ -241,7 +246,7 @@ class FileReader:
         self.logger.debug("FileReader - read_excel - read the whole file:\n{}".format(file_))
 
         # Translate the Excel date time format
-        for row in file_:
+        for row in file_[self.read_config.header_skip: ]:
             # DT
             if(self.read_config.date_time_column != None):
                 col = self.read_config.date_time_column
@@ -294,6 +299,8 @@ class FileReader:
 
 
     def set_config(self, read_config: ReadConfig):
+        if(not isinstance(read_config, ReadConfig)):
+            raise ValueError("read_config must be a ReadConfig object")
         self.read_config = read_config
 
 

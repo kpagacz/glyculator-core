@@ -24,11 +24,20 @@ handlers:
         backupCount: 3
         encoding: utf8
 
+    test:
+        class: logging.handlers.RotatingFileHandler
+        level: DEBUG
+        formatter: long
+        filename: test_debug.log
+        maxBytes: 1000000
+        backupCount: 1
+        encoding: utf8
+
 loggers:
     src:
-        handlers: [console, file]
+        handlers: [file, test]
     tests:
-        handlers: [console]
+        handlers: [test]
 
 root:
     level: DEBUG
