@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Tuple
 from .utils import MAGE_EXCURSION_THRESHOLDS, METRONOME_ADDRESS, METRONOME_ENDPOINT, METRONOME_PORT
 
 
@@ -243,6 +243,7 @@ class CalcConfig:
         )
         self.set_mage_moving_average(kwargs.pop("mage_window", 9))
         self.set_mage_peak_distance(kwargs.pop("mage_distance", 10))
+        self.set_tir_range(kwargs.pop("tir_range", (70, 140)))
 
     def set_interval(self, interval: int):
         """Interval setter.
@@ -302,5 +303,10 @@ class CalcConfig:
         if(type(mage_distance) != int or mage_distance < 1):
             raise ValueError("mage_distance must be an int")
         self.mage_peak_distance = mage_distance
+
+    def set_tir_range(self, tir_range: Tuple[float, float]):
+        if(type(tir_range) != Tuple[int, int] or tir_range[0] > tir_range[1]):
+            raise ValueError("tir_range must be a tuple of (float, float) values; the second greater than the first.")
+        self.tir_range = tir_range
     
     

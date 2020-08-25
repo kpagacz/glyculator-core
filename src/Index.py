@@ -532,7 +532,10 @@ class GVtime_in_range(GVIndex):
     def __init__(self, **kwargs):
         super(GVtime_in_range, self).__init__(**kwargs)
 
-    def calculate(self, lower_bound: int, upper_bound: int):
+    def calculate(self, lower_bound: int = None, upper_bound: int = None):
+        lower_bound = lower_bound if lower_bound is not None else self.calc_config.tir_range[0]
+        upper_bound = upper_bound if upper_bound is not None else self.calc_config.tir_range[1]
+
         if(type(lower_bound) not in [float, int] or type(upper_bound) not in [int, float]):
             raise ValueError("lower_bound and upper_bound must be int")
 
