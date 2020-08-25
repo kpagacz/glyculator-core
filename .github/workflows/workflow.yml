@@ -34,10 +34,13 @@ jobs:
         architecture: x64
         
     - name: Setup Dependencies
-      run: pip install -r requirements.txt
+      run: |
+        pip install -U pip
+        pip install -r requirements.txt
       
     - name: Generate coverage report
       run: |
+        pip install coverage
         coverage run --source src -m unittest -v
 
     - name: Codecov
