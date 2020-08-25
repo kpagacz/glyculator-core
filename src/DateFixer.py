@@ -153,7 +153,9 @@ class DateFixer(object):
         try:
             response = requests.post(api_full_address, json=payload, timeout=0.5)
             response.raise_for_status()
-        except (requests.HTTPError, requests.exceptions.ConnectTimeout):
+        except (requests.HTTPError, 
+                requests.exceptions.ConnectTimeout,
+                requests.exceptions.ConnectionError):
             self.logger.warning("DateFixer - _predict_api - HTTP or ConnectTimeout exception raised while connecting to Metronome API.")
             self.logger.warning("DateFixer - _predict_api - falling back onto local implementation of Metronome")
             return self._predict_local(dates_records)

@@ -2,7 +2,6 @@ env:
     - CODECOV_TOKEN="c3eeb39f-53c7-415a-8cdd-a6d7b27bcc2b"
 language: python
 python:
-    - "3.5"
     - "3.6"
     - "3.7"
     - "3.8"
