@@ -31,6 +31,8 @@ class GVIndex():
         self.calc_config = calc_config
 
     def __call__(self, df: pd.DataFrame, **kwargs):
+        if(type(df) != pd.DataFrame):
+            raise ValueError("Cannot call GVIndex on other than pandas.DataFrame")
         self.set_df(df)
         return self.calculate(**kwargs)
 
@@ -192,14 +194,23 @@ class GVmage(GVIndex):
     def _join_extremas(self, minimas, maximas):
         """Joins indices of minimas and maximas in an alternating manner.
 
-        Arguments:
+
+        Note:
+            `minimas` and `maximas` are local minimas and maximas in the original 
+            measurement. This function works on indices of those minimas and maximas.
+
+            If there are two consecutive values of either type between two consecutive
+            values of the other type, than all the indices except the first index in the
+            consecutive series are ignored. Eg. [1,3,5] and [2, 6] will return [1,2,3,6].
+
+        Args:
             minimas:
-                list-like of glucose minimas
+                list-like of indices of glucose minimas in the original measurement
             maximas:
-                list-like of glucose maximas
+                list-like of indices of glucose maximas in the original measurement
 
         Returns:
-            list:
+            :obj:`list` of :obj:`int`:
                 joined minimas and maximas
 
         """
@@ -244,7 +255,7 @@ class GVmodd(GVIndex):
         super(GVmodd, self).__init__(**kwargs)
 
     def calculate(self):
-        daily_differences = np.diff(self.df[GLUCOSE], n=24 * 60 / self.calc_config.interval)
+        daily_differences = np.diff(self.df[GLUCOSE], n=int(24 * 60 / self.calc_config.interval))
         return np.nanmean(daily_differences)
 
 
@@ -253,18 +264,16 @@ class GVcongaX(GVIndex):
         super(GVcongaX, self).__init__(**kwargs)
 
     def calculate(self, hours: int):
-        if(type(hours) != int):
-            raise ValueError("hours must be int")
-        differences = np.diff(self.df[GLUCOSE], n=hours * 60 / self.calc_config.interval)
+        if(type(hours) != int or hours <= 0):
+            raise ValueError("hours must be a positive int")
+        differences = np.diff(self.df[GLUCOSE], n=int(hours * 60 / self.calc_config.interval))
         return np.nanvar(differences)
 
-    def __call__(self, hours: int, **kwargs):
-        if(type(hours) != int):
-            raise ValueError("hours must be int")
-        df = kwargs.pop("df")
-        calc_config = kwargs.pop("calc_config")
-        differences = np.diff(df[GLUCOSE], n=hours * 60 / calc_config.interval)
-        return np.nanvar(differences)   
+    def __call__(self, df: pd.DataFrame, hours: int):
+        if(type(df) != pd.DataFrame):
+            raise ValueError("df must be a pandas.DataFrame")
+        self.df = df
+        return self.calculate(hours)  
 
 
 class GVhypoglycemia(GVIndex):
@@ -277,6 +286,12 @@ class GVhypoglycemia(GVIndex):
         
         return np.nansum(self.df[GLUCOSE] < threshold) / np.sum(np.invert(np.isnan(self.df[GLUCOSE])))
 
+    def __call__(self, df: pd.DataFrame, threshold: int):
+        if(type(df) != pd.DataFrame):
+            raise ValueError("df must be a pandas.DataFrame")
+        self.df = df
+        return self.calculate(threshold)
+
 
 class GVhyperglycemia(GVIndex):
     def __init__(self, **kwargs):
@@ -287,6 +302,12 @@ class GVhyperglycemia(GVIndex):
             raise ValueError("threshold must be int")
 
         return np.nansum(self.df[GLUCOSE] > threshold) / np.sum(np.invert(np.isnan(self.df[GLUCOSE])))
+
+    def __call__(self, df: pd.DataFrame, threshold: int):
+        if(type(df) != pd.DataFrame):
+            raise ValueError("df must be a pandas.DataFrame")
+        self.df = df
+        return self.calculate(threshold)
 
 
 class GVgrade(GVIndex):
@@ -381,6 +402,9 @@ class GVhbgi(GVIndex):
 
 
 class GVeA1c(GVIndex):
+    """Calculates estimated haemoglobin A1c
+
+    """
     def __init__(self, **kwargs):
         super(GVeA1c, self).__init__(**kwargs)
 
@@ -424,7 +448,7 @@ class GVhypo_events_count(GVIndex):
         Arguments:
             threshold (int):
                 Values of glycemia below this are treated as hypoglycemias
-            hypo_event_records_threshold_duration (int):
+            hypo_event_records_threshold_duration (int, optional, default=15):
                 Sequence of hypoglycemic glucose values must have duration
                 greater than this to be counted as a hypoglycemic event.
                 Value is expressed in minutes. Default = 15
@@ -460,6 +484,9 @@ class GVhypo_events_count(GVIndex):
 
 
 class GVtime_in_hypo(GVIndex):
+    """Calculates total time spent in hypoglycemia (in minutes)
+
+    """
     def __init__(self, **kwargs):
         super(GVtime_in_hypo, self).__init__(**kwargs)
 

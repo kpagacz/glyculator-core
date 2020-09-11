@@ -40,7 +40,7 @@ class FileReader:
         self.read_config = read_config
         self.logger = logging.getLogger(__name__)
 
-        if(file_name != None):
+        if(file_name is not None):
             self.substring_extension()
         
 
@@ -292,11 +292,7 @@ class FileReader:
 
     def set_file_name(self, file_name: str):
         self.file_name = file_name
-        try:
-            self.substring_extension()
-        except IndexError:
-            raise ValueError("Expected the file to have an extension.\n")
-
+ 
 
     def set_config(self, read_config: ReadConfig):
         if(not isinstance(read_config, ReadConfig)):
@@ -305,8 +301,8 @@ class FileReader:
 
 
     def substring_extension(self):
-        if(self.file_name != None):
-            self.extension = self.file_name.split(".")[1]
+        if(self.file_name is not None and len(self.file_name.split(".")) >= 2):
+            self.extension = self.file_name.split(".")[-1]
         else:
             self.extension = None
 

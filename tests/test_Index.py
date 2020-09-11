@@ -159,13 +159,75 @@ class TestGVIndices(unittest.TestCase):
             list2=joined
         )
 
-    def test_mage_join_extremas(self):
+    def test_mage_join_extremas_maximas_first(self):
         index = indices.GVmage(df=self.simple_df, calc_config=self.mock_5_mg_config)
         minimas = [2, 4, 6]
         maximas = [1, 3, 5]
         self.assertListEqual(
             list1=[1, 2, 3, 4, 5, 6],
             list2=index._join_extremas(minimas, maximas)
+        )
+
+    def test_mage_join_extremas_minimas_first(self):
+        index = indices.GVmage(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        minimas = [1, 3, 5]
+        maximas = [2, 4, 6]
+        self.assertListEqual(
+            list1=[1, 2, 3, 4, 5, 6],
+            list2=index._join_extremas(minimas, maximas)
+        )
+
+    def test_mage_join_extremas_minimas_doubled(self):
+        index = indices.GVmage(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        minimas = [1, 3, 5]
+        maximas = [2, 6]
+        self.assertListEqual(
+            list1=[1, 2, 3, 6],
+            list2=index._join_extremas(minimas, maximas),
+            msg="_join_extremas returned: {}, expected: {}".format(
+                index._join_extremas(minimas, maximas),
+                [1, 2, 3, 6],
+            )
+        )
+
+    def test_modd_all_values_are_the_same(self):
+        # Mean of daily differences should obviously return 0 for a measurement
+        # made up of all the same values
+        dates = pd.date_range("12:00 2020/09/11", periods=500, freq="5min")
+        values = np.repeat(100, repeats=500)
+        test_df = pd.DataFrame({GLUCOSE : values}, index=dates)
+        index = indices.GVmodd(df=test_df, calc_config=self.mock_5_mg_config)
+        self.assertEqual(
+            0,
+            index.calculate(),
+            msg="Returned: {}. Expected 0".format(index.calculate()),
+        )
+
+    def test_conga_all_values_the_same(self):
+        # Variance should obviously be 0 for a measurement
+        # made up of all the same values
+        dates = pd.date_range("12:00 2020/09/11", periods=500, freq="5min")
+        values = np.repeat(100, repeats=500)
+        test_df = pd.DataFrame({GLUCOSE : values}, index=dates)
+        index = indices.GVcongaX(df=test_df, calc_config=self.mock_5_mg_config)
+        self.assertEqual(
+            0,
+            index.calculate(2),
+            msg="Returned: {}. Expected 0".format(index.calculate(2)),
+        )
+
+    def test_custom_conga_call(self):
+        # Variance should obviously be 0 for a measurement
+        # made up of all the same values
+        dates = pd.date_range("12:00 2020/09/11", periods=500, freq="5min")
+        values = np.repeat(100, repeats=500)
+        test_df = pd.DataFrame({GLUCOSE : values}, index=dates)
+        index = indices.GVcongaX(calc_config=self.mock_5_mg_config)
+        index.df = test_df
+        self.assertEqual(
+            0,
+            index(df=test_df, hours=2),
+            msg="Returned: {}. Expected 0".format(index.calculate(2)),
         )
 
     def test_m100_mg_simple_df(self):
@@ -198,9 +260,43 @@ class TestGVIndices(unittest.TestCase):
         index = indices.GVhypoglycemia(df=self.simple_df, calc_config=self.mock_5_mg_config)
         self.assertEqual(first=index.calculate(3), second=0.4)
 
+    def test_hypoglycemia_wrong_threshold_type(self):
+        index = indices.GVhypoglycemia(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        with self.assertRaises(ValueError):
+            index.calculate("test")
+
+    def test_hypoglycemia_custom_call(self):
+        index = indices.GVhypoglycemia(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertEqual(
+            index(df=self.simple_df, threshold=3),
+            index.calculate(3)
+        )
+
+    def test_hypoglycemia_call_not_dataframe(self):
+        index = indices.GVhypoglycemia(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        with self.assertRaises(ValueError):
+            index("test", threshold=7)
+
     def test_hyperglycemia(self):
         index = indices.GVhyperglycemia(df=self.simple_df, calc_config=self.mock_5_mg_config)
         self.assertEqual(first=index.calculate(2), second=0.6)
+
+    def test_hyperglycemia_wrong_threshold_type(self):
+        index = indices.GVhyperglycemia(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        with self.assertRaises(ValueError):
+            index.calculate("test")
+
+    def test_hyperglycemia_custom_call(self):
+        index = indices.GVhyperglycemia(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertEqual(
+            index.calculate(2),
+            index(df=self.simple_df, threshold=2)
+        )     
+
+    def test_hyperglycemia_call_not_dataframe(self):
+        index = indices.GVhyperglycemia(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        with self.assertRaises(ValueError):
+            index(df="test", threshold=7)
 
     def test_grade_simple_df_mg(self):
         self.simple_df[GLUCOSE] = len(self.simple_df) * [90]

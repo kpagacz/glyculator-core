@@ -63,10 +63,6 @@ class TestFileReader(unittest.TestCase):
         self.FileReader.validate_file_type()
         self.assertTrue(self.FileReader.delimited)
 
-    def test_set_file_name_error(self):
-        with self.assertRaises(ValueError):
-            self.FileReader.set_file_name("test_no_extension")
-
     def test_set_config(self):
         self.FileReader.set_config(self.mock_config)
         self.assertEqual(
@@ -440,3 +436,4 @@ class TestFileReader(unittest.TestCase):
         
         self.assertTrue(res.equals(expected),
                         msg="Expected data frames to be equal: RES\n{}\nEXPECTED\n{}".format(res, expected))
+

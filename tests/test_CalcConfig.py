@@ -45,3 +45,19 @@ class TestCalcConfig(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             self.config.set_mage_peak_distance(self.negative)
+
+    def test_set_tir_range_not_tuple(self):
+        with self.assertRaises(ValueError):
+            self.config.set_tir_range("test")
+
+    def test_set_tir_range_first_not_float(self):
+        with self.assertRaises(ValueError):
+            self.config.set_tir_range(("test", 1))
+
+    def test_set_tir_range_second_not_float(self):
+        with self.assertRaises(ValueError):
+            self.config.set_tir_range((1, "test"))
+
+    def test_set_tir_range_first_greater_than_second(self):
+        with self.assertRaises(ValueError):
+            self.config.set_tir_range((2, 1))
