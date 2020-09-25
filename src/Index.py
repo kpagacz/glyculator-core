@@ -423,26 +423,31 @@ class GVauc(GVIndex):
 
     It uses the trapezoid rule via numpy.trapz
     Before the actual calculation, nan values are replaced
-    with 0s. The final result is normalized to interval and 
+    with 0s. The final result is normalized to the 
     length of the measurement (supplied via calc_config)
 
     """
     def __init__(self, **kwargs):
         super(GVauc, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self, standardize=True):
         # nan replacement is required for the auc functions
         glucose_values = np.where(self.df[GLUCOSE] == np.nan, 0, self.df[GLUCOSE])
 
-        return np.trapz(glucose_values, dx=self.calc_config.interval)   \
-            / self.calc_config.interval / len(glucose_values)
+        if(standardize):
+            auc = np.trapz(glucose_values, dx=self.calc_config.interval)   \
+                / (len(glucose_values) - 1)
+        else:
+            auc = np.trapz(glucose_values, dx=self.calc_config.interval) 
+
+        return auc
 
 
 class GVhypo_events_count(GVIndex):
     def __init__(self, **kwargs):
         super(GVhypo_events_count, self).__init__(**kwargs)
 
-    def calculate(self, threshold: int, hypo_event_records_threshold_duration: int = 15):
+    def calculate(self, threshold: int, threshold_duration: int = 15):
         """Calculates number of hypoglycemic events.
 
         Arguments:
@@ -466,9 +471,12 @@ class GVhypo_events_count(GVIndex):
         if(type(threshold) != int):
             raise ValueError("threshold must be int")
 
+        if(type(threshold_duration) != int):
+            raise ValueError("hypo_event_records_threshold_duration must be int")
+
         hypoglycemias = self.df[GLUCOSE] < threshold
 
-        hypo_event_records_threshold = hypo_event_records_threshold_duration / self.calc_config.interval
+        hypo_event_records_threshold = threshold_duration / self.calc_config.interval
 
         current_hypo_records = 0
         total_hypo_event_count = 0
@@ -476,10 +484,13 @@ class GVhypo_events_count(GVIndex):
             if(record):
                 current_hypo_records = current_hypo_records + 1
             else:
-                if(current_hypo_records > hypo_event_records_threshold):
+                if(current_hypo_records >= hypo_event_records_threshold):
                     total_hypo_event_count = total_hypo_event_count + 1
                 current_hypo_records = 0
 
+        if(current_hypo_records >= hypo_event_records_threshold):
+            total_hypo_event_count = total_hypo_event_count + 1
+            
         return total_hypo_event_count
 
 

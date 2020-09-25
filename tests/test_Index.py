@@ -49,6 +49,32 @@ class TestGVIndices(unittest.TestCase):
         self.mock_5_mmol_config.interval = 5
 
 
+    def test_auc_simple_df_mg(self):
+        # test on a df with all 1s
+        self.simple_df[GLUCOSE] = len(self.simple_df) * [1]
+        index = indices.GVauc(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertEqual(index.calculate(standardize=True), 5)
+
+    def test_auc_simple_df_no_stand(self):
+        # test on a df with all 1s
+        self.simple_df[GLUCOSE] = len(self.simple_df) * [1]
+        index = indices.GVauc(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertEqual(index.calculate(standardize=False), 20)
+
+    def test_hypo_events_count_threshold_not_int(self):
+        index = indices.GVhypo_events_count(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        with self.assertRaises(ValueError):
+            index.calculate(threshold="test")
+
+    def test_hypo_events_count_threshold_duration_not_int(self):
+        index = indices.GVhypo_events_count(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        with self.assertRaises(ValueError):
+            index.calculate(threshold=0, threshold_duration="test")
+
+    def test_hypo_events_count_simple_df(self):
+        self.simple_df[GLUCOSE] = [1, 1, 3, 2, 2]
+        index = indices.GVhypo_events_count(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        print(index.calculate(threshold=3, threshold_duration=10))
 
     def test_mean_mg(self):
         mean = indices.GVMean(df=self.simple_df, calc_config=self.mock_5_mg_config)
@@ -230,6 +256,16 @@ class TestGVIndices(unittest.TestCase):
             msg="Returned: {}. Expected 0".format(index.calculate(2)),
         )
 
+    def test_conga_calculate_hours_not_int(self):
+        index = indices.GVcongaX(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        with self.assertRaises(ValueError):
+            index.calculate(hours="not int")
+
+    def test_conga_call_on_not_pandas(self):
+        index = indices.GVcongaX(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        with self.assertRaises(ValueError):
+            indices.GVcongaX.__call__(index, df="not pandas", hours=7)
+
     def test_m100_mg_simple_df(self):
         index = indices.GVm100(df=self.simple_df, calc_config=self.mock_5_mg_config)
         self.assertAlmostEqual(first=1584.16375079, second=index.calculate())
@@ -318,6 +354,15 @@ class TestGVIndices(unittest.TestCase):
         index = indices.GVeA1c(df=self.simple_df, calc_config=self.mock_5_mg_config)
         self.assertAlmostEqual(first=index.calculate(), second=5.09752973287909)
 
+    def test_eA1c_mmol_equal_mg(self):
+        self.simple_df[GLUCOSE] = len(self.simple_df) * [100]
+        simple_df_mmol = self.simple_df.copy()
+        simple_df_mmol[GLUCOSE] = simple_df_mmol[GLUCOSE] / 18.02
+        index_mg = indices.GVeA1c(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        index_mmol = indices.GVeA1c(df=simple_df_mmol, calc_config=self.mock_5_mmol_config)
+        self.assertAlmostEqual(index_mg.calculate(), index_mmol.calculate(),
+            msg="\neA1c based on mg: {}. eA1c based on mmol: {}\n".format(index_mg.calculate(), index_mmol.calculate()))
+
     def test_time_in_range_simple_df(self):
         index = indices.GVtime_in_range(df=self.simple_df, calc_config=self.mock_5_mg_config)
         self.assertEqual(index.calculate(lower_bound=1, upper_bound=5), 0.6)
@@ -393,6 +438,11 @@ class TestBaseGVIndex(unittest.TestCase):
     def test_set_df_not_pandas(self):
         with self.assertRaises(ValueError):
             indices.GVIndex(df="test", calc_config=self.mock_5_mg_config)
+
+    def test_call_df_not_pandas(self):
+        with self.assertRaises(ValueError):
+            test_ind = indices.GVIndex(df=self.simple_df, calc_config=self.mock_5_mg_config)
+            indices.GVIndex.__call__(test_ind, df="test")
 
     def test_set_calc_config_not_calcconfig(self):
         with self.assertRaises(ValueError):
