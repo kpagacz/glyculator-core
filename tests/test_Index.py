@@ -284,6 +284,22 @@ class TestGVIndices(unittest.TestCase):
         index = indices.GVm100(df=self.simple_df, calc_config=self.mock_5_mmol_config)
         self.assertEqual(first=index.calculate(), second=0)
 
+    def test_modd_simple_examples(self):
+        same_values = pd.DataFrame(
+            {
+                DT : pd.date_range(start="10/11/2020 12:00", periods=3 * 256, freq="5min"),
+                GLUCOSE : 3 * 256 * [100],
+            }
+        )
+
+        index = indices.GVmodd(df=same_values, calc_config=self.mock_5_mg_config)
+        self.assertEqual(
+            index.calculate(),
+            0,
+            msg="Expected 0 for the array of all equal values. Returned: {}\n".format(index.calculate())
+        )
+
+
     def test_j_mg_simple_df(self):
         index = indices.GVj(df=self.simple_df, calc_config=self.mock_5_mg_config)
         self.assertAlmostEqual(first=index.calculate(), second=0.01948528137423856)

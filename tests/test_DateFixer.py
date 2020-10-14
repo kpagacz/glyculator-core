@@ -11,11 +11,6 @@ import src.configs as configs
 from src.cleaner.config import WINDOW_SIZE
 import src.utils as utils
 
-def logDict(dictionary):
-    for key, value in dictionary.items():
-        print("{} : {}".format(key, value))
-
-
 class TestDateFixer(unittest.TestCase):
     def setUp(self):
         self.config_5 = configs.CleanConfig(interval=5, use_api=False)
