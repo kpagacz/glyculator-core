@@ -41,7 +41,8 @@ jobs:
     - name: Generate coverage report
       run: |
         pip install coverage
-        coverage run --source src -m unittest -v
+        coverage run --source tests -m unittest -v
+        coverage report -im
 
     - name: Codecov
       uses: codecov/codecov-action@v1.0.13
