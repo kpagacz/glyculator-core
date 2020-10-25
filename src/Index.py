@@ -4,6 +4,7 @@ import typing
 import numpy as np
 import pandas as pd
 import scipy
+from scipy import signal
 
 from .utils import DT, GLUCOSE
 from .configs import CalcConfig
@@ -143,8 +144,8 @@ class GVmage(GVIndex):
         self.logger.debug("GVmage - calculate - smoothed: {}".format(smoothed))
 
         # Finding local maximas and minimas
-        maximas = scipy.signal.find_peaks(smoothed, distance=self.calc_config.mage_peak_distance)[0]
-        minimas = scipy.signal.find_peaks(-1 * smoothed, distance=self.calc_config.mage_peak_distance)[0]
+        maximas = signal.find_peaks(smoothed, distance=self.calc_config.mage_peak_distance)[0]
+        minimas = signal.find_peaks(-1 * smoothed, distance=self.calc_config.mage_peak_distance)[0]
         self.logger.debug("GVmage - calculate - minimas: {}".format(minimas))
         self.logger.debug("GVmage - calculate - maximas: {}".format(maximas))
 
@@ -152,16 +153,26 @@ class GVmage(GVIndex):
         # example: minimas[0] maximas[0] minimas[1] maximas[1]
         joined = self._join_extremas(minimas, maximas)
 
+        if (joined == []):
+            raise RuntimeError("No maximas or minimas found in the measurement")
+
         joined_values = smoothed[joined]
-        value_differences = np.diff(a=joined_values)
+        value_differences = np.abs(np.diff(a=joined_values))
+
+        self.logger.debug("GVmage - calculate - joined values: \n{} \nvalue_differences: \n{}".format(joined_values, value_differences))
 
         if(self.calc_config.mage_excursion_threshold == "sd"):
             threshold = np.nanstd(self.df[GLUCOSE])
         if(self.calc_config.mage_excursion_threshold == "half_sd"):
             threshold = np.nanstd(self.df[GLUCOSE]) * 0.5
 
+        self.logger.debug("GVmage - calculate - threshold: {}".format(threshold))
         value_differences = value_differences[value_differences > threshold]
-        return np.nanmean(value_differences)
+
+        if (value_differences.size == 0):
+            return 0
+        else:
+            return np.nanmean(value_differences)
 
     def _moving_average(self, arr: pd.Series, window: int):
         """Calculates moving average smoothing.
@@ -211,9 +222,13 @@ class GVmage(GVIndex):
 
         Returns:
             :obj:`list` of :obj:`int`:
-                joined minimas and maximas
+                joined indices of minimas and maximas
 
         """
+        # Can't join if there are no minimas or maximas
+        if(len(minimas) == 0 or len(maximas) == 0):
+            return []
+
         joined = []
         if(minimas[0] < maximas[0]):
             minimas_turn = False
@@ -222,20 +237,19 @@ class GVmage(GVIndex):
             minimas_turn = True
             joined.append(maximas[0])
 
-        self._join_extremas_util(joined, minimas, maximas, not minimas_turn, minimas_turn, minimas_turn)
+        self._join_extremas_util(joined, minimas, maximas, int(not minimas_turn), int(minimas_turn), minimas_turn)
         return joined
 
     def _join_extremas_util(self, joined, minimas, maximas, minimas_ind, maximas_ind, minimas_turn):
-        self.logger.debug("GVmage - _join_extremas_util - called with: joined {} \nminimas {} \nmaximas {} \nminimas_ind {} \nmaximas_ind {} \nminimas_turn {}"    \
+        self.logger.debug("GVmage - _join_extremas_util - called with: \njoined {} \nminimas {} \nmaximas {} \nminimas_ind {} \nmaximas_ind {} \nminimas_turn {}"    \
             .format(joined, minimas, maximas, minimas_ind, maximas_ind, minimas_turn))
-        
 
         if(minimas_turn):
             if(minimas_ind >= len(minimas)):
                 self.logger.debug("GVmage - _join_extremas_util - return: {}".format(joined))
                 return joined
 
-            if(minimas[minimas_ind] > joined[len(joined) - 1]):
+            if(minimas[minimas_ind] > joined[-1]):
                 joined.append(minimas[minimas_ind])
                 minimas_turn = False
             self._join_extremas_util(joined, minimas, maximas, minimas_ind + 1, maximas_ind, minimas_turn)
@@ -243,8 +257,8 @@ class GVmage(GVIndex):
             if(maximas_ind >= len(maximas)):
                 self.logger.debug("GVmage - _join_extremas_util - return: {}".format(joined))
                 return joined
-
-            if(maximas[maximas_ind] > joined[len(joined) - 1]):
+            
+            if(maximas[maximas_ind] > joined[-1]):
                 joined.append(maximas[maximas_ind])
                 minimas_turn = True
             self._join_extremas_util(joined, minimas, maximas, minimas_ind, maximas_ind + 1, minimas_turn)
@@ -333,7 +347,7 @@ class GVgrade_hypo(GVIndex):
 
     def calculate(self):
         if(self.calc_config.unit == "mg"):
-            threshold = 90
+            threshold = 90 / 18
             glucose_values = self.df[GLUCOSE] / 18
 
         if(self.calc_config.unit == "mmol"):
@@ -356,13 +370,12 @@ class GVgrade_hyper(GVIndex):
 
     def calculate(self):
         if(self.calc_config.unit == "mg"):
-            threshold = 140
+            threshold = 140 / 18
             glucose_values = self.df[GLUCOSE] / 18
 
         if(self.calc_config.unit == "mmol"):
             threshold = 140 / 18
             glucose_values = self.df[GLUCOSE]
-
 
         GRADEs = self.GRADE(glucose_values)
         hyperglycemias = glucose_values > threshold
@@ -520,13 +533,13 @@ class GVmean_hypo_event_duration(GVIndex):
     def __init__(self, **kwargs):
         super(GVmean_hypo_event_duration, self).__init__(**kwargs)
 
-    def calculate(self, threshold: int, hypo_event_records_threshold_duration: int = 15):
+    def calculate(self, threshold: int, records_duration: int = 15):
         """Calculates mean duration of hypoglycemic events.
 
         Arguments:
             threshold (int):
                 Values of glycemia below this are treated as hypoglycemias
-            hypo_event_records_threshold_duration (int):
+            records_duration (int):
                 Sequence of hypoglycemic glucose values must have duration
                 greater than this to be counted as a hypoglycemic event.
                 Value is expressed in minutes. Default = 15
@@ -544,12 +557,12 @@ class GVmean_hypo_event_duration(GVIndex):
         if(type(threshold) != int):
             raise ValueError("threshold must be int")
 
-        if(type(hypo_event_records_threshold_duration) != int):
-            raise ValueError("hypo_event_records_threshold_duration must be an int")
+        if(type(records_duration) != int):
+            raise ValueError("records_duration")
 
         hypoglycemias = self.df[GLUCOSE] < threshold
 
-        hypo_event_records_threshold = hypo_event_records_threshold_duration / self.calc_config.interval
+        hypo_event_records_threshold = records_duration / self.calc_config.interval
 
         current_hypo_records = 0
         total_hypo_event_count = 0
@@ -558,12 +571,15 @@ class GVmean_hypo_event_duration(GVIndex):
             if(record):
                 current_hypo_records = current_hypo_records + 1
             else:
-                if(current_hypo_records > hypo_event_records_threshold):
+                if(current_hypo_records >= hypo_event_records_threshold):
                     total_hypo_event_count = total_hypo_event_count + 1
                     hypo_events_duration.append(current_hypo_records)
                 current_hypo_records = 0
 
-        return np.nanmean(hypo_events_duration) * self.calc_config.interval
+        if (len(hypo_events_duration)):
+            return np.nanmean(hypo_events_duration) * self.calc_config.interval
+        else:
+            return 0
 
 
 class GVtime_in_range(GVIndex):

@@ -297,7 +297,7 @@ class CalcConfig:
     def set_mage_moving_average(self, window_size: int):
         if(type(window_size) != int or window_size < 1):
             raise ValueError("window_size must be an int")
-        self.mage_moving_average_windows_size = window_size
+        self.mage_moving_average_window_size = window_size
 
     def set_mage_peak_distance(self, mage_distance: int):
         if(type(mage_distance) != int or mage_distance < 1):

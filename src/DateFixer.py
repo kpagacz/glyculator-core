@@ -47,7 +47,7 @@ class DateFixer(object):
         self.logger.debug("DateFixer - __call__ - return:\n{}".format(predictions))
 
         return predictions
-
+        
 
     def _metronome_predict(self, data: Union[pd.Series, np.ndarray, list]):
         prepared_timepoints_forward, prepared_timepoints_reverse = \

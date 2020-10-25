@@ -14,6 +14,9 @@ from src.configs import CalcConfig
 # TODO (konrad.pagacz@gmail.com) write tests for indices for non nan array
 # TODO (konrad.pagacz@gmail.com) write tests for indices for nan array
 
+# logging.basicConfig(level=logging.DEBUG, handlers=[logging.StreamHandler()])
+logger = logging.getLogger()
+
 class TestGVIndices(unittest.TestCase):
     def setUp(self):
         dates = pd.date_range(start="27-07-2020 12:00", end="29-07-2020 12:00", freq="5min"),
@@ -23,7 +26,7 @@ class TestGVIndices(unittest.TestCase):
         #     cfg = yaml.safe_load(config.read())
         #     logging.config.dictConfig(cfg)
 
-        self.logger = logging.getLogger(__name__)
+        self.logger = logger
 
         self.non_nan_df = pd.DataFrame({
             DT : dates,
@@ -43,6 +46,9 @@ class TestGVIndices(unittest.TestCase):
         self.mock_5_mg_config = Mock(spec=CalcConfig)
         self.mock_5_mg_config.unit = "mg"
         self.mock_5_mg_config.interval = 5
+        self.mock_5_mg_config.mage_excursion_threshold = "sd"
+        self.mock_5_mg_config.mage_moving_average_window_size = 9
+        self.mock_5_mg_config.mage_peak_distance = 10
 
         self.mock_5_mmol_config = Mock(spec=CalcConfig)
         self.mock_5_mmol_config.unit = "mmol"
@@ -127,6 +133,49 @@ class TestGVIndices(unittest.TestCase):
     def test_std_nan_mg(self):
         index = indices.GVstd(df=self.simple_nan_df, calc_config=self.mock_5_mg_config)
         self.assertAlmostEqual(index.calculate(), 1.479019945)
+
+    def test_mage_runtime_error(self):
+        # integration test in fact
+        self.simple_df = pd.DataFrame({
+            DT : pd.date_range(start="27-07-2020 12:00", periods=50, freq="5min"),
+            GLUCOSE : 50 * [100]
+        })
+        index = indices.GVmage(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        with self.assertRaises(RuntimeError):
+            index.calculate()
+
+    def test_mage_basic_df(self):
+        # integration test in fact
+        self.simple_df = pd.DataFrame({
+            DT : pd.date_range(start="27-07-2020 12:00", periods=50, freq="5min"),
+            GLUCOSE : 50 * [100]
+        })
+        self.simple_df.iloc[10, 1] = 50
+        self.simple_df.iloc[20, 1] = 50
+        self.simple_df.iloc[30, 1] = 300
+        self.simple_df.iloc[40, 1] = 200
+        index = indices.GVmage(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertEqual(
+            first=index.calculate(),
+            second=0
+        )
+
+    def test_mage_basic_df_2(self):
+        # integration test in fact
+        self.simple_df = pd.DataFrame({
+            DT : pd.date_range(start="27-07-2020 12:00", periods=50, freq="5min"),
+            GLUCOSE : 50 * [100]
+        })
+        self.simple_df.iloc[10, 1] = 50
+        self.simple_df.iloc[20, 1] = 50
+        self.simple_df.iloc[30, 1] = 300
+        self.simple_df.iloc[40, 1] = 200
+        self.mock_5_mg_config.mage_excursion_threshold = "half_sd"
+        index = indices.GVmage(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertAlmostEqual(
+            first=index.calculate(),
+            second=25
+        )
 
     def test_mage_moving_average_arr_not_series(self):
         index = indices.GVmage(df=self.simple_df, calc_config=self.mock_5_mg_config)
@@ -365,6 +414,26 @@ class TestGVIndices(unittest.TestCase):
         index = indices.GVgrade(df=self.simple_df, calc_config=self.mock_5_mg_config)
         self.assertAlmostEqual(first=index.calculate(), second=2.80635255992405)
 
+    def test_grade_hypo(self):
+        self.simple_df[GLUCOSE] = len(self.simple_df) * [60]
+        index = indices.GVgrade_hypo(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertAlmostEqual(first=index.calculate(), second=1)  
+
+    def test_grade_hypo_mmol(self):
+        self.simple_df[GLUCOSE] = len(self.simple_df) * [2]
+        index = indices.GVgrade_hypo(df=self.simple_df, calc_config=self.mock_5_mmol_config)
+        self.assertAlmostEqual(first=index.calculate(), second=1)  
+
+    def test_grade_hyper(self):
+        self.simple_df[GLUCOSE] = len(self.simple_df) * [200]
+        index = indices.GVgrade_hyper(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertAlmostEqual(first=index.calculate(), second=1)      
+
+    def test_grade_hyper_mmol(self):
+        self.simple_df[GLUCOSE] = len(self.simple_df) * [15]
+        index = indices.GVgrade_hyper(df=self.simple_df, calc_config=self.mock_5_mmol_config)
+        self.assertAlmostEqual(first=index.calculate(), second=1)      
+
     def test_eA1c_simple_df(self):
         self.simple_df[GLUCOSE] = len(self.simple_df) * [100]
         index = indices.GVeA1c(df=self.simple_df, calc_config=self.mock_5_mg_config)
@@ -412,6 +481,62 @@ class TestGVIndices(unittest.TestCase):
         with self.assertRaises(ValueError):
             index.calculate(threshold="test")
 
+    def test_mean_hypo_event_duration_threshold_error(self):
+        index = indices.GVmean_hypo_event_duration(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        with self.assertRaises(ValueError):
+            index.calculate(threshold="wrong_type")
+            
+    def test_mean_hypo_event_duration_records_duration(self):
+        index = indices.GVmean_hypo_event_duration(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        with self.assertRaises(ValueError):
+            index.calculate(threshold=0, records_duration="wrong_type")
+
+    def test_mean_hypo_event_duration_1(self):
+        self.simple_df = pd.DataFrame({
+            DT : pd.date_range(start="27-07-2020 12:00", periods=8, freq="5min"),
+            GLUCOSE : [10, 10, 10, 0, 0, 0, 0, 10]
+        })
+        index = indices.GVmean_hypo_event_duration(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertEqual(
+            first=index.calculate(threshold=9, records_duration=15),
+            second=20
+        )
+
+    def test_mean_hypo_event_duration_2(self):
+        self.simple_df = pd.DataFrame({
+            DT : pd.date_range(start="27-07-2020 12:00", periods=8, freq="5min"),
+            GLUCOSE : [10, 10, 10, 0, 0, 0, 10, 10]
+        })
+        index = indices.GVmean_hypo_event_duration(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertEqual(
+            first=index.calculate(threshold=9, records_duration=15),
+            second=15
+        )
+
+    def test_mean_hypo_event_duration_no_hypo(self):
+        self.simple_df = pd.DataFrame({
+            DT : pd.date_range(start="27-07-2020 12:00", periods=8, freq="5min"),
+            GLUCOSE : [10, 10, 10, 0, 0, 10, 10, 10]
+        })
+        index = indices.GVmean_hypo_event_duration(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertEqual(
+            first=index.calculate(threshold=9, records_duration=15),
+            second=0
+        )
+
+    def test_lbgi(self):
+        index = indices.GVlbgi(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertAlmostEqual(
+            first=567.362808824868,
+            second=index.calculate()
+        )
+
+    def test_hbgi(self):
+        index = indices.GVhbgi(df=self.simple_df, calc_config=self.mock_5_mg_config)
+        self.assertAlmostEqual(
+            first=0,
+            second=index.calculate()
+        )
 
 class TestBaseGVIndex(unittest.TestCase):
     def setUp(self):
@@ -468,5 +593,3 @@ class TestBaseGVIndex(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             base_index = indices.GVIndex(calc_config=self.mock_5_mg_config)
             base_index(self.simple_df)
-
-    
