@@ -63,6 +63,23 @@ class TestFileReader(unittest.TestCase):
         self.FileReader.validate_file_type()
         self.assertTrue(self.FileReader.delimited)
 
+    def test_merge_date_and_time_not_lists(self):
+        test_dict1 = {
+            TIME: "test",
+            DATE: []
+        }
+        
+        test_dict2 = {
+           TIME: [],
+           DATE: "test" 
+        }
+
+        with self.assertRaises(ValueError):
+            self.FileReader.merge_date_and_time(test_dict1)
+
+        with self.assertRaises(ValueError):
+            self.FileReader.merge_date_and_time(test_dict2)
+
     def test_set_config(self):
         self.FileReader.set_config(self.mock_config)
         self.assertEqual(

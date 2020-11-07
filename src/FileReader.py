@@ -12,7 +12,6 @@ from .configs import ReadConfig
 from .utils import ACCEPTED_EXTENSIONS, TEXT_EXTENSIONS, DT, GLUCOSE, DATE, TIME
 
 # TODO (konrad.pagacz@gmail.com) expand docs
-# TODO (konrad.pagacz@gmail.com) add unit tests
 
 class FileReader:
     """Responsible for reading files and parsing them.
@@ -27,18 +26,29 @@ class FileReader:
         read_report (dict): contains diagnostic information about the reading process
     
     """
-    file_name = None
-    read_config = None
-    extension = None
-    delimited = None
-    string_io = None
-    bytes_io = None
-    read_report = {} #TODO (konrad.pagacz@gmail.com) specify the read report
+    __attrs__ = [
+        "file_name", "read_config", "extension", "delimited", "string_io", "bytes_io", "read_report",
+        "delimited"
+    ]
 
     def __init__(self, file_name: str = None, string_io = None, bytes_io = None, read_config: ReadConfig = None):
+
+        # File name, which contains the data to be read
         self.file_name = file_name
+
+        # Currently not supported
+        self.string_io = string_io
+        self.bytes_io = bytes_io
+
+        # Object of class ReadConfig, which contains the configuration for this FileReader
         self.read_config = read_config
+
+        # Flag for the file being delimited
+        self.delimited = False
+
+        self.read_report = dict()
         self.logger = logging.getLogger(__name__)
+
 
         if(file_name is not None):
             self.substring_extension()
@@ -224,15 +234,19 @@ class FileReader:
         """
         file_ = []
 
-        # Open sheet and report its shape
+        # Open the excel sheet and report its shape
         wb = xlrd.open_workbook(self.file_name)
         sheet = wb.sheet_by_index(0)
         self.read_report["Raw Excel Shape"] = (sheet.nrows, sheet.ncols)
 
         # Read in the whole file
-        # Could read only relevant columns, but it gets messy,
+        # Could read only the relevant columns, but it gets messy,
         # because the order of appending cells to row[]
         # would dictate the order of DATE TIME DT GLUCOSE columns
+        # which would later disrupt joining thr rows together using the 
+        # read_config configuration. The positions would have to be set permanently
+        # in the file_, which I am not a big fan of. This doesn't make it that much slower
+        # because the whole file needs to be parsed anyway.
         for row_number in range(sheet.nrows):
             row = []
             for col_number in range(sheet.ncols):
@@ -308,6 +322,16 @@ class FileReader:
 
 
     def lists_to_dict(self, data: list):
+        """Converts rows read by this class to a dictionary.
+        
+        Args:
+            data: list of lists, which represents a list of rows of the read file
+
+        Returns:
+            dict: dictionary with keys DT and GLUCOSE or DATE, TIME and GLUCOSE depending
+                on the read_config
+
+        """
         data_dict = {
             DT : [],
             GLUCOSE : [],
@@ -338,7 +362,7 @@ class FileReader:
     def merge_date_and_time(self, data_dict: dict):
         """Merges date and time columns.
 
-        Performs an element-wise paste operation on DATE and TIME lists
+        Performs an element-wise paste operation on DATE and TIME lists of data_dict
         and assigns the result to DT key in data_dict. Assumes dates are
         datetime.datetime objects.
 
@@ -350,6 +374,12 @@ class FileReader:
                 the results of pasting
 
         """
+        data_dict_date_type = type(data_dict[DATE])
+        data_dict_time_type = type(data_dict[TIME])
+
+        if (data_dict_date_type is not list or data_dict_time_type is not list):
+            raise ValueError("data_dict[{}] and data_dict[{}] should be of the type list".format(DATE, TIME))
+
         dt_list = [datetime.datetime.combine(date.date(), time.time()) for  \
             (date, time) in zip(data_dict[DATE], data_dict[TIME])]
         data_dict[DT] = dt_list
