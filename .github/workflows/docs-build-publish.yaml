@@ -12,13 +12,18 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+        
+      - name: Setup Python
+        uses: actions/setup-python@v2.1.4
+        with:
+          python-version: 3.x
          
       - name: Sphinx Build
         uses: ammaraskar/sphinx-action@master
         with:
           docs-folder: docs/
           build-command: make html
-          pre-build-command: "pip install -U pip && pip install sphinx && sphinx-apidoc --separate -f -o docs/ src/"
+          pre-build-command: "pip install -U pip && pip install -r requirements.txt && pip install sphinx && sphinx-apidoc --separate -f -o docs/ src/"
 
       - name: Publish Artifact
         uses: actions/upload-artifact@v2.2.0
@@ -52,7 +57,7 @@ jobs:
           git commit -am "Update documentation" -a || true
       
       - name: Push changes
-        uses: actions/github-push-action@master
+        uses: ad-m/github-push-action@v0.6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
