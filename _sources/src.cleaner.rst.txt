@@ -5,7 +5,6 @@ Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 4
 
    src.cleaner.Cleaner
    src.cleaner.config

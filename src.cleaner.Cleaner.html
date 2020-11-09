@@ -1,10 +1,9 @@
 
 <!DOCTYPE html>
 
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>src.cleaner.Cleaner module &#8212; glyculator-core  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -35,28 +34,28 @@
             
   <div class="section" id="module-src.cleaner.Cleaner">
 <span id="src-cleaner-cleaner-module"></span><h1>src.cleaner.Cleaner module<a class="headerlink" href="#module-src.cleaner.Cleaner" title="Permalink to this headline">¶</a></h1>
-<dl class="py class">
+<dl class="class">
 <dt id="src.cleaner.Cleaner.Cleaner">
 <em class="property">class </em><code class="sig-prename descclassname">src.cleaner.Cleaner.</code><code class="sig-name descname">Cleaner</code><a class="reference internal" href="_modules/src/cleaner/Cleaner.html#Cleaner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.cleaner.Cleaner.Cleaner" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
+<dl class="method">
 <dt id="src.cleaner.Cleaner.Cleaner.predict">
 <code class="sig-name descname">predict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/cleaner/Cleaner.html#Cleaner.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.cleaner.Cleaner.Cleaner.predict" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.cleaner.Cleaner.Cleaner.predict_proba">
 <code class="sig-name descname">predict_proba</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/cleaner/Cleaner.html#Cleaner.predict_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.cleaner.Cleaner.Cleaner.predict_proba" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.cleaner.Cleaner.Cleaner.set_up_model">
 <code class="sig-name descname">set_up_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/cleaner/Cleaner.html#Cleaner.set_up_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.cleaner.Cleaner.Cleaner.set_up_model" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
-<dl class="py class">
+<dl class="class">
 <dt id="src.cleaner.Cleaner.Cleaner5">
 <em class="property">class </em><code class="sig-prename descclassname">src.cleaner.Cleaner.</code><code class="sig-name descname">Cleaner5</code><a class="reference internal" href="_modules/src/cleaner/Cleaner.html#Cleaner5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.cleaner.Cleaner.Cleaner5" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#src.cleaner.Cleaner.Cleaner" title="src.cleaner.Cleaner.Cleaner"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.cleaner.Cleaner.Cleaner</span></code></a></p>
@@ -64,9 +63,9 @@
 <p>Makes predictions about CGM time points
 being a part of regular 5 minutes interspersed
 measurement.</p>
-<dl class="py method">
+<dl class="method">
 <dt id="src.cleaner.Cleaner.Cleaner5.predict">
-<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">interval</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/src/cleaner/Cleaner.html#Cleaner5.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.cleaner.Cleaner.Cleaner5.predict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param">data: dict</em>, <em class="sig-param">interval: int</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/src/cleaner/Cleaner.html#Cleaner5.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.cleaner.Cleaner.Cleaner5.predict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns model class predictions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -85,9 +84,9 @@ tensor as its value.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.cleaner.Cleaner.Cleaner5.predict_proba">
-<code class="sig-name descname">predict_proba</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">interval</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/src/cleaner/Cleaner.html#Cleaner5.predict_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.cleaner.Cleaner.Cleaner5.predict_proba" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">predict_proba</code><span class="sig-paren">(</span><em class="sig-param">data: dict</em>, <em class="sig-param">interval: int</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/src/cleaner/Cleaner.html#Cleaner5.predict_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.cleaner.Cleaner.Cleaner5.predict_proba" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns model probability predictions.</p>
 <p>As a side-effects sets _probabilities output.</p>
 <dl class="field-list simple">
@@ -107,7 +106,7 @@ tensor as its value.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.cleaner.Cleaner.Cleaner5.set_up_model">
 <code class="sig-name descname">set_up_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/cleaner/Cleaner.html#Cleaner5.set_up_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.cleaner.Cleaner.Cleaner5.set_up_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets up model.</p>
@@ -144,7 +143,6 @@ tensor as its value.</p></li>
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="articles/quickstart.html">glyculator-core quickstart guide!</a></li>
 </ul>
@@ -196,7 +194,7 @@ tensor as its value.</p></li>
       &copy;2020, Konrad Pagacz.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

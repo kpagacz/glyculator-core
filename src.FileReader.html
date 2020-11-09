@@ -1,10 +1,9 @@
 
 <!DOCTYPE html>
 
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>src.FileReader module &#8212; glyculator-core  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -35,12 +34,12 @@
             
   <div class="section" id="module-src.FileReader">
 <span id="src-filereader-module"></span><h1>src.FileReader module<a class="headerlink" href="#module-src.FileReader" title="Permalink to this headline">¶</a></h1>
-<dl class="py class">
+<dl class="class">
 <dt id="src.FileReader.FileReader">
-<em class="property">class </em><code class="sig-prename descclassname">src.FileReader.</code><code class="sig-name descname">FileReader</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_name</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">string_io</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">bytes_io</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">read_config</span><span class="p">:</span> <span class="n"><a class="reference internal" href="src.configs.html#src.configs.ReadConfig" title="src.configs.ReadConfig">src.configs.ReadConfig</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileReader.html#FileReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileReader.FileReader" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">src.FileReader.</code><code class="sig-name descname">FileReader</code><span class="sig-paren">(</span><em class="sig-param">file_name: str = None</em>, <em class="sig-param">string_io=None</em>, <em class="sig-param">bytes_io=None</em>, <em class="sig-param">read_config: src.configs.ReadConfig = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileReader.html#FileReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileReader.FileReader" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Responsible for reading files and parsing them.</p>
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.FileReader.FileReader.file_name">
 <code class="sig-name descname">file_name</code><a class="headerlink" href="#src.FileReader.FileReader.file_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>name of the file to read</p>
@@ -51,7 +50,7 @@
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.FileReader.FileReader.read_config">
 <code class="sig-name descname">read_config</code><a class="headerlink" href="#src.FileReader.FileReader.read_config" title="Permalink to this definition">¶</a></dt>
 <dd><p>configuration for reading</p>
@@ -62,7 +61,7 @@
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.FileReader.FileReader.delimited">
 <code class="sig-name descname">delimited</code><a class="headerlink" href="#src.FileReader.FileReader.delimited" title="Permalink to this definition">¶</a></dt>
 <dd><p>flag for delimited text files</p>
@@ -73,7 +72,7 @@
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.FileReader.FileReader.extension">
 <code class="sig-name descname">extension</code><a class="headerlink" href="#src.FileReader.FileReader.extension" title="Permalink to this definition">¶</a></dt>
 <dd><p>contains file extension</p>
@@ -84,17 +83,17 @@
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.FileReader.FileReader.string_io">
 <code class="sig-name descname">string_io</code><a class="headerlink" href="#src.FileReader.FileReader.string_io" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.FileReader.FileReader.bytes_io">
 <code class="sig-name descname">bytes_io</code><a class="headerlink" href="#src.FileReader.FileReader.bytes_io" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.FileReader.FileReader.read_report">
 <code class="sig-name descname">read_report</code><a class="headerlink" href="#src.FileReader.FileReader.read_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>contains diagnostic information about the reading process</p>
@@ -105,9 +104,9 @@
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.FileReader.FileReader.lists_to_dict">
-<code class="sig-name descname">lists_to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileReader.html#FileReader.lists_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileReader.FileReader.lists_to_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">lists_to_dict</code><span class="sig-paren">(</span><em class="sig-param">data: list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileReader.html#FileReader.lists_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileReader.FileReader.lists_to_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts rows read by this class to a dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -126,9 +125,9 @@
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.FileReader.FileReader.merge_date_and_time">
-<code class="sig-name descname">merge_date_and_time</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_dict</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileReader.html#FileReader.merge_date_and_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileReader.FileReader.merge_date_and_time" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">merge_date_and_time</code><span class="sig-paren">(</span><em class="sig-param">data_dict: dict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileReader.html#FileReader.merge_date_and_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileReader.FileReader.merge_date_and_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merges date and time columns.</p>
 <p>Performs an element-wise paste operation on DATE and TIME lists of data_dict
 and assigns the result to DT key in data_dict. Assumes dates are
@@ -150,12 +149,12 @@ datetime.datetime objects.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.FileReader.FileReader.read_bytes_io">
 <code class="sig-name descname">read_bytes_io</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileReader.html#FileReader.read_bytes_io"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileReader.FileReader.read_bytes_io" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.FileReader.FileReader.read_delimited">
 <code class="sig-name descname">read_delimited</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileReader.html#FileReader.read_delimited"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileReader.FileReader.read_delimited" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads a csv file</p>
@@ -173,7 +172,7 @@ datetime.datetime objects.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.FileReader.FileReader.read_excel">
 <code class="sig-name descname">read_excel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileReader.html#FileReader.read_excel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileReader.FileReader.read_excel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads an excel file</p>
@@ -192,7 +191,7 @@ the Excel date formatting to datetime ISO format.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.FileReader.FileReader.read_file">
 <code class="sig-name descname">read_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileReader.html#FileReader.read_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileReader.FileReader.read_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads a file.</p>
@@ -220,27 +219,27 @@ stored in the read_config attribute.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.FileReader.FileReader.read_string_io">
 <code class="sig-name descname">read_string_io</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileReader.html#FileReader.read_string_io"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileReader.FileReader.read_string_io" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.FileReader.FileReader.set_config">
-<code class="sig-name descname">set_config</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">read_config</span><span class="p">:</span> <span class="n"><a class="reference internal" href="src.configs.html#src.configs.ReadConfig" title="src.configs.ReadConfig">src.configs.ReadConfig</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileReader.html#FileReader.set_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileReader.FileReader.set_config" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_config</code><span class="sig-paren">(</span><em class="sig-param">read_config: src.configs.ReadConfig</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileReader.html#FileReader.set_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileReader.FileReader.set_config" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.FileReader.FileReader.set_file_name">
-<code class="sig-name descname">set_file_name</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_name</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileReader.html#FileReader.set_file_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileReader.FileReader.set_file_name" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_file_name</code><span class="sig-paren">(</span><em class="sig-param">file_name: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileReader.html#FileReader.set_file_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileReader.FileReader.set_file_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.FileReader.FileReader.substring_extension">
 <code class="sig-name descname">substring_extension</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileReader.html#FileReader.substring_extension"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileReader.FileReader.substring_extension" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.FileReader.FileReader.validate_file_type">
 <code class="sig-name descname">validate_file_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileReader.html#FileReader.validate_file_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileReader.FileReader.validate_file_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Validates the file type.</p>
@@ -279,7 +278,6 @@ is expected to be a comma-seperated values file.</p>
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="articles/quickstart.html">glyculator-core quickstart guide!</a></li>
 </ul>
@@ -329,7 +327,7 @@ is expected to be a comma-seperated values file.</p>
       &copy;2020, Konrad Pagacz.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

@@ -1,10 +1,9 @@
 
 <!DOCTYPE html>
 
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>src.FileCleaner module &#8212; glyculator-core  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -35,12 +34,12 @@
             
   <div class="section" id="module-src.FileCleaner">
 <span id="src-filecleaner-module"></span><h1>src.FileCleaner module<a class="headerlink" href="#module-src.FileCleaner" title="Permalink to this headline">¶</a></h1>
-<dl class="py class">
+<dl class="class">
 <dt id="src.FileCleaner.FileCleaner">
-<em class="property">class </em><code class="sig-prename descclassname">src.FileCleaner.</code><code class="sig-name descname">FileCleaner</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_df</span><span class="p">:</span> <span class="n">pandas.core.frame.DataFrame</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">clean_config</span><span class="p">:</span> <span class="n"><a class="reference internal" href="src.configs.html#src.configs.CleanConfig" title="src.configs.CleanConfig">src.configs.CleanConfig</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileCleaner.html#FileCleaner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileCleaner.FileCleaner" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">src.FileCleaner.</code><code class="sig-name descname">FileCleaner</code><span class="sig-paren">(</span><em class="sig-param">data_df: pandas.core.frame.DataFrame = None</em>, <em class="sig-param">clean_config: src.configs.CleanConfig = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileCleaner.html#FileCleaner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileCleaner.FileCleaner" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Cleans the raw datafile</p>
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.FileCleaner.FileCleaner.untidy">
 <code class="sig-name descname">untidy</code><a class="headerlink" href="#src.FileCleaner.FileCleaner.untidy" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
@@ -50,7 +49,7 @@
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.FileCleaner.FileCleaner.tidy">
 <code class="sig-name descname">tidy</code><a class="reference internal" href="_modules/src/FileCleaner.html#FileCleaner.tidy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileCleaner.FileCleaner.tidy" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
@@ -60,7 +59,7 @@
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.FileCleaner.FileCleaner.tidy_report">
 <code class="sig-name descname">tidy_report</code><a class="headerlink" href="#src.FileCleaner.FileCleaner.tidy_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>contains information about performed tidying</p>
@@ -71,14 +70,14 @@
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.FileCleaner.FileCleaner.clean_config">
 <code class="sig-name descname">clean_config</code><em class="property"> = None</em><a class="headerlink" href="#src.FileCleaner.FileCleaner.clean_config" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.FileCleaner.FileCleaner.fix_dates">
-<code class="sig-name descname">fix_dates</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_df</span><span class="p">:</span> <span class="n">pandas.core.frame.DataFrame</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileCleaner.html#FileCleaner.fix_dates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileCleaner.FileCleaner.fix_dates" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">fix_dates</code><span class="sig-paren">(</span><em class="sig-param">data_df: pandas.core.frame.DataFrame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileCleaner.html#FileCleaner.fix_dates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileCleaner.FileCleaner.fix_dates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Flags measurements of data_df</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -96,24 +95,24 @@ Two columns: DT and GLUCOSE</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.FileCleaner.FileCleaner.set_clean_config">
-<code class="sig-name descname">set_clean_config</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">clean_config</span><span class="p">:</span> <span class="n"><a class="reference internal" href="src.configs.html#src.configs.CleanConfig" title="src.configs.CleanConfig">src.configs.CleanConfig</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileCleaner.html#FileCleaner.set_clean_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileCleaner.FileCleaner.set_clean_config" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_clean_config</code><span class="sig-paren">(</span><em class="sig-param">clean_config: src.configs.CleanConfig</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileCleaner.html#FileCleaner.set_clean_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileCleaner.FileCleaner.set_clean_config" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.FileCleaner.FileCleaner.set_untidy">
-<code class="sig-name descname">set_untidy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_df</span><span class="p">:</span> <span class="n">pandas.core.frame.DataFrame</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileCleaner.html#FileCleaner.set_untidy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileCleaner.FileCleaner.set_untidy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_untidy</code><span class="sig-paren">(</span><em class="sig-param">data_df: pandas.core.frame.DataFrame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileCleaner.html#FileCleaner.set_untidy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileCleaner.FileCleaner.set_untidy" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.FileCleaner.FileCleaner.tidied">
 <code class="sig-name descname">tidied</code><em class="property"> = None</em><a class="headerlink" href="#src.FileCleaner.FileCleaner.tidied" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
-<dt id="id0">
-<code class="sig-name descname">tidy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileCleaner.html#FileCleaner.tidy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<dl class="method">
+<dt>
+<code class="sig-name descname">tidy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileCleaner.html#FileCleaner.tidy"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Fires up cleaning routines</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises</dt>
@@ -123,14 +122,14 @@ Two columns: DT and GLUCOSE</p>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt id="id1">
-<code class="sig-name descname">tidy_report</code><em class="property"> = {}</em><a class="headerlink" href="#id1" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">tidy_report</code><em class="property"> = {}</em></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt id="id2">
-<code class="sig-name descname">untidy</code><em class="property"> = None</em><a class="headerlink" href="#id2" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">untidy</code><em class="property"> = None</em></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -154,7 +153,6 @@ Two columns: DT and GLUCOSE</p>
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="articles/quickstart.html">glyculator-core quickstart guide!</a></li>
 </ul>
@@ -204,7 +202,7 @@ Two columns: DT and GLUCOSE</p>
       &copy;2020, Konrad Pagacz.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

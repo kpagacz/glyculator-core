@@ -1,10 +1,9 @@
 
 <!DOCTYPE html>
 
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>src.configs module &#8212; glyculator-core  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -35,12 +34,12 @@
             
   <div class="section" id="module-src.configs">
 <span id="src-configs-module"></span><h1>src.configs module<a class="headerlink" href="#module-src.configs" title="Permalink to this headline">¶</a></h1>
-<dl class="py class">
+<dl class="class">
 <dt id="src.configs.CalcConfig">
-<em class="property">class </em><code class="sig-prename descclassname">src.configs.</code><code class="sig-name descname">CalcConfig</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">interval</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">5</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CalcConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CalcConfig" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">src.configs.</code><code class="sig-name descname">CalcConfig</code><span class="sig-paren">(</span><em class="sig-param">interval: int = 5</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CalcConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CalcConfig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Configuration for calculating glycemic variability indices.</p>
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.configs.CalcConfig.interval">
 <code class="sig-name descname">interval</code><a class="headerlink" href="#src.configs.CalcConfig.interval" title="Permalink to this definition">¶</a></dt>
 <dd><p>time in minutes between glycemic measurements</p>
@@ -51,7 +50,7 @@
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.configs.CalcConfig.unit">
 <code class="sig-name descname">unit</code><a class="headerlink" href="#src.configs.CalcConfig.unit" title="Permalink to this definition">¶</a></dt>
 <dd><p>“mg” or “mmol” unit of glycemic measurement</p>
@@ -62,20 +61,20 @@
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.configs.CalcConfig.mage_excursion_threshold">
 <code class="sig-name descname">mage_excursion_threshold</code><a class="headerlink" href="#src.configs.CalcConfig.mage_excursion_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>int or “sd”, “half-sd”</p>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.CalcConfig.set_excursion_threshold">
-<code class="sig-name descname">set_excursion_threshold</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">exc_threshold</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>int<span class="p">, </span>str<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CalcConfig.set_excursion_threshold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CalcConfig.set_excursion_threshold" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_excursion_threshold</code><span class="sig-paren">(</span><em class="sig-param">exc_threshold: Union[int, str]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CalcConfig.set_excursion_threshold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CalcConfig.set_excursion_threshold" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.CalcConfig.set_interval">
-<code class="sig-name descname">set_interval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">interval</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CalcConfig.set_interval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CalcConfig.set_interval" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_interval</code><span class="sig-paren">(</span><em class="sig-param">interval: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CalcConfig.set_interval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CalcConfig.set_interval" title="Permalink to this definition">¶</a></dt>
 <dd><p>Interval setter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -87,24 +86,24 @@
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.CalcConfig.set_mage_moving_average">
-<code class="sig-name descname">set_mage_moving_average</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">window_size</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CalcConfig.set_mage_moving_average"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CalcConfig.set_mage_moving_average" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_mage_moving_average</code><span class="sig-paren">(</span><em class="sig-param">window_size: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CalcConfig.set_mage_moving_average"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CalcConfig.set_mage_moving_average" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.CalcConfig.set_mage_peak_distance">
-<code class="sig-name descname">set_mage_peak_distance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mage_distance</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CalcConfig.set_mage_peak_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CalcConfig.set_mage_peak_distance" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_mage_peak_distance</code><span class="sig-paren">(</span><em class="sig-param">mage_distance: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CalcConfig.set_mage_peak_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CalcConfig.set_mage_peak_distance" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.CalcConfig.set_tir_range">
-<code class="sig-name descname">set_tir_range</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tir_range</span><span class="p">:</span> <span class="n">Tuple<span class="p">[</span>float<span class="p">, </span>float<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CalcConfig.set_tir_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CalcConfig.set_tir_range" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_tir_range</code><span class="sig-paren">(</span><em class="sig-param">tir_range: Tuple[float, float]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CalcConfig.set_tir_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CalcConfig.set_tir_range" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.CalcConfig.set_unit">
-<code class="sig-name descname">set_unit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">unit</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CalcConfig.set_unit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CalcConfig.set_unit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_unit</code><span class="sig-paren">(</span><em class="sig-param">unit: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CalcConfig.set_unit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CalcConfig.set_unit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unit setter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -125,44 +124,44 @@ Must be “mg” or “mmol”</p>
 
 </dd></dl>
 
-<dl class="py class">
+<dl class="class">
 <dt id="src.configs.CleanConfig">
-<em class="property">class </em><code class="sig-prename descclassname">src.configs.</code><code class="sig-name descname">CleanConfig</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">interval</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">use_api</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>str<span class="p">, </span>bool<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">api_port</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">api_address</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">api_endpoint</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fill_glucose_tolerance</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CleanConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CleanConfig" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">src.configs.</code><code class="sig-name descname">CleanConfig</code><span class="sig-paren">(</span><em class="sig-param">interval: int, use_api: Union[str, bool], api_port: Optional[int] = None, api_address: Optional[str] = None, api_endpoint: Optional[str] = None, fill_glucose_tolerance: int = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CleanConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CleanConfig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Configuration for cleaning a CGM file.</p>
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.configs.CleanConfig.interval">
 <code class="sig-name descname">interval</code><a class="headerlink" href="#src.configs.CleanConfig.interval" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.configs.CleanConfig.use_api">
 <code class="sig-name descname">use_api</code><a class="headerlink" href="#src.configs.CleanConfig.use_api" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.configs.CleanConfig.api_port">
 <code class="sig-name descname">api_port</code><a class="headerlink" href="#src.configs.CleanConfig.api_port" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.configs.CleanConfig.api_address">
 <code class="sig-name descname">api_address</code><a class="headerlink" href="#src.configs.CleanConfig.api_address" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.configs.CleanConfig.api_endpoint">
 <code class="sig-name descname">api_endpoint</code><a class="headerlink" href="#src.configs.CleanConfig.api_endpoint" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.configs.CleanConfig._full_api_address">
 <code class="sig-name descname">_full_api_address</code><a class="headerlink" href="#src.configs.CleanConfig._full_api_address" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.CleanConfig.set_api_address">
-<code class="sig-name descname">set_api_address</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">api_address</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CleanConfig.set_api_address"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CleanConfig.set_api_address" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_api_address</code><span class="sig-paren">(</span><em class="sig-param">api_address: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CleanConfig.set_api_address"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CleanConfig.set_api_address" title="Permalink to this definition">¶</a></dt>
 <dd><p>api_address setter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -174,9 +173,9 @@ Must be “mg” or “mmol”</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.CleanConfig.set_api_endpoint">
-<code class="sig-name descname">set_api_endpoint</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">api_endpoint</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CleanConfig.set_api_endpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CleanConfig.set_api_endpoint" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_api_endpoint</code><span class="sig-paren">(</span><em class="sig-param">api_endpoint: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CleanConfig.set_api_endpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CleanConfig.set_api_endpoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>endpoint setter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -188,9 +187,9 @@ Must be “mg” or “mmol”</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.CleanConfig.set_api_port">
-<code class="sig-name descname">set_api_port</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">api_port</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CleanConfig.set_api_port"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CleanConfig.set_api_port" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_api_port</code><span class="sig-paren">(</span><em class="sig-param">api_port: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CleanConfig.set_api_port"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CleanConfig.set_api_port" title="Permalink to this definition">¶</a></dt>
 <dd><p>api_port setter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -202,9 +201,9 @@ Must be “mg” or “mmol”</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.CleanConfig.set_fill_glucose_tolerance">
-<code class="sig-name descname">set_fill_glucose_tolerance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fill_glucose_tolerance</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/src/configs.html#CleanConfig.set_fill_glucose_tolerance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CleanConfig.set_fill_glucose_tolerance" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_fill_glucose_tolerance</code><span class="sig-paren">(</span><em class="sig-param">fill_glucose_tolerance: int</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/src/configs.html#CleanConfig.set_fill_glucose_tolerance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CleanConfig.set_fill_glucose_tolerance" title="Permalink to this definition">¶</a></dt>
 <dd><p>fill_glucose_tolerance setter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -214,9 +213,9 @@ glucose values in FileCleaner</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.CleanConfig.set_interval">
-<code class="sig-name descname">set_interval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">interval</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CleanConfig.set_interval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CleanConfig.set_interval" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_interval</code><span class="sig-paren">(</span><em class="sig-param">interval: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CleanConfig.set_interval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CleanConfig.set_interval" title="Permalink to this definition">¶</a></dt>
 <dd><p>Interval setter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -228,9 +227,9 @@ glucose values in FileCleaner</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.CleanConfig.set_use_api">
-<code class="sig-name descname">set_use_api</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">use_api</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>bool<span class="p">, </span>str<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CleanConfig.set_use_api"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CleanConfig.set_use_api" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_use_api</code><span class="sig-paren">(</span><em class="sig-param">use_api: Union[bool, str]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#CleanConfig.set_use_api"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.CleanConfig.set_use_api" title="Permalink to this definition">¶</a></dt>
 <dd><p>use_api flag setter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -245,74 +244,74 @@ to clean dates</p>
 
 </dd></dl>
 
-<dl class="py class">
+<dl class="class">
 <dt id="src.configs.ReadConfig">
-<em class="property">class </em><code class="sig-prename descclassname">src.configs.</code><code class="sig-name descname">ReadConfig</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">header_skip</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">date_time_column</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">date_column</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">time_column</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">glucose_values_column</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#ReadConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.ReadConfig" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">src.configs.</code><code class="sig-name descname">ReadConfig</code><span class="sig-paren">(</span><em class="sig-param">header_skip: int = 0</em>, <em class="sig-param">date_time_column: int = None</em>, <em class="sig-param">date_column: int = None</em>, <em class="sig-param">time_column: int = None</em>, <em class="sig-param">glucose_values_column: int = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#ReadConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.ReadConfig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Configuration for reading a CGM file.</p>
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.configs.ReadConfig.date_column">
 <code class="sig-name descname">date_column</code><em class="property"> = None</em><a class="headerlink" href="#src.configs.ReadConfig.date_column" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.configs.ReadConfig.date_time_column">
 <code class="sig-name descname">date_time_column</code><em class="property"> = None</em><a class="headerlink" href="#src.configs.ReadConfig.date_time_column" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.configs.ReadConfig.file_length">
 <code class="sig-name descname">file_length</code><em class="property"> = None</em><a class="headerlink" href="#src.configs.ReadConfig.file_length" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.configs.ReadConfig.glucose_values_column">
 <code class="sig-name descname">glucose_values_column</code><em class="property"> = None</em><a class="headerlink" href="#src.configs.ReadConfig.glucose_values_column" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.configs.ReadConfig.header_skip">
 <code class="sig-name descname">header_skip</code><em class="property"> = None</em><a class="headerlink" href="#src.configs.ReadConfig.header_skip" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.ReadConfig.set_date_column">
-<code class="sig-name descname">set_date_column</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#ReadConfig.set_date_column"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.ReadConfig.set_date_column" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_date_column</code><span class="sig-paren">(</span><em class="sig-param">value: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#ReadConfig.set_date_column"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.ReadConfig.set_date_column" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.ReadConfig.set_date_time_column">
-<code class="sig-name descname">set_date_time_column</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#ReadConfig.set_date_time_column"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.ReadConfig.set_date_time_column" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_date_time_column</code><span class="sig-paren">(</span><em class="sig-param">value: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#ReadConfig.set_date_time_column"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.ReadConfig.set_date_time_column" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.ReadConfig.set_glucose_values_column">
-<code class="sig-name descname">set_glucose_values_column</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#ReadConfig.set_glucose_values_column"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.ReadConfig.set_glucose_values_column" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_glucose_values_column</code><span class="sig-paren">(</span><em class="sig-param">value: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#ReadConfig.set_glucose_values_column"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.ReadConfig.set_glucose_values_column" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.ReadConfig.set_header_skip">
-<code class="sig-name descname">set_header_skip</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#ReadConfig.set_header_skip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.ReadConfig.set_header_skip" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_header_skip</code><span class="sig-paren">(</span><em class="sig-param">value: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#ReadConfig.set_header_skip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.ReadConfig.set_header_skip" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.ReadConfig.set_time_column">
-<code class="sig-name descname">set_time_column</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#ReadConfig.set_time_column"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.ReadConfig.set_time_column" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_time_column</code><span class="sig-paren">(</span><em class="sig-param">value: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#ReadConfig.set_time_column"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.ReadConfig.set_time_column" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
+<dl class="attribute">
 <dt id="src.configs.ReadConfig.time_column">
 <code class="sig-name descname">time_column</code><em class="property"> = None</em><a class="headerlink" href="#src.configs.ReadConfig.time_column" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.ReadConfig.validate">
 <code class="sig-name descname">validate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#ReadConfig.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.ReadConfig.validate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="src.configs.ReadConfig.validateNonnegative">
-<code class="sig-name descname">validateNonnegative</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#ReadConfig.validateNonnegative"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.ReadConfig.validateNonnegative" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">validateNonnegative</code><span class="sig-paren">(</span><em class="sig-param">value: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/configs.html#ReadConfig.validateNonnegative"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.configs.ReadConfig.validateNonnegative" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -336,7 +335,6 @@ to clean dates</p>
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="articles/quickstart.html">glyculator-core quickstart guide!</a></li>
 </ul>
@@ -386,7 +384,7 @@ to clean dates</p>
       &copy;2020, Konrad Pagacz.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

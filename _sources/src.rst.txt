@@ -5,7 +5,6 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 4
 
    src.cleaner
 
@@ -13,7 +12,6 @@ Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 4
 
    src.DateFixer
    src.FileCleaner
