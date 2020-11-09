@@ -39,3 +39,7 @@ jobs:
           rm -rf /tmp/gh-pages
           cp -r docs/_build/html /tmp/gh-pages
           git checkout gh-pages
+          rm -rf *
+          cp -a /tmp/gh-pages/. .
+          git commit -am "Updated the documentation"
+          git push origin gh-pages
