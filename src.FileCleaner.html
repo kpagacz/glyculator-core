@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.FileCleaner module &#8212; glyculator-core  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="src.FileReader module" href="src.FileReader.html" />
+    <link rel="prev" title="src.DateFixer module" href="src.DateFixer.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-src.FileCleaner">
+<span id="src-filecleaner-module"></span><h1>src.FileCleaner module<a class="headerlink" href="#module-src.FileCleaner" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="src.FileCleaner.FileCleaner">
+<em class="property">class </em><code class="sig-prename descclassname">src.FileCleaner.</code><code class="sig-name descname">FileCleaner</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_df</span><span class="p">:</span> <span class="n">pandas.core.frame.DataFrame</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">clean_config</span><span class="p">:</span> <span class="n"><a class="reference internal" href="src.configs.html#src.configs.CleanConfig" title="src.configs.CleanConfig">src.configs.CleanConfig</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileCleaner.html#FileCleaner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileCleaner.FileCleaner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Cleans the raw datafile</p>
+<dl class="py attribute">
+<dt id="src.FileCleaner.FileCleaner.untidy">
+<code class="sig-name descname">untidy</code><a class="headerlink" href="#src.FileCleaner.FileCleaner.untidy" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="src.FileCleaner.FileCleaner.tidy">
+<code class="sig-name descname">tidy</code><a class="reference internal" href="_modules/src/FileCleaner.html#FileCleaner.tidy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileCleaner.FileCleaner.tidy" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="src.FileCleaner.FileCleaner.tidy_report">
+<code class="sig-name descname">tidy_report</code><a class="headerlink" href="#src.FileCleaner.FileCleaner.tidy_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>contains information about performed tidying</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="src.FileCleaner.FileCleaner.clean_config">
+<code class="sig-name descname">clean_config</code><em class="property"> = None</em><a class="headerlink" href="#src.FileCleaner.FileCleaner.clean_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.FileCleaner.FileCleaner.fix_dates">
+<code class="sig-name descname">fix_dates</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_df</span><span class="p">:</span> <span class="n">pandas.core.frame.DataFrame</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileCleaner.html#FileCleaner.fix_dates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileCleaner.FileCleaner.fix_dates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flags measurements of data_df</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data_df</strong> – Dataframe of measurements.
+Two columns: DT and GLUCOSE</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Array of 0s and 1s - boolean values
+1 represents record, which is part of the CGM
+0 represents additional record, which should be discarded</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.FileCleaner.FileCleaner.set_clean_config">
+<code class="sig-name descname">set_clean_config</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">clean_config</span><span class="p">:</span> <span class="n"><a class="reference internal" href="src.configs.html#src.configs.CleanConfig" title="src.configs.CleanConfig">src.configs.CleanConfig</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileCleaner.html#FileCleaner.set_clean_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileCleaner.FileCleaner.set_clean_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.FileCleaner.FileCleaner.set_untidy">
+<code class="sig-name descname">set_untidy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_df</span><span class="p">:</span> <span class="n">pandas.core.frame.DataFrame</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileCleaner.html#FileCleaner.set_untidy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.FileCleaner.FileCleaner.set_untidy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="src.FileCleaner.FileCleaner.tidied">
+<code class="sig-name descname">tidied</code><em class="property"> = None</em><a class="headerlink" href="#src.FileCleaner.FileCleaner.tidied" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="id0">
+<code class="sig-name descname">tidy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/FileCleaner.html#FileCleaner.tidy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fires up cleaning routines</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>RuntimeError</strong> – if untidy attribute is None
+    if clean_config attribute is None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="id1">
+<code class="sig-name descname">tidy_report</code><em class="property"> = {}</em><a class="headerlink" href="#id1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id2">
+<code class="sig-name descname">untidy</code><em class="property"> = None</em><a class="headerlink" href="#id2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">glyculator-core</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="articles/quickstart.html">glyculator-core quickstart guide!</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="src.html">src package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">src</a><ul>
+  <li><a href="src.html">src package</a><ul>
+      <li>Previous: <a href="src.DateFixer.html" title="previous chapter">src.DateFixer module</a></li>
+      <li>Next: <a href="src.FileReader.html" title="next chapter">src.FileReader module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Konrad Pagacz.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/src.FileCleaner.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

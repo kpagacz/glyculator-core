@@ -1,0 +1,494 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.FileReader &#8212; glyculator-core  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for src.FileReader</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">xlrd</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">pandas.core.tools.datetimes</span> <span class="kn">import</span> <span class="n">_guess_datetime_format</span>
+
+<span class="kn">from</span> <span class="nn">.configs</span> <span class="kn">import</span> <span class="n">ReadConfig</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">ACCEPTED_EXTENSIONS</span><span class="p">,</span> <span class="n">TEXT_EXTENSIONS</span><span class="p">,</span> <span class="n">DT</span><span class="p">,</span> <span class="n">GLUCOSE</span><span class="p">,</span> <span class="n">DATE</span><span class="p">,</span> <span class="n">TIME</span>
+
+<span class="c1"># TODO (konrad.pagacz@gmail.com) expand docs</span>
+
+<div class="viewcode-block" id="FileReader"><a class="viewcode-back" href="../../src.FileReader.html#src.FileReader.FileReader">[docs]</a><span class="k">class</span> <span class="nc">FileReader</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Responsible for reading files and parsing them.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        file_name (str): name of the file to read</span>
+<span class="sd">        read_config (ReadConfig): configuration for reading </span>
+<span class="sd">        delimited (bool): flag for delimited text files</span>
+<span class="sd">        extension (str): contains file extension</span>
+<span class="sd">        string_io:</span>
+<span class="sd">        bytes_io:</span>
+<span class="sd">        read_report (dict): contains diagnostic information about the reading process</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__attrs__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;file_name&quot;</span><span class="p">,</span> <span class="s2">&quot;read_config&quot;</span><span class="p">,</span> <span class="s2">&quot;extension&quot;</span><span class="p">,</span> <span class="s2">&quot;delimited&quot;</span><span class="p">,</span> <span class="s2">&quot;string_io&quot;</span><span class="p">,</span> <span class="s2">&quot;bytes_io&quot;</span><span class="p">,</span> <span class="s2">&quot;read_report&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;delimited&quot;</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">string_io</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bytes_io</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">read_config</span><span class="p">:</span> <span class="n">ReadConfig</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+
+        <span class="c1"># File name, which contains the data to be read</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span>
+
+        <span class="c1"># Currently not supported</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">string_io</span> <span class="o">=</span> <span class="n">string_io</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bytes_io</span> <span class="o">=</span> <span class="n">bytes_io</span>
+
+        <span class="c1"># Object of class ReadConfig, which contains the configuration for this FileReader</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_config</span> <span class="o">=</span> <span class="n">read_config</span>
+
+        <span class="c1"># Flag for the file being delimited</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delimited</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_report</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+        <span class="k">if</span><span class="p">(</span><span class="n">file_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">substring_extension</span><span class="p">()</span>
+        
+
+<div class="viewcode-block" id="FileReader.validate_file_type"><a class="viewcode-back" href="../../src.FileReader.html#src.FileReader.FileReader.validate_file_type">[docs]</a>    <span class="k">def</span> <span class="nf">validate_file_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validates the file type.</span>
+
+<span class="sd">        It validates the file type is one of the accepted file types based</span>
+<span class="sd">        on its extension.</span>
+<span class="sd">        Side effects: sets the delimited attribute to True if the file</span>
+<span class="sd">        is expected to be a comma-seperated values file.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the file is one of the accepted types, false otherwise</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extension</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ACCEPTED_EXTENSIONS</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extension</span> <span class="ow">in</span> <span class="n">TEXT_EXTENSIONS</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">delimited</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="FileReader.read_file"><a class="viewcode-back" href="../../src.FileReader.html#src.FileReader.FileReader.read_file">[docs]</a>    <span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reads a file.</span>
+
+<span class="sd">        Performs pre-read checks and reads a file supplied by a file_name with</span>
+<span class="sd">        configuration stored in read_config. Also calls validate_file_type to set</span>
+<span class="sd">        the delimited attribute determining whether to treat the file as delimited</span>
+<span class="sd">        or excel; and check for the type validity. Uses the configuration</span>
+<span class="sd">        stored in the read_config attribute.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.DataFrame: Read file</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            TypeError: if no ReadConfig is supplied</span>
+<span class="sd">            TypeError: if no file name, stringIO or bytesIO is supplided</span>
+<span class="sd">            ValueError: if the file type of a file is not supported</span>
+<span class="sd">            FileNotFoundError: if the file specified by `file_name` is not found</span>
+<span class="sd">            ValueError: if the supplied ReadConfig fails to validate</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Pre-read checks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;FileReader - started reading file&quot;</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_config</span> <span class="o">==</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Tried reading the file with no supplied ReadConfig. Try supplying a ReadConfig with set_config().</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_name</span> <span class="o">==</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">string_io</span> <span class="o">==</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bytes_io</span> <span class="o">==</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Tried reading the file with no supplied source. Try supplying a file name with set_file_name() or a source.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">string_io</span> <span class="o">==</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bytes_io</span> <span class="o">==</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validate_file_type</span><span class="p">()</span> <span class="o">==</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;File type </span><span class="si">{}</span><span class="s2"> not supported.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extension</span><span class="p">))</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_name</span><span class="p">)</span> <span class="o">==</span> <span class="kc">False</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> not found</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_name</span><span class="p">))</span>
+            <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span> <span class="o">==</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The supplied ReadConfig fails to validate.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        
+        <span class="c1"># Reading to a list of lists</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_name</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delimited</span><span class="p">):</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_delimited</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_excel</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bytes_io</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">):</span> <span class="c1">#TODO (konrad.pagacz@gmail.com) Make the IO reading</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_bytes_io</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_string_io</span><span class="p">()</span>
+
+        <span class="c1"># Creating a dict from a list of lists</span>
+        <span class="c1"># using the read_config</span>
+        <span class="n">data_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lists_to_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="c1"># Merge Date and Time column as needed</span>
+        <span class="c1"># if not needed remove them</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">date_time_column</span> <span class="o">==</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">data_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">merge_date_and_time</span><span class="p">(</span><span class="n">data_dict</span><span class="p">)</span>
+        
+        <span class="c1"># Date and Time are no longer needed</span>
+        <span class="c1"># all the information is stored in dt</span>
+        <span class="k">del</span> <span class="n">data_dict</span><span class="p">[</span><span class="n">DATE</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">data_dict</span><span class="p">[</span><span class="n">TIME</span><span class="p">]</span>
+
+        <span class="c1"># Initialize the dict as a pandas.DataFrame()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data_dict</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;FileReader - read_file - return:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">data</span></div>
+        
+
+<div class="viewcode-block" id="FileReader.read_delimited"><a class="viewcode-back" href="../../src.FileReader.html#src.FileReader.FileReader.read_delimited">[docs]</a>    <span class="k">def</span> <span class="nf">read_delimited</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reads a csv file</span>
+
+<span class="sd">        Tries to sniff the format of the csv and then attempts to read it.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: list of lists (rows)</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: When file is empty or could not read its contents.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">file_</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Open and sniff the formatting of the file</span>
+        <span class="c1"># Read the file row by row appending to file_</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csv_file</span><span class="p">:</span>
+            <span class="n">dialect</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">Sniffer</span><span class="p">()</span><span class="o">.</span><span class="n">sniff</span><span class="p">(</span><span class="n">csv_file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1024</span><span class="p">))</span>
+            <span class="n">csv_file</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">csv_reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">csv_file</span><span class="p">,</span> <span class="n">dialect</span><span class="o">=</span><span class="n">dialect</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">csv_reader</span><span class="p">:</span>
+                <span class="n">file_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;FileReader - read_delimited - read file:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file_</span><span class="p">))</span>
+
+
+        <span class="c1"># This transposition makes it a little bit more efficient to subset the</span>
+        <span class="c1"># columns DT DATE and TIME</span>
+        <span class="n">transposed_file_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">file_</span><span class="p">))</span>
+        <span class="c1"># Detect datetime format using _guess_datetime_format from Pandas library</span>
+        <span class="k">for</span> <span class="n">col_name</span><span class="p">,</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">DT</span><span class="p">,</span> <span class="n">DATE</span><span class="p">],</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">date_time_column</span><span class="p">,</span>
+                                                        <span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">date_column</span><span class="p">]):</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">index</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="c1"># Detect format of the datetime </span>
+                <span class="n">dt_array</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">transposed_file_</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>    \
+                    <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">header_skip</span><span class="p">:]</span>
+                <span class="n">first_nonzero</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">notnull</span><span class="p">(</span><span class="n">dt_array</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">dt_format</span> <span class="o">=</span> <span class="n">_guess_datetime_format</span><span class="p">(</span><span class="n">dt_array</span><span class="p">[</span><span class="n">first_nonzero</span><span class="p">],</span> <span class="n">dayfirst</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;FileReader - read_delimited - detected </span><span class="si">{}</span><span class="s2"> format: </span><span class="si">{}</span><span class="s2">&quot;</span>    \
+                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">col_name</span><span class="p">,</span> <span class="n">dt_format</span><span class="p">))</span>
+            
+                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">file_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">header_skip</span><span class="p">:</span> <span class="p">]:</span>
+                    <span class="n">col</span> <span class="o">=</span> <span class="n">index</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">dt_format</span><span class="p">)</span>
+                    <span class="k">except</span><span class="p">:</span>
+                        <span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">col_name</span><span class="p">,</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">TIME</span><span class="p">],</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">time_column</span><span class="p">]):</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">index</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="c1"># Detect format of the datetime </span>
+                <span class="n">dt_array</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">transposed_file_</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>    \
+                    <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">header_skip</span><span class="p">:]</span>
+                <span class="n">first_nonzero</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">notnull</span><span class="p">(</span><span class="n">dt_array</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dt_array</span><span class="p">[</span><span class="n">first_nonzero</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">))</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+                    <span class="n">dt_format</span> <span class="o">=</span> <span class="s2">&quot;%H:%M&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">dt_format</span> <span class="o">=</span> <span class="s2">&quot;%H:%M:%S&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;FileReader - read_delimited - detected </span><span class="si">{}</span><span class="s2"> format: </span><span class="si">{}</span><span class="s2">&quot;</span>    \
+                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">col_name</span><span class="p">,</span> <span class="n">dt_format</span><span class="p">))</span>
+
+                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">file_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">header_skip</span><span class="p">:</span> <span class="p">]:</span>
+                    <span class="n">col</span> <span class="o">=</span> <span class="n">index</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">dt_format</span><span class="p">)</span>
+                    <span class="k">except</span><span class="p">:</span>
+                        <span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="c1"># Glucose values are read as strings, so there is a need to convert them to numeric</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">file_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">header_skip</span><span class="p">:</span> <span class="p">]:</span>
+            <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">glucose_values_column</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">glucose_values_column</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;FileReader - read_delimited - return: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file_</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">file_</span></div>
+
+
+<div class="viewcode-block" id="FileReader.read_excel"><a class="viewcode-back" href="../../src.FileReader.html#src.FileReader.FileReader.read_excel">[docs]</a>    <span class="k">def</span> <span class="nf">read_excel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reads an excel file</span>
+
+<span class="sd">        Reads an excel file using xlrd package. Also attempts to translate</span>
+<span class="sd">        the Excel date formatting to datetime ISO format.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: list of lists (rows)</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: When file is empty or could not read its contents.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">file_</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Open the excel sheet and report its shape</span>
+        <span class="n">wb</span> <span class="o">=</span> <span class="n">xlrd</span><span class="o">.</span><span class="n">open_workbook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_name</span><span class="p">)</span>
+        <span class="n">sheet</span> <span class="o">=</span> <span class="n">wb</span><span class="o">.</span><span class="n">sheet_by_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_report</span><span class="p">[</span><span class="s2">&quot;Raw Excel Shape&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">sheet</span><span class="o">.</span><span class="n">nrows</span><span class="p">,</span> <span class="n">sheet</span><span class="o">.</span><span class="n">ncols</span><span class="p">)</span>
+
+        <span class="c1"># Read in the whole file</span>
+        <span class="c1"># Could read only the relevant columns, but it gets messy,</span>
+        <span class="c1"># because the order of appending cells to row[]</span>
+        <span class="c1"># would dictate the order of DATE TIME DT GLUCOSE columns</span>
+        <span class="c1"># which would later disrupt joining thr rows together using the </span>
+        <span class="c1"># read_config configuration. The positions would have to be set permanently</span>
+        <span class="c1"># in the file_, which I am not a big fan of. This doesn&#39;t make it that much slower</span>
+        <span class="c1"># because the whole file needs to be parsed anyway.</span>
+        <span class="k">for</span> <span class="n">row_number</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sheet</span><span class="o">.</span><span class="n">nrows</span><span class="p">):</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">col_number</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sheet</span><span class="o">.</span><span class="n">ncols</span><span class="p">):</span>
+                <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sheet</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="n">row_number</span><span class="p">,</span> <span class="n">col_number</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">file_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+        
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">file_</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;File </span><span class="si">{}</span><span class="s2"> empty or could not read its content.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span>\
+                <span class="nb">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_name</span><span class="p">))</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;FileReader - read_excel - read the whole file:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file_</span><span class="p">))</span>
+
+        <span class="c1"># Translate the Excel date time format</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">file_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">header_skip</span><span class="p">:</span> <span class="p">]:</span>
+            <span class="c1"># DT</span>
+            <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">date_time_column</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="n">col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">date_time_column</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">xlrd</span><span class="o">.</span><span class="n">xldate</span><span class="o">.</span><span class="n">xldate_as_datetime</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">],</span>
+                        <span class="n">datemode</span><span class="o">=</span><span class="n">wb</span><span class="o">.</span><span class="n">datemode</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+            <span class="c1"># DATE</span>
+            <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">date_column</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="n">col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">date_column</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">xlrd</span><span class="o">.</span><span class="n">xldate</span><span class="o">.</span><span class="n">xldate_as_datetime</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">],</span>
+                        <span class="n">datemode</span><span class="o">=</span><span class="n">wb</span><span class="o">.</span><span class="n">datemode</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+            <span class="c1"># TIME</span>
+            <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">time_column</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="n">col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">time_column</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">xlrd</span><span class="o">.</span><span class="n">xldate</span><span class="o">.</span><span class="n">xldate_as_datetime</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">],</span>
+                        <span class="n">datemode</span><span class="o">=</span><span class="n">wb</span><span class="o">.</span><span class="n">datemode</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;FileReader - read_excel - return:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file_</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">file_</span></div>
+
+
+<div class="viewcode-block" id="FileReader.read_string_io"><a class="viewcode-back" href="../../src.FileReader.html#src.FileReader.FileReader.read_string_io">[docs]</a>    <span class="k">def</span> <span class="nf">read_string_io</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;String io&quot;</span><span class="p">)</span>
+        <span class="n">file</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">file</span></div>
+
+
+<div class="viewcode-block" id="FileReader.read_bytes_io"><a class="viewcode-back" href="../../src.FileReader.html#src.FileReader.FileReader.read_bytes_io">[docs]</a>    <span class="k">def</span> <span class="nf">read_bytes_io</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Bytes IO&quot;</span><span class="p">)</span>
+        <span class="n">file</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">file</span></div>
+
+
+<div class="viewcode-block" id="FileReader.set_file_name"><a class="viewcode-back" href="../../src.FileReader.html#src.FileReader.FileReader.set_file_name">[docs]</a>    <span class="k">def</span> <span class="nf">set_file_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span></div>
+ 
+
+<div class="viewcode-block" id="FileReader.set_config"><a class="viewcode-back" href="../../src.FileReader.html#src.FileReader.FileReader.set_config">[docs]</a>    <span class="k">def</span> <span class="nf">set_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_config</span><span class="p">:</span> <span class="n">ReadConfig</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">read_config</span><span class="p">,</span> <span class="n">ReadConfig</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;read_config must be a ReadConfig object&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_config</span> <span class="o">=</span> <span class="n">read_config</span></div>
+
+
+<div class="viewcode-block" id="FileReader.substring_extension"><a class="viewcode-back" href="../../src.FileReader.html#src.FileReader.FileReader.substring_extension">[docs]</a>    <span class="k">def</span> <span class="nf">substring_extension</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">extension</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">extension</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="FileReader.lists_to_dict"><a class="viewcode-back" href="../../src.FileReader.html#src.FileReader.FileReader.lists_to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">lists_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Converts rows read by this class to a dictionary.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            data: list of lists, which represents a list of rows of the read file</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: dictionary with keys DT and GLUCOSE or DATE, TIME and GLUCOSE depending</span>
+<span class="sd">                on the read_config</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">DT</span> <span class="p">:</span> <span class="p">[],</span>
+            <span class="n">GLUCOSE</span> <span class="p">:</span> <span class="p">[],</span>
+            <span class="n">DATE</span> <span class="p">:</span> <span class="p">[],</span>
+            <span class="n">TIME</span> <span class="p">:</span> <span class="p">[],</span>
+        <span class="p">}</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">header_skip</span><span class="p">:]</span>
+        <span class="n">dt_column_number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">date_time_column</span>
+        <span class="n">date_column_number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">date_column</span>
+        <span class="n">time_column_number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">time_column</span>
+        <span class="n">glucose_column_number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="o">.</span><span class="n">glucose_values_column</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">dt_column_number</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">data_dict</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">glucose_column_number</span><span class="p">])</span>
+                <span class="n">data_dict</span><span class="p">[</span><span class="n">DT</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">dt_column_number</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">data_dict</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">glucose_column_number</span><span class="p">])</span> 
+                <span class="n">data_dict</span><span class="p">[</span><span class="n">DATE</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">date_column_number</span><span class="p">])</span>
+                <span class="n">data_dict</span><span class="p">[</span><span class="n">TIME</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">time_column_number</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;FileReader - lists_to_dict - return </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data_dict</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">data_dict</span></div>
+
+
+<div class="viewcode-block" id="FileReader.merge_date_and_time"><a class="viewcode-back" href="../../src.FileReader.html#src.FileReader.FileReader.merge_date_and_time">[docs]</a>    <span class="k">def</span> <span class="nf">merge_date_and_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Merges date and time columns.</span>
+
+<span class="sd">        Performs an element-wise paste operation on DATE and TIME lists of data_dict</span>
+<span class="sd">        and assigns the result to DT key in data_dict. Assumes dates are</span>
+<span class="sd">        datetime.datetime objects.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            data_dict (dict): should contain date and time keys</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Dictionary with additional DT key, which contains</span>
+<span class="sd">                the results of pasting</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data_dict_date_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="n">DATE</span><span class="p">])</span>
+        <span class="n">data_dict_time_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="n">TIME</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">data_dict_date_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span> <span class="ow">or</span> <span class="n">data_dict_time_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;data_dict[</span><span class="si">{}</span><span class="s2">] and data_dict[</span><span class="si">{}</span><span class="s2">] should be of the type list&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">DATE</span><span class="p">,</span> <span class="n">TIME</span><span class="p">))</span>
+
+        <span class="n">dt_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">date</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span> <span class="k">for</span>  \
+            <span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="n">DATE</span><span class="p">],</span> <span class="n">data_dict</span><span class="p">[</span><span class="n">TIME</span><span class="p">])]</span>
+        <span class="n">data_dict</span><span class="p">[</span><span class="n">DT</span><span class="p">]</span> <span class="o">=</span> <span class="n">dt_list</span>
+        <span class="k">return</span> <span class="n">data_dict</span></div></div>
+
+    
+
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">glyculator-core</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../articles/quickstart.html">glyculator-core quickstart guide!</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">src</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Konrad Pagacz.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
