@@ -30,14 +30,12 @@ jobs:
       - name: Build docs
         run: |
           cd ./docs
-          sphinx-apidoc -f -o . ../src
+          sphinx-apidoc -f -o --separate . ../src
           make html
 
       - name: Publish docs
         run: |
-          GH_BASE_BRANCH = $(git branch | cut -f 1 -d" ")
+          GH_BASE_BRANCH=$(git branch | cut -f 2 -d" ")
           rm -rf /tmp/gh-pages
-          cp -r _build/html /tmp/gh-pages
+          cp -r docs/_build/html /tmp/gh-pages
           git checkout gh-pages
-          rm -rf * && cp -r /tmp/gh-pages/* ./
-          git add . && git commit -m "Updated gh-pages" && git push && git checkout $GH_BASE_BRANCH
