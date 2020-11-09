@@ -3,8 +3,6 @@ name: Build and publish documentation on GH pages
 on:
   push:
     branches: [ dev ]
-  pull_request:
-    branches: [ dev ]
 
 jobs:
   build:
