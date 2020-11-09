@@ -1,45 +1,58 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Build and publish documentation on GH pages
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the dev branch
 on:
   push:
     branches: [ dev ]
   pull_request:
     branches: [ dev ]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-    
-      - name: Setup Dependencies
-        run: |
-          pip install -U pip
-          pip install -r requirements.txt
-        
-      - name: Build docs
-        run: |
-          cd ./docs
-          sphinx-apidoc -f -o --separate . ../src
-          make html
+         
+      - name: Sphinx Build
+        uses: ammaraskar/sphinx-action@master
+        with:
+          docs-folder: docs/
+          build-command: make html
+          pre-build-command: "pip install -U pip && pip install sphinx && sphinx-apidoc --separate -f -o docs/ src/"
 
-      - name: Publish docs
+      - name: Publish Artifact
+        uses: actions/upload-artifact@v2.2.0
+        with:
+          name: documentation
+          path: docs/_build/html
+          retention-days: 5
+          if-no-files-found: error
+          
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+          
+      - name: Empty the repo
         run: |
-          GH_BASE_BRANCH=$(git branch | cut -f 2 -d" ")
-          rm -rf /tmp/gh-pages
-          cp -r docs/_build/html /tmp/gh-pages
-          git checkout gh-pages
           rm -rf *
-          cp -a /tmp/gh-pages/. .
-          git commit -am "Updated the documentation"
-          git push origin gh-pages
+          
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: documentation
+          
+      - name: Commit changes
+        run: |
+          git config --local user.email "workflows@github.com"
+          git config --local user.name "GitHub Workflows"
+          git commit -am "Update documentation" -a || true
+      
+      - name: Push changes
+        uses: actions/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
