@@ -22,6 +22,10 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
          
+      - name: Setup Dependencies
+        run: |
+          pip3 install sphinx
+
       - name: Build docs
         run: |
           cd ./docs
