@@ -7,9 +7,9 @@ import yaml
 import numpy as np
 import pandas as pd 
 
-import src.Index as indices
-from src.utils import DT, GLUCOSE
-from src.configs import CalcConfig
+import glyculator.Index as indices
+from glyculator.utils import DT, GLUCOSE
+from glyculator.configs import CalcConfig
 
 # TODO (konrad.pagacz@gmail.com) write tests for indices for non nan array
 # TODO (konrad.pagacz@gmail.com) write tests for indices for nan array

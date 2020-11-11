@@ -21,7 +21,7 @@ jobs:
         with:
           docs-folder: docs/
           build-command: make html
-          pre-build-command: "pip install -U pip && pip install -r requirements.txt && pip install sphinx && sphinx-apidoc --separate -f -o docs/ src/"
+          pre-build-command: "pip install -U pip && pip install -r requirements.txt && pip install sphinx && sphinx-apidoc --separate -f -o docs/ glyculator/"
 
       - name: Publish Artifact
         uses: actions/upload-artifact@v2.2.0

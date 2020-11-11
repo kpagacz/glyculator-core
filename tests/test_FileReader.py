@@ -5,9 +5,9 @@ from unittest.mock import patch, Mock
 
 import pandas as pd
 
-import src.FileReader as fr
-from src.utils import DATE, TIME, DT, GLUCOSE
-from src.configs import ReadConfig
+import glyculator.FileReader as fr
+from glyculator.utils import DATE, TIME, DT, GLUCOSE
+from glyculator.configs import ReadConfig
 
 import logging
 import logging.config

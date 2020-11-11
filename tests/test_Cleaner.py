@@ -1,9 +1,9 @@
 import unittest
 import tensorflow as tf 
 import numpy as np 
-import src.cleaner.config as config
+import glyculator.cleaner.config as config
 
-from src.cleaner.Cleaner import Cleaner5, Cleaner
+from glyculator.cleaner.Cleaner import Cleaner5, Cleaner
 
 class TestCleaner(unittest.TestCase):
     def setUp(self):

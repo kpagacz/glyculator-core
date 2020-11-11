@@ -7,9 +7,9 @@ import logging
 import logging.config
 import yaml
 
-from src.FileCleaner import FileCleaner
-from src.utils import DT, GLUCOSE
-import src.configs as configs
+from glyculator.FileCleaner import FileCleaner
+from glyculator.utils import DT, GLUCOSE
+import glyculator.configs as configs
 
 class TestFileCleaner(unittest.TestCase):
     def setUp(self):

@@ -1,12 +1,8 @@
 import numpy as np
-import os
-import logging
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
-logging.getLogger('tensorflow').setLevel(logging.FATAL)
 import tensorflow as tf
 import functools
 
-import src.cleaner.config as config
+import glyculator.cleaner.config as config
 
 class Cleaner(object):
     def predict_proba(self):
@@ -153,5 +149,5 @@ class Cleaner5(Cleaner):
         # what is going on. For now I leave it with expect_partial() 
         # to suppress the warnings.
         # Konrad
-        model_dense.load_weights("src/cleaner/model/DenseComplicatedv2").expect_partial()
+        model_dense.load_weights("glyculator/cleaner/model/DenseComplicatedv2").expect_partial()
         return model_dense

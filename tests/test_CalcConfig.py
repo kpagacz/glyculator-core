@@ -1,4 +1,4 @@
-import src.configs as configs
+import glyculator.configs as configs
 import unittest 
 
 

@@ -1,7 +1,7 @@
 import unittest
 
-from src.configs import CleanConfig
-import src.utils as utils
+from glyculator.configs import CleanConfig
+import glyculator.utils as utils
 
 
 class TestCleanConfig(unittest.TestCase):

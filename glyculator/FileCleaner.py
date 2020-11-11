@@ -5,7 +5,7 @@ import numpy as np
 
 from .utils import DT, GLUCOSE, PANDAS_FILL_FREQUENCIES, PANDAS_TOLERANCES
 from .configs import CleanConfig
-import src.DateFixer as DateFixer
+import glyculator.DateFixer as DateFixer
 
 # TODO (konrad.pagacz@gmail.com) expand docs
 # TODO (konrad.pagacz@gmail.com) write unit tests with no integration with CleanConfig

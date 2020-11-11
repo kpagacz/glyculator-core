@@ -6,10 +6,10 @@ import mock
 import requests
 
 
-import src.DateFixer as DateFixer
-import src.configs as configs
-from src.cleaner.config import WINDOW_SIZE
-import src.utils as utils
+import glyculator.DateFixer as DateFixer
+import glyculator.configs as configs
+from glyculator.cleaner.config import WINDOW_SIZE
+import glyculator.utils as utils
 
 class TestDateFixer(unittest.TestCase):
     def setUp(self):

@@ -7,9 +7,9 @@ from typing import Union
 
 import logging
 
-from src.configs import CleanConfig
-import src.utils as utils
-from src.cleaner.config import WINDOW_SIZE
+from glyculator.configs import CleanConfig
+import glyculator.utils as utils
+from glyculator.cleaner.config import WINDOW_SIZE
 
 
 
@@ -137,7 +137,7 @@ class DateFixer(object):
 
 
     def _predict_local(self, dates_records: dict):
-        from src.cleaner.Cleaner import Cleaner5
+        from glyculator.cleaner.Cleaner import Cleaner5
         if(self._cleaner is None):
             self._cleaner = Cleaner5()
 
