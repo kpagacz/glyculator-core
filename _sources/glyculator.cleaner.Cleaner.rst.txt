@@ -1,0 +1,7 @@
+glyculator.cleaner.Cleaner module
+=================================
+
+.. automodule:: glyculator.cleaner.Cleaner
+   :members:
+   :undoc-members:
+   :show-inheritance:

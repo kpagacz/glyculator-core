@@ -1,0 +1,7 @@
+glyculator.FileCleaner module
+=============================
+
+.. automodule:: glyculator.FileCleaner
+   :members:
+   :undoc-members:
+   :show-inheritance:

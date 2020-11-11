@@ -1,0 +1,209 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>glyculator.cleaner.Cleaner module &#8212; glyculator-core  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="glyculator.cleaner.config module" href="glyculator.cleaner.config.html" />
+    <link rel="prev" title="glyculator.cleaner package" href="glyculator.cleaner.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-glyculator.cleaner.Cleaner">
+<span id="glyculator-cleaner-cleaner-module"></span><h1>glyculator.cleaner.Cleaner module<a class="headerlink" href="#module-glyculator.cleaner.Cleaner" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="glyculator.cleaner.Cleaner.Cleaner">
+<em class="property">class </em><code class="sig-prename descclassname">glyculator.cleaner.Cleaner.</code><code class="sig-name descname">Cleaner</code><a class="reference internal" href="_modules/glyculator/cleaner/Cleaner.html#Cleaner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.cleaner.Cleaner.Cleaner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="glyculator.cleaner.Cleaner.Cleaner.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/cleaner/Cleaner.html#Cleaner.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.cleaner.Cleaner.Cleaner.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="glyculator.cleaner.Cleaner.Cleaner.predict_proba">
+<code class="sig-name descname">predict_proba</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/cleaner/Cleaner.html#Cleaner.predict_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.cleaner.Cleaner.Cleaner.predict_proba" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="glyculator.cleaner.Cleaner.Cleaner.set_up_model">
+<code class="sig-name descname">set_up_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/cleaner/Cleaner.html#Cleaner.set_up_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.cleaner.Cleaner.Cleaner.set_up_model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="glyculator.cleaner.Cleaner.Cleaner5">
+<em class="property">class </em><code class="sig-prename descclassname">glyculator.cleaner.Cleaner.</code><code class="sig-name descname">Cleaner5</code><a class="reference internal" href="_modules/glyculator/cleaner/Cleaner.html#Cleaner5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.cleaner.Cleaner.Cleaner5" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#glyculator.cleaner.Cleaner.Cleaner" title="glyculator.cleaner.Cleaner.Cleaner"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.cleaner.Cleaner.Cleaner</span></code></a></p>
+<p>Wrapper around keras model.</p>
+<p>Makes predictions about CGM time points
+being a part of regular 5 minutes interspersed
+measurement.</p>
+<dl class="method">
+<dt id="glyculator.cleaner.Cleaner.Cleaner5.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param">data: dict</em>, <em class="sig-param">interval: int</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/glyculator/cleaner/Cleaner.html#Cleaner5.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.cleaner.Cleaner.Cleaner5.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns model class predictions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Dict with one key - “numeric” and
+tensor as its value.</p></li>
+<li><p><strong>interval</strong> (<em>int</em>) – Number of minutes designating the temporal pattern.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Array of model class predictions.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="glyculator.cleaner.Cleaner.Cleaner5.predict_proba">
+<code class="sig-name descname">predict_proba</code><span class="sig-paren">(</span><em class="sig-param">data: dict</em>, <em class="sig-param">interval: int</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/glyculator/cleaner/Cleaner.html#Cleaner5.predict_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.cleaner.Cleaner.Cleaner5.predict_proba" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns model probability predictions.</p>
+<p>As a side-effects sets _probabilities output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Dict with one key - “numeric” and
+tensor as its value.</p></li>
+<li><p><strong>interval</strong> (<em>int</em>) – Number of minutes designating the temporal pattern.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Array of model probability predictions</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="glyculator.cleaner.Cleaner.Cleaner5.set_up_model">
+<code class="sig-name descname">set_up_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/cleaner/Cleaner.html#Cleaner5.set_up_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.cleaner.Cleaner.Cleaner5.set_up_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets up model.</p>
+<p>Sets up the architecture and loads weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>tensorflow.keras.Model</dt><dd><p>Set up model.</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">glyculator-core</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="articles/quickstart.html">A Quickstart Guide!</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">glyculator</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="glyculator.html">glyculator package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">glyculator</a><ul>
+  <li><a href="glyculator.html">glyculator package</a><ul>
+  <li><a href="glyculator.cleaner.html">glyculator.cleaner package</a><ul>
+      <li>Previous: <a href="glyculator.cleaner.html" title="previous chapter">glyculator.cleaner package</a></li>
+      <li>Next: <a href="glyculator.cleaner.config.html" title="next chapter">glyculator.cleaner.config module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Konrad Pagacz.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/glyculator.cleaner.Cleaner.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

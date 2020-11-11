@@ -1,0 +1,730 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>glyculator.Index &#8212; glyculator-core  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for glyculator.Index</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">scipy</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">signal</span>
+
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">DT</span><span class="p">,</span> <span class="n">GLUCOSE</span>
+<span class="kn">from</span> <span class="nn">.configs</span> <span class="kn">import</span> <span class="n">CalcConfig</span>
+
+<span class="c1"># TODO (konrad.pagacz@gmail.com) expand docs</span>
+<span class="c1"># TODO (konrad.pagacz@gmail.com) finish writing tests</span>
+
+<div class="viewcode-block" id="GVIndex"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVIndex">[docs]</a><span class="k">class</span> <span class="nc">GVIndex</span><span class="p">():</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calc_config</span><span class="p">:</span> <span class="n">CalcConfig</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_df</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_calc_config</span><span class="p">(</span><span class="n">calc_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVIndex.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVIndex.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="GVIndex.set_df"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVIndex.set_df">[docs]</a>    <span class="k">def</span> <span class="nf">set_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="o">!=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="ow">and</span> <span class="n">df</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;df needs to be a pandas DataFrame. Received type:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">df</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="GVIndex.set_calc_config"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVIndex.set_calc_config">[docs]</a>    <span class="k">def</span> <span class="nf">set_calc_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calc_config</span><span class="p">:</span> <span class="n">CalcConfig</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">calc_config</span><span class="p">,</span> <span class="n">CalcConfig</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;calc_config needs to be a CalcConfig&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span> <span class="o">=</span> <span class="n">calc_config</span></div>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="o">!=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot call GVIndex on other than pandas.DataFrame&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_df</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GVMean"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVMean">[docs]</a><span class="k">class</span> <span class="nc">GVMean</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVMean</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVMean.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVMean.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])</span></div></div>
+    
+
+<div class="viewcode-block" id="GVMedian"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVMedian">[docs]</a><span class="k">class</span> <span class="nc">GVMedian</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVMedian</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVMedian.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVMedian.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])</span></div></div>
+
+
+<div class="viewcode-block" id="GVVariance"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVVariance">[docs]</a><span class="k">class</span> <span class="nc">GVVariance</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVVariance</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVVariance.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVVariance.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanvar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])</span></div></div>
+
+
+<div class="viewcode-block" id="GVNanFraction"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVNanFraction">[docs]</a><span class="k">class</span> <span class="nc">GVNanFraction</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVNanFraction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVNanFraction.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVNanFraction.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="GVRecordsNo"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVRecordsNo">[docs]</a><span class="k">class</span> <span class="nc">GVRecordsNo</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVRecordsNo</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVRecordsNo.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVRecordsNo.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="GVCV"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVCV">[docs]</a><span class="k">class</span> <span class="nc">GVCV</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVCV</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVCV.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVCV.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])</span></div></div>
+
+
+<div class="viewcode-block" id="GVstd"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVstd">[docs]</a><span class="k">class</span> <span class="nc">GVstd</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVstd</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVstd.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVstd.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])</span></div></div>
+
+
+<div class="viewcode-block" id="GVm100"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVm100">[docs]</a><span class="k">class</span> <span class="nc">GVm100</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVm100</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVm100.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVm100.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;mg&quot;</span><span class="p">):</span>
+            <span class="c1"># np.ma.array is numpy built-in mask function</span>
+            <span class="c1"># numpy functions will mask elements that are inf in</span>
+            <span class="c1"># calculations with masked array</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="mi">1000</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)))</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;mmol&quot;</span><span class="p">):</span>
+            <span class="c1"># glucose: mmol/l * 18 = mg/dl</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="mi">1000</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mi">100</span> <span class="o">/</span> <span class="mi">18</span><span class="p">))))</span></div></div>
+
+
+<div class="viewcode-block" id="GVj"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVj">[docs]</a><span class="k">class</span> <span class="nc">GVj</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVj</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVj.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVj.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">0.001</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]),</span> <span class="mi">2</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="GVmage"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVmage">[docs]</a><span class="k">class</span> <span class="nc">GVmage</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVmage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVmage.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVmage.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculates MAGE (mean average of glucose excursions)</span>
+
+<span class="sd">        Steps undertaken:</span>
+<span class="sd">        1. Replace nans with mean</span>
+<span class="sd">        2. Moving average with window size equal to 9</span>
+<span class="sd">        3. Search excursions and calculate the average</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float:</span>
+<span class="sd">                value of MAGE</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Mean substitution of nans</span>
+        <span class="n">nans_replaced</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">to_replace</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GVmage - calculate - nans_replaced: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nans_replaced</span><span class="p">))</span>
+
+        <span class="c1"># Smoothing</span>
+        <span class="n">smoothed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_moving_average</span><span class="p">(</span><span class="n">nans_replaced</span><span class="p">,</span>
+            <span class="n">window</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">mage_moving_average_window_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GVmage - calculate - smoothed: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">smoothed</span><span class="p">))</span>
+
+        <span class="c1"># Finding local maximas and minimas</span>
+        <span class="n">maximas</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">find_peaks</span><span class="p">(</span><span class="n">smoothed</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">mage_peak_distance</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">minimas</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">find_peaks</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">smoothed</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">mage_peak_distance</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GVmage - calculate - minimas: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">minimas</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GVmage - calculate - maximas: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">maximas</span><span class="p">))</span>
+
+        <span class="c1"># minimas and maximas are joined in an alternating manner</span>
+        <span class="c1"># example: minimas[0] maximas[0] minimas[1] maximas[1]</span>
+        <span class="n">joined</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_join_extremas</span><span class="p">(</span><span class="n">minimas</span><span class="p">,</span> <span class="n">maximas</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">joined</span> <span class="o">==</span> <span class="p">[]):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No maximas or minimas found in the measurement&quot;</span><span class="p">)</span>
+
+        <span class="n">joined_values</span> <span class="o">=</span> <span class="n">smoothed</span><span class="p">[</span><span class="n">joined</span><span class="p">]</span>
+        <span class="n">value_differences</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">joined_values</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GVmage - calculate - joined values: </span><span class="se">\n</span><span class="si">{}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">value_differences: </span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">joined_values</span><span class="p">,</span> <span class="n">value_differences</span><span class="p">))</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">mage_excursion_threshold</span> <span class="o">==</span> <span class="s2">&quot;sd&quot;</span><span class="p">):</span>
+            <span class="n">threshold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">mage_excursion_threshold</span> <span class="o">==</span> <span class="s2">&quot;half_sd&quot;</span><span class="p">):</span>
+            <span class="n">threshold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.5</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GVmage - calculate - threshold: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">threshold</span><span class="p">))</span>
+        <span class="n">value_differences</span> <span class="o">=</span> <span class="n">value_differences</span><span class="p">[</span><span class="n">value_differences</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">value_differences</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">value_differences</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_moving_average</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">window</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculates moving average smoothing.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            arr (pandas.Series):</span>
+<span class="sd">                pandas.Series of glucose values</span>
+<span class="sd">            window (int):</span>
+<span class="sd">                size of the moving average window</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.Series</span>
+<span class="sd">                Series with smoothed glucose values.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError:</span>
+<span class="sd">                if arr is not a pandas.Series</span>
+<span class="sd">            ValueError:</span>
+<span class="sd">                if window is not int</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span><span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">Series</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;arr must be a pandas.Series&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">window</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;window must be an int&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">arr</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">window</span><span class="p">,))</span> <span class="o">/</span> <span class="n">window</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;valid&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_join_extremas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimas</span><span class="p">,</span> <span class="n">maximas</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Joins indices of minimas and maximas in an alternating manner.</span>
+
+
+<span class="sd">        Note:</span>
+<span class="sd">            `minimas` and `maximas` are local minimas and maximas in the original </span>
+<span class="sd">            measurement. This function works on indices of those minimas and maximas.</span>
+
+<span class="sd">            If there are two consecutive values of either type between two consecutive</span>
+<span class="sd">            values of the other type, than all the indices except the first index in the</span>
+<span class="sd">            consecutive series are ignored. Eg. [1,3,5] and [2, 6] will return [1,2,3,6].</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            minimas:</span>
+<span class="sd">                list-like of indices of glucose minimas in the original measurement</span>
+<span class="sd">            maximas:</span>
+<span class="sd">                list-like of indices of glucose maximas in the original measurement</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :obj:`list` of :obj:`int`:</span>
+<span class="sd">                joined indices of minimas and maximas</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Can&#39;t join if there are no minimas or maximas</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">minimas</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">maximas</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">joined</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">minimas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">maximas</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">minimas_turn</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">joined</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">minimas</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">minimas_turn</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">joined</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">maximas</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_join_extremas_util</span><span class="p">(</span><span class="n">joined</span><span class="p">,</span> <span class="n">minimas</span><span class="p">,</span> <span class="n">maximas</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="ow">not</span> <span class="n">minimas_turn</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">minimas_turn</span><span class="p">),</span> <span class="n">minimas_turn</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">joined</span>
+
+    <span class="k">def</span> <span class="nf">_join_extremas_util</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">joined</span><span class="p">,</span> <span class="n">minimas</span><span class="p">,</span> <span class="n">maximas</span><span class="p">,</span> <span class="n">minimas_ind</span><span class="p">,</span> <span class="n">maximas_ind</span><span class="p">,</span> <span class="n">minimas_turn</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GVmage - _join_extremas_util - called with: </span><span class="se">\n</span><span class="s2">joined </span><span class="si">{}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">minimas </span><span class="si">{}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">maximas </span><span class="si">{}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">minimas_ind </span><span class="si">{}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">maximas_ind </span><span class="si">{}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">minimas_turn </span><span class="si">{}</span><span class="s2">&quot;</span>    \
+            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">joined</span><span class="p">,</span> <span class="n">minimas</span><span class="p">,</span> <span class="n">maximas</span><span class="p">,</span> <span class="n">minimas_ind</span><span class="p">,</span> <span class="n">maximas_ind</span><span class="p">,</span> <span class="n">minimas_turn</span><span class="p">))</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="n">minimas_turn</span><span class="p">):</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">minimas_ind</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">minimas</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GVmage - _join_extremas_util - return: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">joined</span><span class="p">))</span>
+                <span class="k">return</span> <span class="n">joined</span>
+
+            <span class="k">if</span><span class="p">(</span><span class="n">minimas</span><span class="p">[</span><span class="n">minimas_ind</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">joined</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">joined</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">minimas</span><span class="p">[</span><span class="n">minimas_ind</span><span class="p">])</span>
+                <span class="n">minimas_turn</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_join_extremas_util</span><span class="p">(</span><span class="n">joined</span><span class="p">,</span> <span class="n">minimas</span><span class="p">,</span> <span class="n">maximas</span><span class="p">,</span> <span class="n">minimas_ind</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">maximas_ind</span><span class="p">,</span> <span class="n">minimas_turn</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">maximas_ind</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">maximas</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GVmage - _join_extremas_util - return: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">joined</span><span class="p">))</span>
+                <span class="k">return</span> <span class="n">joined</span>
+            
+            <span class="k">if</span><span class="p">(</span><span class="n">maximas</span><span class="p">[</span><span class="n">maximas_ind</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">joined</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">joined</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">maximas</span><span class="p">[</span><span class="n">maximas_ind</span><span class="p">])</span>
+                <span class="n">minimas_turn</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_join_extremas_util</span><span class="p">(</span><span class="n">joined</span><span class="p">,</span> <span class="n">minimas</span><span class="p">,</span> <span class="n">maximas</span><span class="p">,</span> <span class="n">minimas_ind</span><span class="p">,</span> <span class="n">maximas_ind</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">minimas_turn</span><span class="p">)</span></div>
+
+        
+<div class="viewcode-block" id="GVmodd"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVmodd">[docs]</a><span class="k">class</span> <span class="nc">GVmodd</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVmodd</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVmodd.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVmodd.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">daily_differences</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">],</span> <span class="n">n</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mi">24</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">interval</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">daily_differences</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="GVcongaX"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVcongaX">[docs]</a><span class="k">class</span> <span class="nc">GVcongaX</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVcongaX</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVcongaX.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVcongaX.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hours</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">hours</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span> <span class="ow">or</span> <span class="n">hours</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;hours must be a positive int&quot;</span><span class="p">)</span>
+        <span class="n">differences</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">],</span> <span class="n">n</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">hours</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">interval</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanvar</span><span class="p">(</span><span class="n">differences</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">hours</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="o">!=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;df must be a pandas.DataFrame&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">hours</span><span class="p">)</span>  </div>
+
+
+<div class="viewcode-block" id="GVhypoglycemia"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVhypoglycemia">[docs]</a><span class="k">class</span> <span class="nc">GVhypoglycemia</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVhypoglycemia</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVhypoglycemia.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVhypoglycemia.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;threshold must be int&quot;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])))</span></div>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="o">!=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;df must be a pandas.DataFrame&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GVhyperglycemia"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVhyperglycemia">[docs]</a><span class="k">class</span> <span class="nc">GVhyperglycemia</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVhyperglycemia</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVhyperglycemia.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVhyperglycemia.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;threshold must be int&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])))</span></div>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="o">!=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;df must be a pandas.DataFrame&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GVgrade"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVgrade">[docs]</a><span class="k">class</span> <span class="nc">GVgrade</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVgrade</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVgrade.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVgrade.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;mg&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span> <span class="o">/</span> <span class="mi">18</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;mmol&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span>
+        
+        <span class="n">GRADEs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GRADE</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">GRADEs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GVgrade.GRADE"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVgrade.GRADE">[docs]</a>    <span class="k">def</span> <span class="nf">GRADE</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">425</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">array</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.16</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="GVgrade_hypo"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVgrade_hypo">[docs]</a><span class="k">class</span> <span class="nc">GVgrade_hypo</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVgrade_hypo</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVgrade_hypo.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVgrade_hypo.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;mg&quot;</span><span class="p">):</span>
+            <span class="n">threshold</span> <span class="o">=</span> <span class="mi">90</span> <span class="o">/</span> <span class="mi">18</span>
+            <span class="n">glucose_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span> <span class="o">/</span> <span class="mi">18</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;mmol&quot;</span><span class="p">):</span>
+            <span class="n">threshold</span> <span class="o">=</span> <span class="mi">90</span> <span class="o">/</span> <span class="mi">18</span>
+            <span class="n">glucose_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span>
+
+
+        <span class="n">GRADEs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GRADE</span><span class="p">(</span><span class="n">glucose_values</span><span class="p">)</span>
+        <span class="n">hypoglycemias</span> <span class="o">=</span> <span class="n">glucose_values</span> <span class="o">&lt;</span> <span class="n">threshold</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">GRADEs</span><span class="p">[</span><span class="n">hypoglycemias</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">GRADEs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GVgrade_hypo.GRADE"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVgrade_hypo.GRADE">[docs]</a>    <span class="k">def</span> <span class="nf">GRADE</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">425</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">array</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.16</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="GVgrade_hyper"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVgrade_hyper">[docs]</a><span class="k">class</span> <span class="nc">GVgrade_hyper</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVgrade_hyper</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVgrade_hyper.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVgrade_hyper.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;mg&quot;</span><span class="p">):</span>
+            <span class="n">threshold</span> <span class="o">=</span> <span class="mi">140</span> <span class="o">/</span> <span class="mi">18</span>
+            <span class="n">glucose_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span> <span class="o">/</span> <span class="mi">18</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;mmol&quot;</span><span class="p">):</span>
+            <span class="n">threshold</span> <span class="o">=</span> <span class="mi">140</span> <span class="o">/</span> <span class="mi">18</span>
+            <span class="n">glucose_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span>
+
+        <span class="n">GRADEs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GRADE</span><span class="p">(</span><span class="n">glucose_values</span><span class="p">)</span>
+        <span class="n">hyperglycemias</span> <span class="o">=</span> <span class="n">glucose_values</span> <span class="o">&gt;</span> <span class="n">threshold</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">GRADEs</span><span class="p">[</span><span class="n">hyperglycemias</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">GRADEs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GVgrade_hyper.GRADE"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVgrade_hyper.GRADE">[docs]</a>    <span class="k">def</span> <span class="nf">GRADE</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">425</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">array</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.16</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span></div></div>
+            
+
+<div class="viewcode-block" id="GVlbgi"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVlbgi">[docs]</a><span class="k">class</span> <span class="nc">GVlbgi</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVlbgi</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVlbgi.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVlbgi.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">f_glucose</span> <span class="o">=</span> <span class="mf">1.509</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])),</span> <span class="mf">1.084</span><span class="p">)</span> <span class="o">-</span> <span class="mf">5.381</span><span class="p">)</span>
+        <span class="n">r_glucose</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">f_glucose</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">rl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">r_glucose</span><span class="p">)</span>
+        <span class="n">rl</span><span class="p">[</span><span class="n">f_glucose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">rl</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="GVhbgi"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVhbgi">[docs]</a><span class="k">class</span> <span class="nc">GVhbgi</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVhbgi</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVhbgi.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVhbgi.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">f_glucose</span> <span class="o">=</span> <span class="mf">1.509</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])),</span> <span class="mf">1.084</span><span class="p">)</span> <span class="o">-</span> <span class="mf">5.381</span><span class="p">)</span>
+        <span class="n">r_glucose</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">f_glucose</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">rh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">r_glucose</span><span class="p">)</span>
+        <span class="n">rh</span><span class="p">[</span><span class="n">f_glucose</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">rh</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="GVeA1c"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVeA1c">[docs]</a><span class="k">class</span> <span class="nc">GVeA1c</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates estimated haemoglobin A1c</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVeA1c</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVeA1c.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVeA1c.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;mg&quot;</span><span class="p">):</span>
+            <span class="n">glucose_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span> <span class="o">/</span> <span class="mf">18.02</span>
+        
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;mmol&quot;</span><span class="p">):</span>
+            <span class="n">glucose_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">glucose_values</span><span class="p">)</span> <span class="o">+</span> <span class="mf">2.52</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1.583</span></div></div>
+
+
+<div class="viewcode-block" id="GVauc"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVauc">[docs]</a><span class="k">class</span> <span class="nc">GVauc</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates AUC under the glucose curve.</span>
+
+<span class="sd">    It uses the trapezoid rule via numpy.trapz</span>
+<span class="sd">    Before the actual calculation, nan values are replaced</span>
+<span class="sd">    with 0s. The final result is normalized to the </span>
+<span class="sd">    length of the measurement (supplied via calc_config)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVauc</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVauc.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVauc.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="c1"># nan replacement is required for the auc functions</span>
+        <span class="n">glucose_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="n">standardize</span><span class="p">):</span>
+            <span class="n">auc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">glucose_values</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">interval</span><span class="p">)</span>   \
+                <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">glucose_values</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">auc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">glucose_values</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">interval</span><span class="p">)</span> 
+
+        <span class="k">return</span> <span class="n">auc</span></div></div>
+
+
+<div class="viewcode-block" id="GVhypo_events_count"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVhypo_events_count">[docs]</a><span class="k">class</span> <span class="nc">GVhypo_events_count</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVhypo_events_count</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVhypo_events_count.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVhypo_events_count.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">threshold_duration</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">15</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculates number of hypoglycemic events.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            threshold (int):</span>
+<span class="sd">                Values of glycemia below this are treated as hypoglycemias</span>
+<span class="sd">            hypo_event_records_threshold_duration (int, optional, default=15):</span>
+<span class="sd">                Sequence of hypoglycemic glucose values must have duration</span>
+<span class="sd">                greater than this to be counted as a hypoglycemic event.</span>
+<span class="sd">                Value is expressed in minutes. Default = 15</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int:</span>
+<span class="sd">                number of hypoglycemic events</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError:</span>
+<span class="sd">                if threshold or hypo_event_records_threshold_duration</span>
+<span class="sd">                are not int</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;threshold must be int&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">threshold_duration</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;hypo_event_records_threshold_duration must be int&quot;</span><span class="p">)</span>
+
+        <span class="n">hypoglycemias</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">threshold</span>
+
+        <span class="n">hypo_event_records_threshold</span> <span class="o">=</span> <span class="n">threshold_duration</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">interval</span>
+
+        <span class="n">current_hypo_records</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">total_hypo_event_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">hypoglycemias</span><span class="p">:</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+                <span class="n">current_hypo_records</span> <span class="o">=</span> <span class="n">current_hypo_records</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">current_hypo_records</span> <span class="o">&gt;=</span> <span class="n">hypo_event_records_threshold</span><span class="p">):</span>
+                    <span class="n">total_hypo_event_count</span> <span class="o">=</span> <span class="n">total_hypo_event_count</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">current_hypo_records</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="n">current_hypo_records</span> <span class="o">&gt;=</span> <span class="n">hypo_event_records_threshold</span><span class="p">):</span>
+            <span class="n">total_hypo_event_count</span> <span class="o">=</span> <span class="n">total_hypo_event_count</span> <span class="o">+</span> <span class="mi">1</span>
+            
+        <span class="k">return</span> <span class="n">total_hypo_event_count</span></div></div>
+
+
+<div class="viewcode-block" id="GVtime_in_hypo"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVtime_in_hypo">[docs]</a><span class="k">class</span> <span class="nc">GVtime_in_hypo</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates total time spent in hypoglycemia (in minutes)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVtime_in_hypo</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVtime_in_hypo.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVtime_in_hypo.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;threshold must be int&quot;</span><span class="p">)</span>
+
+        <span class="n">hypoglycemias</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">threshold</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">hypoglycemias</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">interval</span></div></div>
+
+
+<div class="viewcode-block" id="GVmean_hypo_event_duration"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVmean_hypo_event_duration">[docs]</a><span class="k">class</span> <span class="nc">GVmean_hypo_event_duration</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates mean duration of hypoglycemic events.</span>
+
+<span class="sd">    Hypoglycemic event is defined as a sequence of hypoglycemic</span>
+<span class="sd">    glucose values.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVmean_hypo_event_duration</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVmean_hypo_event_duration.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVmean_hypo_event_duration.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">records_duration</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">15</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculates mean duration of hypoglycemic events.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            threshold (int):</span>
+<span class="sd">                Values of glycemia below this are treated as hypoglycemias</span>
+<span class="sd">            records_duration (int):</span>
+<span class="sd">                Sequence of hypoglycemic glucose values must have duration</span>
+<span class="sd">                greater than this to be counted as a hypoglycemic event.</span>
+<span class="sd">                Value is expressed in minutes. Default = 15</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float:</span>
+<span class="sd">                mean duration of hypoglycemic events</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError:</span>
+<span class="sd">                if threshold or hypo_event_records_threshold_duration</span>
+<span class="sd">                are not int</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;threshold must be int&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">records_duration</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;records_duration&quot;</span><span class="p">)</span>
+
+        <span class="n">hypoglycemias</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">threshold</span>
+
+        <span class="n">hypo_event_records_threshold</span> <span class="o">=</span> <span class="n">records_duration</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">interval</span>
+
+        <span class="n">current_hypo_records</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">total_hypo_event_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">hypo_events_duration</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">hypoglycemias</span><span class="p">:</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+                <span class="n">current_hypo_records</span> <span class="o">=</span> <span class="n">current_hypo_records</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">current_hypo_records</span> <span class="o">&gt;=</span> <span class="n">hypo_event_records_threshold</span><span class="p">):</span>
+                    <span class="n">total_hypo_event_count</span> <span class="o">=</span> <span class="n">total_hypo_event_count</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="n">hypo_events_duration</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_hypo_records</span><span class="p">)</span>
+                <span class="n">current_hypo_records</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hypo_events_duration</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">hypo_events_duration</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">interval</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span></div></div>
+
+
+<div class="viewcode-block" id="GVtime_in_range"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVtime_in_range">[docs]</a><span class="k">class</span> <span class="nc">GVtime_in_range</span><span class="p">(</span><span class="n">GVIndex</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GVtime_in_range</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GVtime_in_range.calculate"><a class="viewcode-back" href="../../glyculator.Index.html#glyculator.Index.GVtime_in_range.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">lower_bound</span> <span class="o">=</span> <span class="n">lower_bound</span> <span class="k">if</span> <span class="n">lower_bound</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">tir_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">upper_bound</span> <span class="o">=</span> <span class="n">upper_bound</span> <span class="k">if</span> <span class="n">upper_bound</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_config</span><span class="o">.</span><span class="n">tir_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">lower_bound</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">upper_bound</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;lower_bound and upper_bound must be int&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">lower_bound</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">upper_bound</span><span class="p">)</span>
+            <span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">GLUCOSE</span><span class="p">])))</span></div></div>
+
+
+<span class="n">INDICES_TO_CALC</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Mean&quot;</span> <span class="p">:</span> <span class="n">GVMean</span><span class="p">,</span>
+    <span class="s2">&quot;Median&quot;</span> <span class="p">:</span> <span class="n">GVMedian</span><span class="p">,</span>
+    <span class="s2">&quot;Variance&quot;</span> <span class="p">:</span> <span class="n">GVVariance</span><span class="p">,</span>
+    <span class="s2">&quot;CV&quot;</span> <span class="p">:</span> <span class="n">GVCV</span><span class="p">,</span>
+    <span class="s2">&quot;Missing values&quot;</span> <span class="p">:</span> <span class="n">GVNanFraction</span><span class="p">,</span>
+    <span class="s2">&quot;Total time points No&quot;</span> <span class="p">:</span> <span class="n">GVRecordsNo</span><span class="p">,</span>
+    <span class="s2">&quot;Standard deviation&quot;</span> <span class="p">:</span> <span class="n">GVstd</span><span class="p">,</span>
+    <span class="s2">&quot;M100&quot;</span> <span class="p">:</span> <span class="n">GVm100</span><span class="p">,</span>
+    <span class="s2">&quot;J-index&quot;</span> <span class="p">:</span> <span class="n">GVj</span><span class="p">,</span>
+    <span class="s2">&quot;MAGE&quot;</span> <span class="p">:</span> <span class="n">GVmage</span><span class="p">,</span>
+    <span class="s2">&quot;MODD&quot;</span> <span class="p">:</span> <span class="n">GVmodd</span><span class="p">,</span>
+    <span class="s2">&quot;CONGA&quot;</span> <span class="p">:</span> <span class="n">GVcongaX</span><span class="p">,</span>
+    <span class="s2">&quot;Hypoglycemia fraction&quot;</span> <span class="p">:</span> <span class="n">GVhypoglycemia</span><span class="p">,</span>
+    <span class="s2">&quot;Hyperglycemia fraction&quot;</span> <span class="p">:</span> <span class="n">GVhyperglycemia</span><span class="p">,</span>
+    <span class="s2">&quot;GRADE&quot;</span> <span class="p">:</span> <span class="n">GVgrade</span><span class="p">,</span>
+    <span class="s2">&quot;GRADE hypoglycemia&quot;</span> <span class="p">:</span> <span class="n">GVgrade_hypo</span><span class="p">,</span>
+    <span class="s2">&quot;GRADE hyperglycemia&quot;</span> <span class="p">:</span> <span class="n">GVgrade_hyper</span><span class="p">,</span>
+    <span class="s2">&quot;Low Blood Glucose Index&quot;</span> <span class="p">:</span> <span class="n">GVlbgi</span><span class="p">,</span>
+    <span class="s2">&quot;High Blood Glucose Index&quot;</span> <span class="p">:</span> <span class="n">GVhbgi</span><span class="p">,</span>
+    <span class="s2">&quot;eA1c&quot;</span> <span class="p">:</span> <span class="n">GVeA1c</span><span class="p">,</span>
+    <span class="s2">&quot;AUC&quot;</span> <span class="p">:</span> <span class="n">GVauc</span><span class="p">,</span>
+    <span class="s2">&quot;Hypoglycemic events No&quot;</span> <span class="p">:</span> <span class="n">GVhypo_events_count</span><span class="p">,</span>
+    <span class="s2">&quot;Time in hypoglycemia&quot;</span> <span class="p">:</span> <span class="n">GVtime_in_hypo</span><span class="p">,</span>
+    <span class="s2">&quot;Mean duration of hypoglycemic event&quot;</span> <span class="p">:</span> <span class="n">GVmean_hypo_event_duration</span><span class="p">,</span>
+    <span class="s2">&quot;Time in range&quot;</span><span class="p">:</span> <span class="n">GVtime_in_range</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">glyculator-core</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../articles/quickstart.html">A Quickstart Guide!</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">glyculator</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Konrad Pagacz.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

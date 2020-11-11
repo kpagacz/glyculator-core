@@ -1,0 +1,399 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>glyculator.configs module &#8212; glyculator-core  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="glyculator.utils module" href="glyculator.utils.html" />
+    <link rel="prev" title="glyculator.Index module" href="glyculator.Index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-glyculator.configs">
+<span id="glyculator-configs-module"></span><h1>glyculator.configs module<a class="headerlink" href="#module-glyculator.configs" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="glyculator.configs.CalcConfig">
+<em class="property">class </em><code class="sig-prename descclassname">glyculator.configs.</code><code class="sig-name descname">CalcConfig</code><span class="sig-paren">(</span><em class="sig-param">interval: int = 5</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#CalcConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.CalcConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Configuration for calculating glycemic variability indices.</p>
+<dl class="attribute">
+<dt id="glyculator.configs.CalcConfig.interval">
+<code class="sig-name descname">interval</code><a class="headerlink" href="#glyculator.configs.CalcConfig.interval" title="Permalink to this definition">¶</a></dt>
+<dd><p>time in minutes between glycemic measurements</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="glyculator.configs.CalcConfig.unit">
+<code class="sig-name descname">unit</code><a class="headerlink" href="#glyculator.configs.CalcConfig.unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>“mg” or “mmol” unit of glycemic measurement</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="glyculator.configs.CalcConfig.mage_excursion_threshold">
+<code class="sig-name descname">mage_excursion_threshold</code><a class="headerlink" href="#glyculator.configs.CalcConfig.mage_excursion_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>int or “sd”, “half-sd”</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.CalcConfig.set_excursion_threshold">
+<code class="sig-name descname">set_excursion_threshold</code><span class="sig-paren">(</span><em class="sig-param">exc_threshold: Union[int, str]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#CalcConfig.set_excursion_threshold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.CalcConfig.set_excursion_threshold" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.CalcConfig.set_interval">
+<code class="sig-name descname">set_interval</code><span class="sig-paren">(</span><em class="sig-param">interval: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#CalcConfig.set_interval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.CalcConfig.set_interval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interval setter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>interval</strong> (<em>int</em>) – interval of a CGM measurement</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if the interval is not 5 and not 15</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.CalcConfig.set_mage_moving_average">
+<code class="sig-name descname">set_mage_moving_average</code><span class="sig-paren">(</span><em class="sig-param">window_size: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#CalcConfig.set_mage_moving_average"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.CalcConfig.set_mage_moving_average" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.CalcConfig.set_mage_peak_distance">
+<code class="sig-name descname">set_mage_peak_distance</code><span class="sig-paren">(</span><em class="sig-param">mage_distance: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#CalcConfig.set_mage_peak_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.CalcConfig.set_mage_peak_distance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.CalcConfig.set_tir_range">
+<code class="sig-name descname">set_tir_range</code><span class="sig-paren">(</span><em class="sig-param">tir_range: Tuple[float, float]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#CalcConfig.set_tir_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.CalcConfig.set_tir_range" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.CalcConfig.set_unit">
+<code class="sig-name descname">set_unit</code><span class="sig-paren">(</span><em class="sig-param">unit: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#CalcConfig.set_unit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.CalcConfig.set_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unit setter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>unit</strong> (<em>str</em>) – Unit used in glucose measurement.
+Must be “mg” or “mmol”</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>unit</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if <code class="docutils literal notranslate"><span class="pre">unit</span></code> is not “mg” nor “mmol”</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="glyculator.configs.CleanConfig">
+<em class="property">class </em><code class="sig-prename descclassname">glyculator.configs.</code><code class="sig-name descname">CleanConfig</code><span class="sig-paren">(</span><em class="sig-param">interval: int, use_api: Union[str, bool], api_port: Optional[int] = None, api_address: Optional[str] = None, api_endpoint: Optional[str] = None, fill_glucose_tolerance: int = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#CleanConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.CleanConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Configuration for cleaning a CGM file.</p>
+<dl class="attribute">
+<dt id="glyculator.configs.CleanConfig.interval">
+<code class="sig-name descname">interval</code><a class="headerlink" href="#glyculator.configs.CleanConfig.interval" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="glyculator.configs.CleanConfig.use_api">
+<code class="sig-name descname">use_api</code><a class="headerlink" href="#glyculator.configs.CleanConfig.use_api" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="glyculator.configs.CleanConfig.api_port">
+<code class="sig-name descname">api_port</code><a class="headerlink" href="#glyculator.configs.CleanConfig.api_port" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="glyculator.configs.CleanConfig.api_address">
+<code class="sig-name descname">api_address</code><a class="headerlink" href="#glyculator.configs.CleanConfig.api_address" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="glyculator.configs.CleanConfig.api_endpoint">
+<code class="sig-name descname">api_endpoint</code><a class="headerlink" href="#glyculator.configs.CleanConfig.api_endpoint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="glyculator.configs.CleanConfig._full_api_address">
+<code class="sig-name descname">_full_api_address</code><a class="headerlink" href="#glyculator.configs.CleanConfig._full_api_address" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.CleanConfig.set_api_address">
+<code class="sig-name descname">set_api_address</code><span class="sig-paren">(</span><em class="sig-param">api_address: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#CleanConfig.set_api_address"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.CleanConfig.set_api_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>api_address setter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>api_address</strong> – Address to the API</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if api_address is not int or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.CleanConfig.set_api_endpoint">
+<code class="sig-name descname">set_api_endpoint</code><span class="sig-paren">(</span><em class="sig-param">api_endpoint: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#CleanConfig.set_api_endpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.CleanConfig.set_api_endpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>endpoint setter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>api_endpoint</strong> – Endpoint of the API</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if api_address is not int or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.CleanConfig.set_api_port">
+<code class="sig-name descname">set_api_port</code><span class="sig-paren">(</span><em class="sig-param">api_port: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#CleanConfig.set_api_port"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.CleanConfig.set_api_port" title="Permalink to this definition">¶</a></dt>
+<dd><p>api_port setter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>api_port</strong> – Port at which the API listens</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if api_port is not int or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.CleanConfig.set_fill_glucose_tolerance">
+<code class="sig-name descname">set_fill_glucose_tolerance</code><span class="sig-paren">(</span><em class="sig-param">fill_glucose_tolerance: int</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/glyculator/configs.html#CleanConfig.set_fill_glucose_tolerance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.CleanConfig.set_fill_glucose_tolerance" title="Permalink to this definition">¶</a></dt>
+<dd><p>fill_glucose_tolerance setter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fill_glucose_tolerance</strong> – number of minutes, which governs the tolerance of filling missing
+glucose values in FileCleaner</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.CleanConfig.set_interval">
+<code class="sig-name descname">set_interval</code><span class="sig-paren">(</span><em class="sig-param">interval: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#CleanConfig.set_interval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.CleanConfig.set_interval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interval setter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>interval</strong> – interval of a CGM measurement (in minutes)</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if the interval is neither 5 nor 15</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.CleanConfig.set_use_api">
+<code class="sig-name descname">set_use_api</code><span class="sig-paren">(</span><em class="sig-param">use_api: Union[bool, str]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#CleanConfig.set_use_api"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.CleanConfig.set_use_api" title="Permalink to this definition">¶</a></dt>
+<dd><p>use_api flag setter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>use_api</strong> – boolean designating whether to use an HTTP API
+to clean dates</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if api_dates is not a boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="glyculator.configs.ReadConfig">
+<em class="property">class </em><code class="sig-prename descclassname">glyculator.configs.</code><code class="sig-name descname">ReadConfig</code><span class="sig-paren">(</span><em class="sig-param">header_skip: int = 0</em>, <em class="sig-param">date_time_column: int = None</em>, <em class="sig-param">date_column: int = None</em>, <em class="sig-param">time_column: int = None</em>, <em class="sig-param">glucose_values_column: int = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#ReadConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.ReadConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Configuration for reading a CGM file.</p>
+<dl class="attribute">
+<dt id="glyculator.configs.ReadConfig.date_column">
+<code class="sig-name descname">date_column</code><em class="property"> = None</em><a class="headerlink" href="#glyculator.configs.ReadConfig.date_column" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="glyculator.configs.ReadConfig.date_time_column">
+<code class="sig-name descname">date_time_column</code><em class="property"> = None</em><a class="headerlink" href="#glyculator.configs.ReadConfig.date_time_column" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="glyculator.configs.ReadConfig.file_length">
+<code class="sig-name descname">file_length</code><em class="property"> = None</em><a class="headerlink" href="#glyculator.configs.ReadConfig.file_length" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="glyculator.configs.ReadConfig.glucose_values_column">
+<code class="sig-name descname">glucose_values_column</code><em class="property"> = None</em><a class="headerlink" href="#glyculator.configs.ReadConfig.glucose_values_column" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="glyculator.configs.ReadConfig.header_skip">
+<code class="sig-name descname">header_skip</code><em class="property"> = None</em><a class="headerlink" href="#glyculator.configs.ReadConfig.header_skip" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.ReadConfig.set_date_column">
+<code class="sig-name descname">set_date_column</code><span class="sig-paren">(</span><em class="sig-param">value: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#ReadConfig.set_date_column"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.ReadConfig.set_date_column" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.ReadConfig.set_date_time_column">
+<code class="sig-name descname">set_date_time_column</code><span class="sig-paren">(</span><em class="sig-param">value: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#ReadConfig.set_date_time_column"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.ReadConfig.set_date_time_column" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.ReadConfig.set_glucose_values_column">
+<code class="sig-name descname">set_glucose_values_column</code><span class="sig-paren">(</span><em class="sig-param">value: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#ReadConfig.set_glucose_values_column"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.ReadConfig.set_glucose_values_column" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.ReadConfig.set_header_skip">
+<code class="sig-name descname">set_header_skip</code><span class="sig-paren">(</span><em class="sig-param">value: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#ReadConfig.set_header_skip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.ReadConfig.set_header_skip" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.ReadConfig.set_time_column">
+<code class="sig-name descname">set_time_column</code><span class="sig-paren">(</span><em class="sig-param">value: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#ReadConfig.set_time_column"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.ReadConfig.set_time_column" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="glyculator.configs.ReadConfig.time_column">
+<code class="sig-name descname">time_column</code><em class="property"> = None</em><a class="headerlink" href="#glyculator.configs.ReadConfig.time_column" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.ReadConfig.validate">
+<code class="sig-name descname">validate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#ReadConfig.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.ReadConfig.validate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="glyculator.configs.ReadConfig.validateNonnegative">
+<code class="sig-name descname">validateNonnegative</code><span class="sig-paren">(</span><em class="sig-param">value: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/configs.html#ReadConfig.validateNonnegative"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.configs.ReadConfig.validateNonnegative" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">glyculator-core</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="articles/quickstart.html">A Quickstart Guide!</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">glyculator</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="glyculator.html">glyculator package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">glyculator</a><ul>
+  <li><a href="glyculator.html">glyculator package</a><ul>
+      <li>Previous: <a href="glyculator.Index.html" title="previous chapter">glyculator.Index module</a></li>
+      <li>Next: <a href="glyculator.utils.html" title="next chapter">glyculator.utils module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Konrad Pagacz.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/glyculator.configs.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

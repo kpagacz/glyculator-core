@@ -1,0 +1,7 @@
+glyculator.configs module
+=========================
+
+.. automodule:: glyculator.configs
+   :members:
+   :undoc-members:
+   :show-inheritance:

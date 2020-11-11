@@ -1,0 +1,18 @@
+glyculator.cleaner package
+==========================
+
+Submodules
+----------
+
+.. toctree::
+
+   glyculator.cleaner.Cleaner
+   glyculator.cleaner.config
+
+Module contents
+---------------
+
+.. automodule:: glyculator.cleaner
+   :members:
+   :undoc-members:
+   :show-inheritance:

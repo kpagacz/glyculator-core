@@ -1,0 +1,217 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>glyculator.FileCleaner module &#8212; glyculator-core  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="glyculator.FileReader module" href="glyculator.FileReader.html" />
+    <link rel="prev" title="glyculator.DateFixer module" href="glyculator.DateFixer.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-glyculator.FileCleaner">
+<span id="glyculator-filecleaner-module"></span><h1>glyculator.FileCleaner module<a class="headerlink" href="#module-glyculator.FileCleaner" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="glyculator.FileCleaner.FileCleaner">
+<em class="property">class </em><code class="sig-prename descclassname">glyculator.FileCleaner.</code><code class="sig-name descname">FileCleaner</code><span class="sig-paren">(</span><em class="sig-param">data_df: pandas.core.frame.DataFrame = None</em>, <em class="sig-param">clean_config: glyculator.configs.CleanConfig = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/FileCleaner.html#FileCleaner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Cleans the raw datafile</p>
+<dl class="attribute">
+<dt id="glyculator.FileCleaner.FileCleaner.untidy">
+<code class="sig-name descname">untidy</code><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner.untidy" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="glyculator.FileCleaner.FileCleaner.tidy">
+<code class="sig-name descname">tidy</code><a class="reference internal" href="_modules/glyculator/FileCleaner.html#FileCleaner.tidy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner.tidy" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="glyculator.FileCleaner.FileCleaner.tidy_report">
+<code class="sig-name descname">tidy_report</code><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner.tidy_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>contains information about performed tidying</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="glyculator.FileCleaner.FileCleaner.clean_config">
+<code class="sig-name descname">clean_config</code><em class="property"> = None</em><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner.clean_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="glyculator.FileCleaner.FileCleaner.fix_dates">
+<code class="sig-name descname">fix_dates</code><span class="sig-paren">(</span><em class="sig-param">data_df: pandas.core.frame.DataFrame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/FileCleaner.html#FileCleaner.fix_dates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner.fix_dates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flags measurements of data_df</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data_df</strong> – Dataframe of measurements.
+Two columns: DT and GLUCOSE</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Array of 0s and 1s - boolean values
+1 represents record, which is part of the CGM
+0 represents additional record, which should be discarded</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="glyculator.FileCleaner.FileCleaner.set_clean_config">
+<code class="sig-name descname">set_clean_config</code><span class="sig-paren">(</span><em class="sig-param">clean_config: glyculator.configs.CleanConfig</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/FileCleaner.html#FileCleaner.set_clean_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner.set_clean_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="glyculator.FileCleaner.FileCleaner.set_untidy">
+<code class="sig-name descname">set_untidy</code><span class="sig-paren">(</span><em class="sig-param">data_df: pandas.core.frame.DataFrame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/FileCleaner.html#FileCleaner.set_untidy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner.set_untidy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="glyculator.FileCleaner.FileCleaner.tidied">
+<code class="sig-name descname">tidied</code><em class="property"> = None</em><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner.tidied" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-name descname">tidy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/FileCleaner.html#FileCleaner.tidy"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Fires up cleaning routines</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>RuntimeError</strong> – if untidy attribute is None
+    if clean_config attribute is None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">tidy_report</code><em class="property"> = {}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">untidy</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">glyculator-core</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="articles/quickstart.html">A Quickstart Guide!</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">glyculator</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="glyculator.html">glyculator package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">glyculator</a><ul>
+  <li><a href="glyculator.html">glyculator package</a><ul>
+      <li>Previous: <a href="glyculator.DateFixer.html" title="previous chapter">glyculator.DateFixer module</a></li>
+      <li>Next: <a href="glyculator.FileReader.html" title="next chapter">glyculator.FileReader module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Konrad Pagacz.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/glyculator.FileCleaner.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

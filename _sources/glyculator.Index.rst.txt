@@ -1,0 +1,7 @@
+glyculator.Index module
+=======================
+
+.. automodule:: glyculator.Index
+   :members:
+   :undoc-members:
+   :show-inheritance:

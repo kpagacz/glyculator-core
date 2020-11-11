@@ -1,0 +1,29 @@
+glyculator package
+==================
+
+Subpackages
+-----------
+
+.. toctree::
+
+   glyculator.cleaner
+
+Submodules
+----------
+
+.. toctree::
+
+   glyculator.DateFixer
+   glyculator.FileCleaner
+   glyculator.FileReader
+   glyculator.Index
+   glyculator.configs
+   glyculator.utils
+
+Module contents
+---------------
+
+.. automodule:: glyculator
+   :members:
+   :undoc-members:
+   :show-inheritance:

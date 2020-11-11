@@ -1,0 +1,7 @@
+glyculator.DateFixer module
+===========================
+
+.. automodule:: glyculator.DateFixer
+   :members:
+   :undoc-members:
+   :show-inheritance:

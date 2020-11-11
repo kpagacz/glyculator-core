@@ -1,0 +1,7 @@
+glyculator.FileReader module
+============================
+
+.. automodule:: glyculator.FileReader
+   :members:
+   :undoc-members:
+   :show-inheritance:
