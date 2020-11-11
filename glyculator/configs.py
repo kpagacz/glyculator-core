@@ -116,10 +116,10 @@ class CleanConfig:
         """Interval setter.
 
         Args:
-            interval (int): interval of a CGM measurement
+            interval: interval of a CGM measurement (in minutes)
 
         Raises:
-            ValueError: if the interval is not 5 and not 15
+            ValueError: if the interval is neither 5 nor 15
         """
         if(interval not in [5, 15]):
             raise ValueError("Interval needs to be 5 or 15")
