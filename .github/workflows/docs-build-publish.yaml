@@ -59,3 +59,14 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
+          
+      - name: Log documentation structure
+        run: 
+          tree | tee .log
+          
+      - name: Artifact log
+        uses: actions/upload-artifact@v2.2.0
+        with:
+          name: doc-publish-log
+          path: .log
+          retention_days: 1
