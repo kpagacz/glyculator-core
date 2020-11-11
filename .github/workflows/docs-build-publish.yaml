@@ -52,6 +52,7 @@ jobs:
         run: |
           git config --local user.email "workflows@github.com"
           git config --local user.name "GitHub Workflows"
+          git add .
           git commit -am "Update documentation" || true
       
       - name: Push changes
@@ -69,4 +70,4 @@ jobs:
         with:
           name: doc-publish-log
           path: .log
-          retention_days: 1
+          retention-days: 1
