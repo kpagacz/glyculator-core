@@ -1,7 +1,7 @@
-src
-===
+glyculator
+==========
 
 .. toctree::
    :maxdepth: 4
 
-   src
+   glyculator
