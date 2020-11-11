@@ -62,7 +62,7 @@ jobs:
           
       - name: Log documentation structure
         run: 
-          apt-get install tree && tree | tee .log
+          sudo apt-get install tree && tree | tee .log
           
       - name: Artifact log
         uses: actions/upload-artifact@v2.2.0
