@@ -80,7 +80,7 @@ class TestGVIndices(unittest.TestCase):
     def test_hypo_events_count_simple_df(self):
         self.simple_df[GLUCOSE] = [1, 1, 3, 2, 2]
         index = indices.GVhypo_events_count(df=self.simple_df, calc_config=self.mock_5_mg_config)
-        print(index.calculate(threshold=3, threshold_duration=10))
+        self.assertEqual(index.calculate(threshold=3, threshold_duration=10), 2)
 
     def test_mean_mg(self):
         mean = indices.GVMean(df=self.simple_df, calc_config=self.mock_5_mg_config)

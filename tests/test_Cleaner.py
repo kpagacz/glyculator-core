@@ -43,14 +43,10 @@ class TestCleaner(unittest.TestCase):
         )
 
     def test_model_exact_proba(self):
-        """
-
-        This was my sanity check, if the model loaded was indeed the model
-        I have trained. I made this, because I encountered some warnings
-        during loading weights in my Cleaner class - unresolved objects in weights
-        and bias files. But it seems it is alright.
-
-        """
+        # This was my sanity check, if the model loaded was indeed the model
+        # I have trained. I made this, because I encountered some warnings
+        # during loading weights in my Cleaner class - unresolved objects in weights
+        # and bias files. But it seems it is alright.
         res_proba = float(self.cleaner.model.predict(self.numeric_dict))
         self.assertAlmostEqual(res_proba, 1138.01330566406)
 
@@ -68,10 +64,10 @@ class TestCleaner(unittest.TestCase):
             (4, )
         )
 
-    def test_predict_sanity_check(self):
+    def test_predict_all_exact_intervals(self):
         all_300s = { "var" + str(i) : [300] for i in range(config.WINDOW_SIZE - 1)}
         res = self.cleaner.predict(all_300s, interval=5)
-        print(res)
+        self.assertEqual(res, 1)
 
 
 class testCleanerBase(unittest.TestCase):
