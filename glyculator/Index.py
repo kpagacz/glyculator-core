@@ -9,29 +9,36 @@ from scipy import signal
 from .utils import DT, GLUCOSE
 from .configs import CalcConfig
 
-# TODO (konrad.pagacz@gmail.com) expand docs
-# TODO (konrad.pagacz@gmail.com) finish writing tests
-
 class GVIndex():
-    def __init__(self, calc_config: CalcConfig, df: pd.DataFrame = None):
+    """Abstraction of a glycemic variability index.
+
+    Attributes:
+        calc_config: configuration for calculations
+        df: dataframe with a datetime column and a glucose values column
+    """
+    __attrs__ = [
+        "calc_config", "df"
+    ]
+
+    def __init__(self, calc_config: CalcConfig, df: pd.DataFrame = None) -> None:
         self.set_df(df)
         self.set_calc_config(calc_config)
         self.logger = logging.getLogger(__name__)
 
-    def calculate(self, **kwargs):
+    def calculate(self, **kwargs) -> float:
         raise NotImplementedError
 
-    def set_df(self, df: pd.DataFrame):
+    def set_df(self, df: pd.DataFrame) -> None:
         if(type(df) != pd.DataFrame and df is not None):
             raise ValueError("df needs to be a pandas DataFrame. Received type:{}".format(type(df)))
         self.df = df
 
-    def set_calc_config(self, calc_config: CalcConfig):
+    def set_calc_config(self, calc_config: CalcConfig) -> None:
         if(not isinstance(calc_config, CalcConfig)):
             raise ValueError("calc_config needs to be a CalcConfig")
         self.calc_config = calc_config
 
-    def __call__(self, df: pd.DataFrame, **kwargs):
+    def __call__(self, df: pd.DataFrame, **kwargs) -> float:
         if(type(df) != pd.DataFrame):
             raise ValueError("Cannot call GVIndex on other than pandas.DataFrame")
         self.set_df(df)
@@ -39,66 +46,66 @@ class GVIndex():
 
 
 class GVMean(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVMean, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self) -> float:
         return np.nanmean(self.df[GLUCOSE])
     
 
 class GVMedian(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVMedian, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self) -> float:
         return np.nanmedian(self.df[GLUCOSE])
 
 
 class GVVariance(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVVariance, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self) -> float:
         return np.nanvar(self.df[GLUCOSE])
 
 
 class GVNanFraction(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVNanFraction, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self) -> float:
         return np.nansum(np.isnan(self.df[GLUCOSE])) / len(self.df)
 
 
 class GVRecordsNo(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVRecordsNo, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self) -> float:
         return len(self.df)
 
 
 class GVCV(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVCV, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self) -> float:
         return np.nanstd(self.df[GLUCOSE]) / np.nanmean(self.df[GLUCOSE])
 
 
 class GVstd(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVstd, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self) -> float:
         return np.nanstd(self.df[GLUCOSE])
 
 
 class GVm100(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVm100, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self) -> float:
         if(self.calc_config.unit == "mg"):
             # np.ma.array is numpy built-in mask function
             # numpy functions will mask elements that are inf in
@@ -110,18 +117,18 @@ class GVm100(GVIndex):
 
 
 class GVj(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVj, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self) -> float:
         return 0.001 * np.power(np.nanmean(self.df[GLUCOSE]) + np.nanstd(self.df[GLUCOSE]), 2)
 
 
 class GVmage(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVmage, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self) -> float:
         """Calculates MAGE (mean average of glucose excursions)
 
         Steps undertaken:
@@ -174,7 +181,7 @@ class GVmage(GVIndex):
         else:
             return np.nanmean(value_differences)
 
-    def _moving_average(self, arr: pd.Series, window: int):
+    def _moving_average(self, arr: pd.Series, window: int) -> pd.Series:
         """Calculates moving average smoothing.
 
         Arguments:
@@ -202,7 +209,7 @@ class GVmage(GVIndex):
 
         return np.convolve(a=arr, v=np.ones((window,)) / window, mode="valid")
 
-    def _join_extremas(self, minimas, maximas):
+    def _join_extremas(self, minimas, maximas) -> list:
         """Joins indices of minimas and maximas in an alternating manner.
 
 
@@ -240,7 +247,7 @@ class GVmage(GVIndex):
         self._join_extremas_util(joined, minimas, maximas, int(not minimas_turn), int(minimas_turn), minimas_turn)
         return joined
 
-    def _join_extremas_util(self, joined, minimas, maximas, minimas_ind, maximas_ind, minimas_turn):
+    def _join_extremas_util(self, joined, minimas, maximas, minimas_ind, maximas_ind, minimas_turn) -> list:
         self.logger.debug("GVmage - _join_extremas_util - called with: \njoined {} \nminimas {} \nmaximas {} \nminimas_ind {} \nmaximas_ind {} \nminimas_turn {}"    \
             .format(joined, minimas, maximas, minimas_ind, maximas_ind, minimas_turn))
 
@@ -265,25 +272,25 @@ class GVmage(GVIndex):
 
         
 class GVmodd(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVmodd, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self) -> float:
         daily_differences = np.diff(self.df[GLUCOSE], n=int(24 * 60 / self.calc_config.interval))
         return np.nanmean(daily_differences)
 
 
 class GVcongaX(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVcongaX, self).__init__(**kwargs)
 
-    def calculate(self, hours: int):
+    def calculate(self, hours: int) -> float:
         if(type(hours) != int or hours <= 0):
             raise ValueError("hours must be a positive int")
         differences = np.diff(self.df[GLUCOSE], n=int(hours * 60 / self.calc_config.interval))
         return np.nanvar(differences)
 
-    def __call__(self, df: pd.DataFrame, hours: int):
+    def __call__(self, df: pd.DataFrame, hours: int) -> float:
         if(type(df) != pd.DataFrame):
             raise ValueError("df must be a pandas.DataFrame")
         self.df = df
@@ -291,16 +298,16 @@ class GVcongaX(GVIndex):
 
 
 class GVhypoglycemia(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) ->None:
         super(GVhypoglycemia, self).__init__(**kwargs)
 
-    def calculate(self, threshold: int):
+    def calculate(self, threshold: int) -> float:
         if(type(threshold) != int):
             raise ValueError("threshold must be int")
         
         return np.nansum(self.df[GLUCOSE] < threshold) / np.sum(np.invert(np.isnan(self.df[GLUCOSE])))
 
-    def __call__(self, df: pd.DataFrame, threshold: int):
+    def __call__(self, df: pd.DataFrame, threshold: int) -> float:
         if(type(df) != pd.DataFrame):
             raise ValueError("df must be a pandas.DataFrame")
         self.df = df
@@ -308,16 +315,16 @@ class GVhypoglycemia(GVIndex):
 
 
 class GVhyperglycemia(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVhyperglycemia, self).__init__(**kwargs)
 
-    def calculate(self, threshold: int):
+    def calculate(self, threshold: int) -> float:
         if(type(threshold) != int):
             raise ValueError("threshold must be int")
 
         return np.nansum(self.df[GLUCOSE] > threshold) / np.sum(np.invert(np.isnan(self.df[GLUCOSE])))
 
-    def __call__(self, df: pd.DataFrame, threshold: int):
+    def __call__(self, df: pd.DataFrame, threshold: int) -> float:
         if(type(df) != pd.DataFrame):
             raise ValueError("df must be a pandas.DataFrame")
         self.df = df
@@ -325,10 +332,10 @@ class GVhyperglycemia(GVIndex):
 
 
 class GVgrade(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVgrade, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self) -> float:
         if(self.calc_config.unit == "mg"):
             self.df[GLUCOSE] = self.df[GLUCOSE] / 18
         if(self.calc_config.unit == "mmol"):
@@ -337,15 +344,15 @@ class GVgrade(GVIndex):
         GRADEs = self.GRADE(self.df[GLUCOSE])
         return np.nanmean(GRADEs)
 
-    def GRADE(self, array):
+    def GRADE(self, array: pd.Series) -> pd.Series:
         return 425 * np.power(np.log10(np.log10(np.ma.array(array)) + 0.16), 2)
 
 
 class GVgrade_hypo(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVgrade_hypo, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self) -> float:
         if(self.calc_config.unit == "mg"):
             threshold = 90 / 18
             glucose_values = self.df[GLUCOSE] / 18
@@ -360,15 +367,15 @@ class GVgrade_hypo(GVIndex):
 
         return np.nansum(GRADEs[hypoglycemias]) / np.nansum(GRADEs)
 
-    def GRADE(self, array):
+    def GRADE(self, array: pd.Series) -> pd.Series:
         return 425 * np.power(np.log10(np.log10(np.ma.array(array)) + 0.16), 2)
 
 
 class GVgrade_hyper(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVgrade_hyper, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self) -> float:
         if(self.calc_config.unit == "mg"):
             threshold = 140 / 18
             glucose_values = self.df[GLUCOSE] / 18
@@ -382,15 +389,15 @@ class GVgrade_hyper(GVIndex):
 
         return np.nansum(GRADEs[hyperglycemias]) / np.nansum(GRADEs)
 
-    def GRADE(self, array):
+    def GRADE(self, array: pd.Series) -> pd.Series:
         return 425 * np.power(np.log10(np.log10(np.ma.array(array)) + 0.16), 2)
             
 
 class GVlbgi(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVlbgi, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self) -> float:
         f_glucose = 1.509 * (np.power(np.log10(np.ma.array(self.df[GLUCOSE])), 1.084) - 5.381)
         r_glucose = 10 * np.power(f_glucose, 2)
 
@@ -401,10 +408,10 @@ class GVlbgi(GVIndex):
 
 
 class GVhbgi(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVhbgi, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self) -> float:
         f_glucose = 1.509 * (np.power(np.log10(np.ma.array(self.df[GLUCOSE])), 1.084) - 5.381)
         r_glucose = 10 * np.power(f_glucose, 2)
 
@@ -418,10 +425,10 @@ class GVeA1c(GVIndex):
     """Calculates estimated haemoglobin A1c
 
     """
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVeA1c, self).__init__(**kwargs)
 
-    def calculate(self):
+    def calculate(self) -> float:
         if(self.calc_config.unit == "mg"):
             glucose_values = self.df[GLUCOSE] / 18.02
         
@@ -440,10 +447,10 @@ class GVauc(GVIndex):
     length of the measurement (supplied via calc_config)
 
     """
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVauc, self).__init__(**kwargs)
 
-    def calculate(self, standardize=True):
+    def calculate(self, standardize: bool = True) -> float:
         # nan replacement is required for the auc functions
         glucose_values = np.where(self.df[GLUCOSE] == np.nan, 0, self.df[GLUCOSE])
 
@@ -457,10 +464,10 @@ class GVauc(GVIndex):
 
 
 class GVhypo_events_count(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVhypo_events_count, self).__init__(**kwargs)
 
-    def calculate(self, threshold: int, threshold_duration: int = 15):
+    def calculate(self, threshold: int, threshold_duration: int = 15) -> float:
         """Calculates number of hypoglycemic events.
 
         Arguments:
@@ -511,10 +518,10 @@ class GVtime_in_hypo(GVIndex):
     """Calculates total time spent in hypoglycemia (in minutes)
 
     """
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVtime_in_hypo, self).__init__(**kwargs)
 
-    def calculate(self, threshold: typing.Union[int, float]):
+    def calculate(self, threshold: typing.Union[int, float]) -> float:
         if(type(threshold) not in [int, float]):
             raise ValueError("threshold must be int")
 
@@ -530,10 +537,10 @@ class GVmean_hypo_event_duration(GVIndex):
     glucose values.
 
     """
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVmean_hypo_event_duration, self).__init__(**kwargs)
 
-    def calculate(self, threshold: int, records_duration: int = 15):
+    def calculate(self, threshold: int, records_duration: int = 15) -> float:
         """Calculates mean duration of hypoglycemic events.
 
         Arguments:
@@ -583,10 +590,10 @@ class GVmean_hypo_event_duration(GVIndex):
 
 
 class GVtime_in_range(GVIndex):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(GVtime_in_range, self).__init__(**kwargs)
 
-    def calculate(self, lower_bound: int = None, upper_bound: int = None):
+    def calculate(self, lower_bound: int = None, upper_bound: int = None) -> float:
         lower_bound = lower_bound if lower_bound is not None else self.calc_config.tir_range[0]
         upper_bound = upper_bound if upper_bound is not None else self.calc_config.tir_range[1]
 
