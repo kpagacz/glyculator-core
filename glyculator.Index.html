@@ -40,7 +40,7 @@
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVCV.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVCV.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVCV.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVCV.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVCV.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -49,19 +49,32 @@
 <dt id="glyculator.Index.GVIndex">
 <em class="property">class </em><code class="sig-prename descclassname">glyculator.Index.</code><code class="sig-name descname">GVIndex</code><span class="sig-paren">(</span><em class="sig-param">calc_config: glyculator.configs.CalcConfig</em>, <em class="sig-param">df: pandas.core.frame.DataFrame = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVIndex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVIndex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Abstraction of a glycemic variability index.</p>
+<dl class="attribute">
+<dt id="glyculator.Index.GVIndex.calc_config">
+<code class="sig-name descname">calc_config</code><a class="headerlink" href="#glyculator.Index.GVIndex.calc_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>configuration for calculations</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="glyculator.Index.GVIndex.df">
+<code class="sig-name descname">df</code><a class="headerlink" href="#glyculator.Index.GVIndex.df" title="Permalink to this definition">¶</a></dt>
+<dd><p>dataframe with a datetime column and a glucose values column</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="glyculator.Index.GVIndex.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVIndex.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVIndex.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVIndex.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVIndex.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="glyculator.Index.GVIndex.set_calc_config">
-<code class="sig-name descname">set_calc_config</code><span class="sig-paren">(</span><em class="sig-param">calc_config: glyculator.configs.CalcConfig</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVIndex.set_calc_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVIndex.set_calc_config" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_calc_config</code><span class="sig-paren">(</span><em class="sig-param">calc_config: glyculator.configs.CalcConfig</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/glyculator/Index.html#GVIndex.set_calc_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVIndex.set_calc_config" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="glyculator.Index.GVIndex.set_df">
-<code class="sig-name descname">set_df</code><span class="sig-paren">(</span><em class="sig-param">df: pandas.core.frame.DataFrame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVIndex.set_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVIndex.set_df" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_df</code><span class="sig-paren">(</span><em class="sig-param">df: pandas.core.frame.DataFrame</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/glyculator/Index.html#GVIndex.set_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVIndex.set_df" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -72,7 +85,7 @@
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVMean.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVMean.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVMean.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVMean.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVMean.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -83,7 +96,7 @@
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVMedian.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVMedian.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVMedian.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVMedian.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVMedian.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -94,7 +107,7 @@
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVNanFraction.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVNanFraction.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVNanFraction.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVNanFraction.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVNanFraction.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -105,7 +118,7 @@
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVRecordsNo.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVRecordsNo.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVRecordsNo.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVRecordsNo.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVRecordsNo.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -116,7 +129,7 @@
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVVariance.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVVariance.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVVariance.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVVariance.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVVariance.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -132,7 +145,7 @@ with 0s. The final result is normalized to the
 length of the measurement (supplied via calc_config)</p>
 <dl class="method">
 <dt id="glyculator.Index.GVauc.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">standardize=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVauc.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVauc.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">standardize: bool = True</em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVauc.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVauc.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -143,7 +156,7 @@ length of the measurement (supplied via calc_config)</p>
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVcongaX.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">hours: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVcongaX.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVcongaX.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">hours: int</em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVcongaX.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVcongaX.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -155,7 +168,7 @@ length of the measurement (supplied via calc_config)</p>
 <p>Calculates estimated haemoglobin A1c</p>
 <dl class="method">
 <dt id="glyculator.Index.GVeA1c.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVeA1c.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVeA1c.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVeA1c.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVeA1c.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -166,12 +179,12 @@ length of the measurement (supplied via calc_config)</p>
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVgrade.GRADE">
-<code class="sig-name descname">GRADE</code><span class="sig-paren">(</span><em class="sig-param">array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVgrade.GRADE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVgrade.GRADE" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">GRADE</code><span class="sig-paren">(</span><em class="sig-param">array: pandas.core.series.Series</em><span class="sig-paren">)</span> &#x2192; pandas.core.series.Series<a class="reference internal" href="_modules/glyculator/Index.html#GVgrade.GRADE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVgrade.GRADE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="glyculator.Index.GVgrade.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVgrade.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVgrade.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVgrade.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVgrade.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -182,12 +195,12 @@ length of the measurement (supplied via calc_config)</p>
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVgrade_hyper.GRADE">
-<code class="sig-name descname">GRADE</code><span class="sig-paren">(</span><em class="sig-param">array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVgrade_hyper.GRADE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVgrade_hyper.GRADE" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">GRADE</code><span class="sig-paren">(</span><em class="sig-param">array: pandas.core.series.Series</em><span class="sig-paren">)</span> &#x2192; pandas.core.series.Series<a class="reference internal" href="_modules/glyculator/Index.html#GVgrade_hyper.GRADE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVgrade_hyper.GRADE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="glyculator.Index.GVgrade_hyper.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVgrade_hyper.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVgrade_hyper.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVgrade_hyper.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVgrade_hyper.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -198,12 +211,12 @@ length of the measurement (supplied via calc_config)</p>
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVgrade_hypo.GRADE">
-<code class="sig-name descname">GRADE</code><span class="sig-paren">(</span><em class="sig-param">array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVgrade_hypo.GRADE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVgrade_hypo.GRADE" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">GRADE</code><span class="sig-paren">(</span><em class="sig-param">array: pandas.core.series.Series</em><span class="sig-paren">)</span> &#x2192; pandas.core.series.Series<a class="reference internal" href="_modules/glyculator/Index.html#GVgrade_hypo.GRADE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVgrade_hypo.GRADE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="glyculator.Index.GVgrade_hypo.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVgrade_hypo.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVgrade_hypo.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVgrade_hypo.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVgrade_hypo.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -214,7 +227,7 @@ length of the measurement (supplied via calc_config)</p>
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVhbgi.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVhbgi.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVhbgi.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVhbgi.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVhbgi.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -225,7 +238,7 @@ length of the measurement (supplied via calc_config)</p>
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVhyperglycemia.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">threshold: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVhyperglycemia.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVhyperglycemia.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">threshold: int</em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVhyperglycemia.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVhyperglycemia.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -236,7 +249,7 @@ length of the measurement (supplied via calc_config)</p>
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVhypo_events_count.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">threshold: int</em>, <em class="sig-param">threshold_duration: int = 15</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVhypo_events_count.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVhypo_events_count.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">threshold: int</em>, <em class="sig-param">threshold_duration: int = 15</em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVhypo_events_count.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVhypo_events_count.calculate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates number of hypoglycemic events.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -268,7 +281,7 @@ Value is expressed in minutes. Default = 15</p></li>
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVhypoglycemia.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">threshold: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVhypoglycemia.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVhypoglycemia.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">threshold: int</em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVhypoglycemia.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVhypoglycemia.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -279,7 +292,7 @@ Value is expressed in minutes. Default = 15</p></li>
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVj.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVj.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVj.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVj.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVj.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -290,7 +303,7 @@ Value is expressed in minutes. Default = 15</p></li>
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVlbgi.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVlbgi.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVlbgi.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVlbgi.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVlbgi.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -301,7 +314,7 @@ Value is expressed in minutes. Default = 15</p></li>
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVm100.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVm100.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVm100.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVm100.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVm100.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -312,7 +325,7 @@ Value is expressed in minutes. Default = 15</p></li>
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVmage.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVmage.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVmage.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVmage.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVmage.calculate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates MAGE (mean average of glucose excursions)</p>
 <p>Steps undertaken:
 1. Replace nans with mean
@@ -339,7 +352,7 @@ Value is expressed in minutes. Default = 15</p></li>
 glucose values.</p>
 <dl class="method">
 <dt id="glyculator.Index.GVmean_hypo_event_duration.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">threshold: int</em>, <em class="sig-param">records_duration: int = 15</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVmean_hypo_event_duration.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVmean_hypo_event_duration.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">threshold: int</em>, <em class="sig-param">records_duration: int = 15</em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVmean_hypo_event_duration.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVmean_hypo_event_duration.calculate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates mean duration of hypoglycemic events.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -371,7 +384,7 @@ Value is expressed in minutes. Default = 15</p></li>
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVmodd.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVmodd.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVmodd.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVmodd.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVmodd.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -382,7 +395,7 @@ Value is expressed in minutes. Default = 15</p></li>
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVstd.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVstd.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVstd.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVstd.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVstd.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -394,7 +407,7 @@ Value is expressed in minutes. Default = 15</p></li>
 <p>Calculates total time spent in hypoglycemia (in minutes)</p>
 <dl class="method">
 <dt id="glyculator.Index.GVtime_in_hypo.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">threshold: Union[int, float]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVtime_in_hypo.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVtime_in_hypo.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">threshold: Union[int, float]</em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVtime_in_hypo.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVtime_in_hypo.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -405,7 +418,7 @@ Value is expressed in minutes. Default = 15</p></li>
 <dd><p>Bases: <a class="reference internal" href="#glyculator.Index.GVIndex" title="glyculator.Index.GVIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">glyculator.Index.GVIndex</span></code></a></p>
 <dl class="method">
 <dt id="glyculator.Index.GVtime_in_range.calculate">
-<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">lower_bound: int = None</em>, <em class="sig-param">upper_bound: int = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/Index.html#GVtime_in_range.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVtime_in_range.calculate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">lower_bound: int = None</em>, <em class="sig-param">upper_bound: int = None</em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/glyculator/Index.html#GVtime_in_range.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.Index.GVtime_in_range.calculate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
