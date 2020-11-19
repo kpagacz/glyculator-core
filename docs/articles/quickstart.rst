@@ -129,7 +129,7 @@ Calculating glycemic variability indices
 Cautionary snake
 ::
 
-                ____
+                 ____
                 / . .\
                 \  ---<
                  \  /

@@ -7,20 +7,20 @@ from .utils import DT, GLUCOSE, PANDAS_FILL_FREQUENCIES, PANDAS_TOLERANCES
 from .configs import CleanConfig
 import glyculator.DateFixer as DateFixer
 
-# TODO (konrad.pagacz@gmail.com) expand docs
-# TODO (konrad.pagacz@gmail.com) write unit tests with no integration with CleanConfig
-
 
 class FileCleaner():
-    """Cleans the raw datafile
+    """Cleans the raw CGM data file
 
     Attributes:
         untidy (pandas.DataFrame):
         tidy (pandas.DataFrame):
+        clean_config (CleanConfig)
         tidy_report (dict):
             contains information about performed tidying
 
     """
+    __attrs__ = ["untidy", "tidied", "clean_config", "tidy_report"]
+
     untidy = None
     tidied = None
     clean_config = None
@@ -32,8 +32,17 @@ class FileCleaner():
         self.set_clean_config(clean_config)
 
 
-    def tidy(self):
+    def tidy(self) -> pd.DataFrame:
         """Fires up cleaning routines
+        
+        Performs cleaning operations on the CGM file. Removes rows with missing
+        dates, empty rows, duplicated rows, rows with glucose value between the
+        regularly interspersed measurements. Uses information stored in the
+        CleanConfig object passed to the FileCleaner on init.
+
+        Returns:
+            A dataframe with two columns: date time column and glucose values
+            column. Returns a cleaned CGM.
 
         Raises:
             RuntimeError: 
@@ -128,7 +137,6 @@ class FileCleaner():
                 Array of 0s and 1s - boolean values
                 1 represents record, which is part of the CGM
                 0 represents additional record, which should be discarded
-
 
         """
         dates = data_df[DT]
@@ -235,3 +243,9 @@ class FileCleaner():
 
         self.logger.debug("FileCleaner - _fill_missing_dates - return:\n{}".format(df))
         return df
+
+
+    def __call__(self, df: pd.DataFrame) -> pd.DataFrame:
+        self.set_untidy(df)
+        self.tidy()
+        return self.tidied

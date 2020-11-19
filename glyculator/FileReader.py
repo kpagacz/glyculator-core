@@ -386,6 +386,11 @@ class FileReader:
         data_dict[DT] = dt_list
         return data_dict
 
+
+    def __call__(self, file_name) -> pd.DataFrame:
+        self.file_name = file_name
+        read_file = self.read_file()
+        return read_file
     
 
 
