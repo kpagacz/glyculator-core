@@ -8,10 +8,9 @@ RECORD_LENGTH = 15
 """
 Record length is the same as WINDOW_SIZE,
 but due to its misleading name I prefer to use WINDOW_SIZE.
-I was too lazy to refactor the whole code to use WINDOW_SIZ
+I was too lazy to refactor the whole code to use WINDOW_SIZE
 
 Konrad
-
 """
 
 NUMERIC_FEATURES = ["var" + str(i) for i in range(WINDOW_SIZE - 1)]

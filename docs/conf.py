@@ -33,7 +33,9 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
     "sphinx.ext.coverage",
-    "sphinx.ext.githubpages"
+    "sphinx.ext.githubpages",
+    "sphinx.ext.doctest",
+    "sphinx.ext.intersphinx"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -45,7 +47,7 @@ templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # Autodoc config
-autodock_mock_imports = [
+autodoc_mock_imports = [
     "pandas",
     "tensorflow",
     "numpy",
@@ -55,6 +57,8 @@ autodock_mock_imports = [
     "scipy"
 ]
 
+# doctest options
+doctest_test_doctest_blocks = "test"
 
 # -- Options for HTML output -------------------------------------------------
 

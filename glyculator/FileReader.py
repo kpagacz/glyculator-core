@@ -104,7 +104,7 @@ class FileReader:
             if(self.validate_file_type() == False):
                 raise ValueError("File type {} not supported.\n".format(self.extension))
             if(os.path.isfile(self.file_name) == False):
-                    raise FileNotFoundError("{} not found\n".format(self.file_name))
+                raise FileNotFoundError("{} not found\n".format(self.file_name))
             if(self.read_config.validate() == False):
                 raise ValueError("The supplied ReadConfig fails to validate.\n")
 
@@ -131,7 +131,7 @@ class FileReader:
             data_dict = self.merge_date_and_time(data_dict)
         
         # Date and Time are no longer needed
-        # all the information is stored in dt
+        # all the information is stored in a DT column
         del data_dict[DATE]
         del data_dict[TIME]
 
@@ -173,6 +173,7 @@ class FileReader:
         # columns DT DATE and TIME
         transposed_file_ = list(zip(*file_))
         # Detect datetime format using _guess_datetime_format from Pandas library
+        # This is needed, because the date time format might vary
         for col_name, index in zip([DT, DATE], [self.read_config.date_time_column,
                                                         self.read_config.date_column]):
             if(index != None):

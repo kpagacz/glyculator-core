@@ -2,12 +2,15 @@ from typing import Union, Tuple
 from .utils import MAGE_EXCURSION_THRESHOLDS, METRONOME_ADDRESS, METRONOME_ENDPOINT, METRONOME_PORT
 
 
-# TODO (konrad.pagacz@gmail.com) expand docs
-
 class ReadConfig:
     """Configuration for reading a CGM file.
 
     """
+    __attrs__ = [
+        "file_length", "header_skip", "date_time_column", "date_column",
+        "time_column", "glucose_values_column"
+    ]
+
     file_length = None
     header_skip = None
     date_time_column = None
@@ -95,12 +98,12 @@ class CleanConfig:
 
     """
     def __init__(self,
-    interval: int,
-    use_api: Union[str, bool],
-    api_port: Union[int, None] = None,
-    api_address: Union[str, None] = None,
-    api_endpoint: Union[str, None] = None,
-    fill_glucose_tolerance: int = None):
+        interval: int,
+        use_api: Union[str, bool],
+        api_port: Union[int, None] = None,
+        api_address: Union[str, None] = None,
+        api_endpoint: Union[str, None] = None,
+        fill_glucose_tolerance: int = None):
         self.set_interval(interval)
         self.set_use_api(use_api)
         if(api_port is not None):
