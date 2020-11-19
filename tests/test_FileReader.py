@@ -5,7 +5,7 @@ from unittest.mock import patch, Mock
 
 import pandas as pd
 
-import glyculator.FileReader as fr
+from glyculator import FileReader
 from glyculator.utils import DATE, TIME, DT, GLUCOSE
 from glyculator.configs import ReadConfig
 
@@ -15,7 +15,7 @@ import yaml
 
 class TestFileReader(unittest.TestCase):
     def setUp(self):
-        self.FileReader = fr.FileReader()
+        self.FileReader = FileReader()
 
         # Logging setup
         with open("logging_config.yaml", "rt") as file:
@@ -102,7 +102,7 @@ class TestFileReader(unittest.TestCase):
         self.assertEqual(self.FileReader.extension, None)
 
     def test_substring_extension_on_init(self):
-        new_reader = fr.FileReader("test.ext")
+        new_reader = FileReader("test.ext")
         self.assertEqual(new_reader.extension, "ext")
 
     def test_read_file_no_config_exception(self):
