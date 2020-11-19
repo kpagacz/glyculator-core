@@ -126,13 +126,12 @@ Cleaning CGM data
 Calculating glycemic variability indices
 -----------------------------------------
 
-And here is a Snake for certain someone, because she really needs to believe I work on snakes.
-
+Cautionary snake
 ::
 
                 ____
                 / . .\
                 \  ---<
-                \  /
-    __________/ /
+                 \  /
+       __________/ /
     -=:___________/
