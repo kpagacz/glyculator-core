@@ -40,20 +40,20 @@
 <span class="kn">from</span> <span class="nn">.configs</span> <span class="kn">import</span> <span class="n">CleanConfig</span>
 <span class="kn">import</span> <span class="nn">glyculator.DateFixer</span> <span class="k">as</span> <span class="nn">DateFixer</span>
 
-<span class="c1"># TODO (konrad.pagacz@gmail.com) expand docs</span>
-<span class="c1"># TODO (konrad.pagacz@gmail.com) write unit tests with no integration with CleanConfig</span>
-
 
 <div class="viewcode-block" id="FileCleaner"><a class="viewcode-back" href="../../glyculator.FileCleaner.html#glyculator.FileCleaner.FileCleaner">[docs]</a><span class="k">class</span> <span class="nc">FileCleaner</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Cleans the raw datafile</span>
+    <span class="sd">&quot;&quot;&quot;Cleans the raw CGM data file</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        untidy (pandas.DataFrame):</span>
 <span class="sd">        tidy (pandas.DataFrame):</span>
+<span class="sd">        clean_config (CleanConfig)</span>
 <span class="sd">        tidy_report (dict):</span>
 <span class="sd">            contains information about performed tidying</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__attrs__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;untidy&quot;</span><span class="p">,</span> <span class="s2">&quot;tidied&quot;</span><span class="p">,</span> <span class="s2">&quot;clean_config&quot;</span><span class="p">,</span> <span class="s2">&quot;tidy_report&quot;</span><span class="p">]</span>
+
     <span class="n">untidy</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">tidied</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">clean_config</span> <span class="o">=</span> <span class="kc">None</span>
@@ -65,8 +65,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">set_clean_config</span><span class="p">(</span><span class="n">clean_config</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="FileCleaner.tidy"><a class="viewcode-back" href="../../glyculator.FileCleaner.html#glyculator.FileCleaner.FileCleaner.tidy">[docs]</a>    <span class="k">def</span> <span class="nf">tidy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="FileCleaner.tidy"><a class="viewcode-back" href="../../glyculator.FileCleaner.html#glyculator.FileCleaner.FileCleaner.tidy">[docs]</a>    <span class="k">def</span> <span class="nf">tidy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Fires up cleaning routines</span>
+<span class="sd">        </span>
+<span class="sd">        Performs cleaning operations on the CGM file. Removes rows with missing</span>
+<span class="sd">        dates, empty rows, duplicated rows, rows with glucose value between the</span>
+<span class="sd">        regularly interspersed measurements. Uses information stored in the</span>
+<span class="sd">        CleanConfig object passed to the FileCleaner on init.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe with two columns: date time column and glucose values</span>
+<span class="sd">            column. Returns a cleaned CGM.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            RuntimeError: </span>
@@ -161,7 +170,6 @@
 <span class="sd">                Array of 0s and 1s - boolean values</span>
 <span class="sd">                1 represents record, which is part of the CGM</span>
 <span class="sd">                0 represents additional record, which should be discarded</span>
-
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">dates</span> <span class="o">=</span> <span class="n">data_df</span><span class="p">[</span><span class="n">DT</span><span class="p">]</span>
@@ -267,7 +275,13 @@
             <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;index&quot;</span> <span class="p">:</span> <span class="n">DT</span><span class="p">})</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;FileCleaner - _fill_missing_dates - return:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">df</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">df</span></div>
+        <span class="k">return</span> <span class="n">df</span>
+
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_untidy</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tidy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tidied</span></div>
 </pre></div>
 
           </div>

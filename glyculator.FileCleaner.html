@@ -36,9 +36,9 @@
 <span id="glyculator-filecleaner-module"></span><h1>glyculator.FileCleaner module<a class="headerlink" href="#module-glyculator.FileCleaner" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="glyculator.FileCleaner.FileCleaner">
-<em class="property">class </em><code class="sig-prename descclassname">glyculator.FileCleaner.</code><code class="sig-name descname">FileCleaner</code><span class="sig-paren">(</span><em class="sig-param">data_df: pandas.core.frame.DataFrame = None</em>, <em class="sig-param">clean_config: glyculator.configs.CleanConfig = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/FileCleaner.html#FileCleaner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">glyculator.FileCleaner.</code><code class="sig-name descname">FileCleaner</code><span class="sig-paren">(</span><em class="sig-param">data_df: pandas.DataFrame = None</em>, <em class="sig-param">clean_config: glyculator.configs.CleanConfig = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/FileCleaner.html#FileCleaner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Cleans the raw datafile</p>
+<p>Cleans the raw CGM data file</p>
 <dl class="attribute">
 <dt id="glyculator.FileCleaner.FileCleaner.untidy">
 <code class="sig-name descname">untidy</code><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner.untidy" title="Permalink to this definition">¶</a></dt>
@@ -60,6 +60,16 @@
 </dd></dl>
 
 <dl class="attribute">
+<dt id="glyculator.FileCleaner.FileCleaner.clean_config">
+<code class="sig-name descname">clean_config</code><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner.clean_config" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="glyculator.configs.html#glyculator.configs.CleanConfig" title="glyculator.configs.CleanConfig">CleanConfig</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="glyculator.FileCleaner.FileCleaner.tidy_report">
 <code class="sig-name descname">tidy_report</code><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner.tidy_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>contains information about performed tidying</p>
@@ -71,13 +81,13 @@
 </dd></dl>
 
 <dl class="attribute">
-<dt id="glyculator.FileCleaner.FileCleaner.clean_config">
-<code class="sig-name descname">clean_config</code><em class="property"> = None</em><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner.clean_config" title="Permalink to this definition">¶</a></dt>
+<dt>
+<code class="sig-name descname">clean_config</code><em class="property"> = None</em></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="glyculator.FileCleaner.FileCleaner.fix_dates">
-<code class="sig-name descname">fix_dates</code><span class="sig-paren">(</span><em class="sig-param">data_df: pandas.core.frame.DataFrame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/FileCleaner.html#FileCleaner.fix_dates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner.fix_dates" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">fix_dates</code><span class="sig-paren">(</span><em class="sig-param">data_df: pandas.DataFrame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/FileCleaner.html#FileCleaner.fix_dates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner.fix_dates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Flags measurements of data_df</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -102,7 +112,7 @@ Two columns: DT and GLUCOSE</p>
 
 <dl class="method">
 <dt id="glyculator.FileCleaner.FileCleaner.set_untidy">
-<code class="sig-name descname">set_untidy</code><span class="sig-paren">(</span><em class="sig-param">data_df: pandas.core.frame.DataFrame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/FileCleaner.html#FileCleaner.set_untidy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner.set_untidy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_untidy</code><span class="sig-paren">(</span><em class="sig-param">data_df: pandas.DataFrame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/FileCleaner.html#FileCleaner.set_untidy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#glyculator.FileCleaner.FileCleaner.set_untidy" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -112,9 +122,20 @@ Two columns: DT and GLUCOSE</p>
 
 <dl class="method">
 <dt>
-<code class="sig-name descname">tidy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/glyculator/FileCleaner.html#FileCleaner.tidy"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">tidy</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; pandas.DataFrame<a class="reference internal" href="_modules/glyculator/FileCleaner.html#FileCleaner.tidy"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Fires up cleaning routines</p>
+<p>Performs cleaning operations on the CGM file. Removes rows with missing
+dates, empty rows, duplicated rows, rows with glucose value between the
+regularly interspersed measurements. Uses information stored in the
+CleanConfig object passed to the FileCleaner on init.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>date time column and glucose values
+column. Returns a cleaned CGM.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>A dataframe with two columns</p>
+</dd>
 <dt class="field-odd">Raises</dt>
 <dd class="field-odd"><p><strong>RuntimeError</strong> – if untidy attribute is None
     if clean_config attribute is None</p>

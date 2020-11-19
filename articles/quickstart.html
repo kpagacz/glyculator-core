@@ -39,14 +39,120 @@ Or are you designing a new Python software to deal with CGM data?</p>
 <p>If so, then fret not! glyculator-core has all the tools you will need to conduct a basic CGM analysis!
 glyculator-core provides a set of utilities to deal with data created during Continuous Glucose Monitoring.
 It covers file reading, simple data cleaning steps and calculations of the most well-known glycemic variability indices.</p>
-<p>And here is a Snake for certain someone, because she really needs to believe I work on snakes.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>            <span class="n">____</span>
+<div class="section" id="api-design">
+<h2>API design<a class="headerlink" href="#api-design" title="Permalink to this headline">¶</a></h2>
+<p>glyculator.core is designed with modularity in mind. In this spirit, it exposes classes, which deal with a single CGM file.</p>
+<img alt="../_images/core-api-design.png" src="../_images/core-api-design.png" />
+<p>glyculator.core covers three aspects of dealing with CGM data:
+* reading a single file,
+* performing a data cleaning step,
+* calculating glycemic variability indices.</p>
+</div>
+<div class="section" id="reading-a-cgm-file">
+<h2>Reading a CGM file<a class="headerlink" href="#reading-a-cgm-file" title="Permalink to this headline">¶</a></h2>
+<p>Reading a single CGM file with glyculator-core is controlled by a duo of two classes - <a class="reference internal" href="../glyculator.FileReader.html#module-glyculator.FileReader" title="glyculator.FileReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">Reader</span></code></a> and ReadConfig.
+ReadConfig holds the description of how the file should be read and Reader does the reading.</p>
+<p>First, let’s prepare a dummy CGM file.</p>
+<div class="highlight-pycon3 notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cgm</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>    <span class="s2">&quot;dates&quot;</span> <span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2020/11/19&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;5min&quot;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">1000</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="s2">&quot;glucose_values&quot;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">cgm</span><span class="p">)</span>
+<span class="go">                  dates  glucose_values</span>
+<span class="go">0   2020-11-19 00:00:00      159.762701</span>
+<span class="go">1   2020-11-19 00:05:00      193.037873</span>
+<span class="go">2   2020-11-19 00:10:00      170.552675</span>
+<span class="go">3   2020-11-19 00:15:00      158.976637</span>
+<span class="go">4   2020-11-19 00:20:00      134.730960</span>
+<span class="go">..                  ...             ...</span>
+<span class="go">995 2020-11-22 10:55:00       69.535273</span>
+<span class="go">996 2020-11-22 11:00:00      152.984440</span>
+<span class="go">997 2020-11-22 11:05:00      237.682404</span>
+<span class="go">998 2020-11-22 11:10:00       95.729310</span>
+<span class="go">999 2020-11-22 11:15:00      185.428229</span>
+
+<span class="go">[1000 rows x 2 columns]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cgm</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;example_file.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>ReadConfig should be provided information about the columns relevant to the CGM analysis - the date time column number, the glucose values column number
+and the number of header rows (the rows that do not contain any glucose values).</p>
+<div class="highlight-pycon3 notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">glyculator.configs</span> <span class="kn">import</span> <span class="n">ReadConfig</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">glyculator</span> <span class="kn">import</span> <span class="n">FileReader</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">read_config</span> <span class="o">=</span> <span class="n">ReadConfig</span><span class="p">(</span><span class="n">header_skip</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">date_time_column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">glucose_values_column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span> <span class="o">=</span> <span class="n">FileReader</span><span class="p">(</span><span class="s2">&quot;example_file.csv&quot;</span><span class="p">,</span> <span class="n">read_config</span><span class="o">=</span><span class="n">read_config</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">reader</span><span class="o">.</span><span class="n">read_file</span><span class="p">())</span>
+<span class="go">              date-time     glucose</span>
+<span class="go">0   2020-11-19 00:00:00  159.762701</span>
+<span class="go">1   2020-11-19 00:05:00  193.037873</span>
+<span class="go">2   2020-11-19 00:10:00  170.552675</span>
+<span class="go">3   2020-11-19 00:15:00  158.976637</span>
+<span class="go">4   2020-11-19 00:20:00  134.730960</span>
+<span class="go">..                  ...         ...</span>
+<span class="go">995 2020-11-22 10:55:00   69.535273</span>
+<span class="go">996 2020-11-22 11:00:00  152.984440</span>
+<span class="go">997 2020-11-22 11:05:00  237.682404</span>
+<span class="go">998 2020-11-22 11:10:00   95.729310</span>
+<span class="go">999 2020-11-22 11:15:00  185.428229</span>
+
+<span class="go">[1000 rows x 2 columns]</span>
+</pre></div>
+</div>
+<p>This in itself is not that impressive, but FileReader and ReadConfig can also work with split date and time columns. it also supports reading
+all types of comma-seperated files - it tries to derive the structure of the file from its extension and first couple of rows, so you don’t have
+to specify those things!</p>
+<p>Let’s try to create a little more complex of an example:</p>
+<div class="highlight-pycon3 notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lines</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="s2">&quot;ID,,,,,&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;dt,glucose,date,time,,&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;,78,09/08/2019,08:00:00,,&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;,80,09/08/2019,08:05:00,,&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;,83,09/08/2019,08:10:00,,&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;,79,09/08/2019,08:15:00,,&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;example_file2.csv&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">_</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="n">_</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You could create a new ReadConfig object to describe this file, but let us reuse the old ReadConfig.</p>
+<div class="highlight-pycon3 notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span><span class="o">.</span><span class="n">set_file_name</span><span class="p">(</span><span class="s2">&quot;example_file2.csv&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">read_config</span><span class="o">.</span><span class="n">set_glucose_values_column</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">read_config</span><span class="o">.</span><span class="n">set_date_column</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">read_config</span><span class="o">.</span><span class="n">set_time_column</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">read_config</span><span class="o">.</span><span class="n">set_date_time_column</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">read_config</span><span class="o">.</span><span class="n">set_header_skip</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span><span class="o">.</span><span class="n">read_file</span><span class="p">()</span>
+<span class="go">            date-time  glucose</span>
+<span class="go">0 2019-08-09 08:00:00     78.0</span>
+<span class="go">1 2019-08-09 08:05:00     80.0</span>
+<span class="go">2 2019-08-09 08:10:00     83.0</span>
+<span class="go">3 2019-08-09 08:15:00     79.0</span>
+</pre></div>
+</div>
+<p>The read file has only the date-time column and the glucose column, despite the original file having additional columns.
+FileReader also pasted the date column with the time column in a smart way - notice the differences in the formatting.</p>
+</div>
+<div class="section" id="cleaning-cgm-data">
+<h2>Cleaning CGM data<a class="headerlink" href="#cleaning-cgm-data" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="calculating-glycemic-variability-indices">
+<h2>Calculating glycemic variability indices<a class="headerlink" href="#calculating-glycemic-variability-indices" title="Permalink to this headline">¶</a></h2>
+<p>Cautionary snake</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>             <span class="n">____</span>
             <span class="o">/</span> <span class="o">.</span> <span class="o">.</span>\
             \  <span class="o">---&lt;</span>
-            \  <span class="o">/</span>
-<span class="n">__________</span><span class="o">/</span> <span class="o">/</span>
+             \  <span class="o">/</span>
+   <span class="n">__________</span><span class="o">/</span> <span class="o">/</span>
 <span class="o">-=</span><span class="p">:</span><span class="n">___________</span><span class="o">/</span>
 </pre></div>
+</div>
 </div>
 </div>
 
@@ -68,7 +174,13 @@ It covers file reading, simple data cleaning steps and calculations of the most 
 
 <h3>Navigation</h3>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">A Quickstart Guide!</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">A Quickstart Guide!</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#api-design">API design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reading-a-cgm-file">Reading a CGM file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cleaning-cgm-data">Cleaning CGM data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#calculating-glycemic-variability-indices">Calculating glycemic variability indices</a></li>
+</ul>
+</li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../modules.html">glyculator</a></li>
