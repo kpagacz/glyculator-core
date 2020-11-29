@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/kpagacz/glyculator-core/branch/dev/graph/badge.svg?token=GJV4Q9QT5P)](https://codecov.io/gh/kpagacz/glyculator-core)
+
 ## Welcome to glyculator-core
 
 glyculator-core exposes a set of utilities for dealing with files output by software dedicated to Continuous Glucose Monitoring systems
